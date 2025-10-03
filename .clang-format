@@ -1,0 +1,74 @@
+---
+Language: Cpp
+BasedOnStyle: Microsoft
+
+Standard: c++20
+LineEnding: LF  # LF, CRLF, DeriveLF, DeriveCRLF
+ColumnLimit: 120
+
+IncludeCategories:
+  - Regex: '^<my_project/'
+    Priority: 1
+  - Regex: '^<[^/]+/'
+    Priority: 2
+  - Regex: '^<.+>$'
+    Priority: 3
+IncludeBlocks: Regroup
+IncludeIsMainRegex: '$'
+IncludeIsMainSourceRegex: ''
+MainIncludeChar: Quote
+SortIncludes: CaseInsensitive
+
+AccessModifierOffset: -2
+AlignAfterOpenBracket: Align
+AlignArrayOfStructures: Right
+AlignConsecutiveAssignments:
+  PadOperators: false
+AlignConsecutiveDeclarations:
+  AlignFunctionDeclarations: false
+AlignEscapedNewlines: LeftWithLastLine
+AlignOperands: Align
+AlignTrailingComments:
+  Kind: Always
+  OverEmptyLines: 0
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortLambdasOnASingleLine: All
+BinPackParameters: OnePerLine
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterCaseLabel: true
+  AfterUnion: true
+  BeforeLambdaBody: true
+  BeforeWhile: true
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+BreakConstructorInitializers: BeforeColon
+BreakInheritanceList: BeforeColon
+BreakBeforeBinaryOperators: NonAssignment
+BreakTemplateDeclarations: Yes
+IndentWrappedFunctionNames: true
+InsertNewlineAtEOF: true
+KeepEmptyLines:
+  AtEndOfFile: false
+  AtStartOfBlock: false
+  AtStartOfFile: false
+PackConstructorInitializers: Never
+PointerAlignment: Left
+QualifierAlignment: Custom
+QualifierOrder: [static, inline, const, constexpr, volatile, restrict, friend, type]
+ReferenceAlignment: Left
+ReflowComments: IndentOnly
+RemoveEmptyLinesInUnwrappedLines: true
+RemoveSemicolon: true
+SeparateDefinitionBlocks: Always
+SkipMacroDefinitionBody: true
+SortUsingDeclarations: Lexicographic
+SpaceAfterTemplateKeyword: false
+SpaceBeforeCpp11BracedList: false
+SpacesBeforeTrailingComments: 2
+SpacesInLineCommentPrefix:
+  Minimum: 1
+  Maximum: 1
+WrapNamespaceBodyWithEmptyLines: Always
+...
