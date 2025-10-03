@@ -7,7 +7,7 @@ LineEnding: LF  # LF, CRLF, DeriveLF, DeriveCRLF
 ColumnLimit: 120
 
 IncludeCategories:
-  - Regex: '^<my_project/'
+  - Regex: '^<vsl/'
     Priority: 1
   - Regex: '^<[^/]+/'
     Priority: 2
