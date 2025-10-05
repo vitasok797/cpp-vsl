@@ -10,4 +10,4 @@ for ext in extensions:
 
 for file in files:
     print(file)
-    os.system(f'clang-format -i {file}')
+    os.system(f'clang-format -i "{file}"')
