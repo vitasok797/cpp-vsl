@@ -5,6 +5,7 @@ BasedOnStyle: Microsoft
 Standard: c++20
 LineEnding: LF  # LF, CRLF, DeriveLF, DeriveCRLF
 ColumnLimit: 120
+StatementMacros: [VSL_SCOPE_GUARD]
 
 IncludeCategories:
   - Regex: '^<vsl/'
