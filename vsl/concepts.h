@@ -17,7 +17,7 @@ template<typename T>
 concept numeric = std::integral<std::decay_t<T>> || std::floating_point<std::decay_t<T>>;
 
 template<typename T, typename... Types>
-concept one_of_types = (std::same_as<std::decay_t<T>, Types> || ...);
+concept one_of = (std::same_as<std::decay_t<T>, Types> || ...);
 
 template<typename T, typename U>
 concept same_type_as = std::same_as<std::decay_t<T>, U>;
