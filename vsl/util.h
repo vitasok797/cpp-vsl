@@ -1,9 +1,11 @@
 #ifndef VSL_UTIL_H
 #define VSL_UTIL_H
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <initializer_list>
 #include <optional>
 #include <type_traits>
 #include <utility>
@@ -57,6 +59,18 @@ constexpr auto forward_like(U&& x) noexcept -> auto&&
         else
             return std::move(x);
     }
+}
+
+template<typename T, typename... Options>
+bool is_one_of(const T& value, const Options&... options)
+{
+    return ((value == options) || ...);
+}
+
+template<typename T>
+bool is_one_of(const T& value, const std::initializer_list<T>& options)
+{
+    return std::ranges::find(options, value) != options.end();
 }
 
 // CRTP underlying type casting helper
