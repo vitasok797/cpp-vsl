@@ -6,7 +6,7 @@
 #include <source_location>
 
 #define VSL_ASSERT(type, expr, ...) (static_cast<bool>(expr) ? static_cast<void>(0) : \
-    vsl::assert_fail(type, #expr, std::source_location::current() __VA_OPT__(,) __VA_ARGS__))
+    vsl::detail::assert_fail(type, #expr, std::source_location::current() __VA_OPT__(,) __VA_ARGS__))
 
 #define VSL_EXPECTS(...) VSL_ASSERT("Expects", __VA_ARGS__)
 #define VSL_ENSURES(...) VSL_ASSERT("Ensures", __VA_ARGS__)
@@ -14,7 +14,7 @@
 #define EXPECTS VSL_EXPECTS
 #define ENSURES VSL_ENSURES
 
-namespace vsl
+namespace vsl::detail
 {
 
 [[noreturn]]
@@ -39,9 +39,10 @@ inline auto assert_fail(        //
 
     std::cerr << std::endl;
 
+    // TODO: use exception ?
     std::terminate();
 }
 
-}  // namespace vsl
+}  // namespace vsl::detail
 
 #endif  // VSL_ASSERT_H
