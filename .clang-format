@@ -8,12 +8,14 @@ ColumnLimit: 120
 StatementMacros: [VSL_SCOPE_GUARD]
 
 IncludeCategories:
-  - Regex: '^<vsl/'
+  - Regex: '^".+"$'
     Priority: 1
-  - Regex: '^<[^/]+/'
+  - Regex: '^<vsl/'
     Priority: 2
-  - Regex: '^<.+>$'
+  - Regex: '^<[^/]+/'
     Priority: 3
+  - Regex: '^<.+>$'
+    Priority: 4
 IncludeBlocks: Regroup
 IncludeIsMainRegex: '$'
 IncludeIsMainSourceRegex: ''
