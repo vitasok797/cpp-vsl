@@ -1,0 +1,17 @@
+{
+    "name": "vsl",
+    "dependencies": [
+        "fmt",
+        "ms-gsl",
+        {
+            "name": "poco",
+            "default-features": false,
+            "features": [
+                "encodings",
+                "net"
+            ]
+        },
+        "tabulate"
+    ],
+    "builtin-baseline": "d912d8d62818710b876969cd60d547f50687a613"
+}
