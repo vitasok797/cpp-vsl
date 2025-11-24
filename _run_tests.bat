@@ -17,6 +17,9 @@ cmake --build --preset=%PRESET%
 if %errorlevel% NEQ 0 goto :error
 
 echo.
+echo -----------------------------------------------------
+echo.
+
 out\build\%PRESET%\run_tests.exe
 
 goto:eof
