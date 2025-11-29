@@ -73,6 +73,12 @@ bool is_one_of(const T& value, const std::initializer_list<T>& options)
     return std::ranges::find(options, value) != options.end();
 }
 
+template<class... Ts>
+struct overloaded : Ts...
+{
+    using Ts::operator()...;
+};
+
 // CRTP underlying type casting helper
 template<typename Und, typename Ptr>
 auto this_to(Ptr* this_ptr) noexcept -> decltype(auto)
