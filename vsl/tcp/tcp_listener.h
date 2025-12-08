@@ -14,7 +14,6 @@ namespace vsl::tcp
 
 class TcpListenerError : public TcpError
 {
-  public:
     using TcpError::TcpError;
 };
 

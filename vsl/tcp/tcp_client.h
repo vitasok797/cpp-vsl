@@ -12,9 +12,9 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <exception>
 #include <memory>
 #include <span>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -22,35 +22,23 @@
 namespace vsl::tcp
 {
 
-class TcpError : public std::exception
+class TcpError : public std::runtime_error
 {
   public:
-    explicit TcpError(std::string_view error_message)
-        : message_{error_message}
-    {}
+    using std::runtime_error::runtime_error;
 
     explicit TcpError(std::string_view error_message, std::string_view error_desc)
-        : message_{fmt::format("{} ({})", error_message, error_desc)}
+        : TcpError{fmt::format("{} ({})", error_message, error_desc)}
     {}
-
-    auto what() const noexcept -> const char* override
-    {
-        return message_.c_str();
-    }
-
-  private:
-    std::string message_{};
 };
 
 class TcpClientError : public TcpError
 {
-  public:
     using TcpError::TcpError;
 };
 
 class TcpClientDisconnect : public TcpClientError
 {
-  public:
     using TcpClientError::TcpClientError;
 };
 
