@@ -5,9 +5,6 @@
 #include <iostream>
 #include <thread>
 
-namespace vsl::interrupt::example
-{
-
 static auto interrupt_handler() noexcept -> void
 {
 #ifdef _WIN32
@@ -27,18 +24,18 @@ static auto interrupt_handler() noexcept -> void
     std::exit(1);
 }
 
-auto interrupt_example() -> void
+auto main() -> int
 {
     std::cout << "main thread[" << std::this_thread::get_id() << "] " << std::endl;
 
-    set_handler(interrupt_handler);
+    vsl::interrupt::set_handler(interrupt_handler);
 
-    // start_handling();
-    start_handling(SuppressCtrlC::YES);
+    // vsl::interrupt::start_handling();
+    vsl::interrupt::start_handling(vsl::interrupt::SuppressCtrlC::YES);
 
     while (true)
     {
-        if (is_interrupted())
+        if (vsl::interrupt::is_interrupted())
         {
             std::cout << "interrupted" << std::endl;
         }
@@ -50,5 +47,3 @@ auto interrupt_example() -> void
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
 }
-
-}  // namespace vsl::interrupt::example

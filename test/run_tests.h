@@ -15,11 +15,4 @@ auto test_tcp() -> void;
 
 }  // namespace vsl::tcp::test
 
-namespace vsl::interrupt::example
-{
-
-auto interrupt_example() -> void;
-
-}  // namespace vsl::interrupt::example
-
 #endif  // TEST_RUN_TESTS_H
