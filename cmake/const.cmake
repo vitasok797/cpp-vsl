@@ -1,0 +1,5 @@
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set(_WINDOWS 1)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(_LINUX 1)
+endif()

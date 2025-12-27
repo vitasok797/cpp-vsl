@@ -1,0 +1,6 @@
+include(${CMAKE_CURRENT_LIST_DIR}/const.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/crt_linkage.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/functions.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/lang_cxx.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/lang_fortran.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/linux.cmake)

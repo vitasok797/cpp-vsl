@@ -2,9 +2,7 @@ cmake_minimum_required(VERSION 3.30)
 
 project(vsl)
 
-include(cmake/crt_linkage.cmake)
-include(cmake/functions.cmake)
-include(cmake/lang_cxx.cmake)
+include(cmake/modules.cmake)
 
 #--- common --------------------------------------------------------------------------------------
 
