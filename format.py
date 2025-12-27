@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 
-def format_in_dir(target_dir: Path):
+def format_in_dir(target_dir: Path) -> None:
     files = []
     extensions = ['.cpp', '.h']
     for ext in extensions:
