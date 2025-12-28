@@ -27,11 +27,17 @@
     "buildPresets": [
         {
             "name": "win-x64-vs19-debug",
-            "configurePreset": "win-x64-vs19-debug"
+            "configurePreset": "win-x64-vs19-debug",
+            "inherits": [
+                "win"
+            ]
         },
         {
             "name": "win-x64-vs19-release",
-            "configurePreset": "win-x64-vs19-release"
+            "configurePreset": "win-x64-vs19-release",
+            "inherits": [
+                "win"
+            ]
         }
     ]
 }
