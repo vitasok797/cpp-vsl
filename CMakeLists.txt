@@ -42,16 +42,20 @@ target_sources(${CUR_TARGET} PRIVATE
 
 #--- tests executable ----------------------------------------------------------------------------
 
-set(CUR_TARGET run_tests)
-add_executable(${CUR_TARGET})
+option(VSL_BUILD_TESTS "Build tests" ON)
 
-target_include_directories(${CUR_TARGET} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-target_link_libraries(${CUR_TARGET} PRIVATE dependencies)
+if(VSL_BUILD_TESTS AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    set(CUR_TARGET run_tests)
+    add_executable(${CUR_TARGET})
 
-configure_cxx_options(${CUR_TARGET})
+    target_include_directories(${CUR_TARGET} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+    target_link_libraries(${CUR_TARGET} PRIVATE dependencies)
 
-target_sources(${CUR_TARGET} PRIVATE
-    "test/run_tests.cpp"
-    "vsl/tabulate/tabulate.test.cpp"
-    "vsl/tcp/test.cpp"
-    )
+    configure_cxx_options(${CUR_TARGET})
+
+    target_sources(${CUR_TARGET} PRIVATE
+        "test/run_tests.cpp"
+        "vsl/tabulate/tabulate.test.cpp"
+        "vsl/tcp/test.cpp"
+        )
+endif()
