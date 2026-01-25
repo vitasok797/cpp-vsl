@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import colorama
 import functools
 import locale
 import os
@@ -21,11 +22,27 @@ OUT_DIR = ROOT_DIR / 'out'
 BUILD_DIR = OUT_DIR / 'build'
 DEFAULT_PRESET = ('win' if IS_WINDOWS else 'lin') + '-x64-debug'
 TESTS_PRESET = DEFAULT_PRESET
-TESTS_EXE_NAME = 'run_tests'
+TESTS_EXE_NAME = 'tests'
 
 
-def print_err(*args: Any, **kwargs: Any) -> None:
-    print(*args, file=sys.stderr, **kwargs)
+class Color(Enum):
+    BLACK = colorama.Fore.BLACK
+    RED = colorama.Fore.RED
+    GREEN = colorama.Fore.GREEN
+    YELLOW = colorama.Fore.YELLOW
+    BLUE = colorama.Fore.BLUE
+    MAGENTA = colorama.Fore.MAGENTA
+    CYAN = colorama.Fore.CYAN
+    WHITE = colorama.Fore.WHITE
+    RESET = colorama.Fore.RESET
+
+
+def colored(text: str, color: Color) -> str:
+    return color.value + text + colorama.Style.RESET_ALL
+
+
+def print_err(text: str, **kwargs: Any) -> None:
+    print(colored(text, Color.RED), file=sys.stderr, **kwargs)
 
 
 def print_hr() -> None:
@@ -40,14 +57,6 @@ def get_os_specific_exe_name(name: str) -> str:
 
 def get_os_specific_script_name(name: str) -> str:
     return name + ('.bat' if IS_WINDOWS else '.sh')
-
-
-def decorate_error_message(message: str) -> str:
-    return f'Error: {message}'
-
-
-def print_error_message(message: str) -> None:
-    print_err(decorate_error_message(message))
 
 
 class UnknownAction(Exception):
@@ -155,16 +164,17 @@ class Console:
     @staticmethod
     def input_string(prompt: str, *, allow_empty: bool = True) -> str:
         while True:
-            text = input(f'{prompt} ')
+            print(f'{prompt} ', end='', flush=True)
+            text = input()
             if text or allow_empty:
                 return text
 
     @staticmethod
-    def input_int(prompt: str, *, default: int | None = None) -> int:
+    def input_int(prompt: str) -> int | None:
         while True:
             text = Console.input_string(prompt)
-            if not text and default is not None:
-                return default
+            if not text:
+                return None
             try:
                 return int(text)
             except ValueError:
@@ -185,13 +195,14 @@ class Console:
     def select(
             prompt: str,
             variants: dict[str, Any],
-            *,
-            default: int | None = None,
-            ) -> Any:  # noqa: ANN401
+            ) -> Any | None:  # noqa: ANN401
         for i, variant in enumerate(variants, start=1):
             print(f'{i}: {variant}')
         while True:
-            index = Console.input_int(prompt, default=default) - 1
+            user_input = Console.input_int(prompt)
+            if user_input is None:
+                return None
+            index = user_input - 1
             if 0 <= index < len(variants):
                 values = list(variants.values())
                 return values[index]
@@ -270,12 +281,14 @@ class InteractiveActionManager(BaseActionManager):
             self._process_user_command()
 
     def _process_user_command(self) -> None:
-        user_input = input(self._generate_prompt())
+        print(self._generate_prompt(), end='', flush=True)
+        user_input = input()
 
         try:
             actions = self._get_actions_to_execute(user_input)
         except UnknownAction as ex:
-            print_error_message(f'Unknown action "{ex}"')
+            print_err(f'Unknown action "{ex}"')
+            print_err('--- ERROR ---')
             return
 
         is_multiple_actions = len(actions) > 1
@@ -289,7 +302,7 @@ class InteractiveActionManager(BaseActionManager):
             except ActionError as ex:  # noqa: PERF203
                 error_message = str(ex)
                 if error_message:
-                    print_error_message(error_message)
+                    print_err(error_message)
 
                 if is_multiple_actions:
                     print_err(f'--- ERROR ({action.DESC}) ---')
@@ -302,7 +315,7 @@ class InteractiveActionManager(BaseActionManager):
                 return
 
     def _generate_prompt(self) -> str:
-        return f'\n{self.active_preset}> '
+        return colored(f'\n{self.active_preset}> ', Color.GREEN)
 
     def _get_actions_to_execute(self, user_input: str) -> list[BaseAction]:
         tokens = user_input.strip().split()
@@ -336,7 +349,7 @@ class CliActionManager(BaseActionManager):
         except ActionError as ex:
             error_message = str(ex)
             if error_message:
-                print_error_message(error_message)
+                print_err(error_message)
 
             sys.exit('--- ERROR ---')
 
@@ -363,25 +376,19 @@ class PresetSelectAction(BaseAction):
     DESC = 'Preset select'
 
     def execute(self) -> None:
-        old_active_preset = self.manager.active_preset
-
         variants = {self._decorate_preset(preset): preset for preset in self.manager.presets}
-        self.manager.active_preset = Console.select(
-                prompt='Select preset:',
-                variants=variants,
-                default=self._get_active_preset_num(),
-                )
+        selected_preset = Console.select(prompt='Select preset:', variants=variants)
 
-        if self.manager.active_preset == old_active_preset:
+        if selected_preset is None:
             raise ActionCancel
 
-        print(f'Preset selected: {self.manager.active_preset}')
+        self.manager.active_preset = selected_preset
 
     def _decorate_preset(self, preset: str) -> str:
-        preset_desc = '> ' if preset == self.manager.active_preset else '  '
-        preset_desc += preset
-        preset_desc += ' (default)' if preset == DEFAULT_PRESET else ''
-        return preset_desc
+        if preset == self.manager.active_preset:
+            return colored(preset, Color.CYAN)
+        else:
+            return preset
 
     def _get_active_preset_num(self) -> int:
         return self.manager.presets.index(self.manager.active_preset) + 1
@@ -485,20 +492,16 @@ class RunAction(BaseAction):
         if not executables:
             raise ActionError('Executables not found')
 
-        variants = {f'Run "{exe.name}"': exe for exe in executables} | {'Abort (default)': None}
-        abort_option_num = len(variants)
-        exe = Console.select(
-                prompt='Select:',
-                variants=variants,
-                default=abort_option_num,
-                )
-        if not exe:
+        variants = {exe.name: exe for exe in executables}
+        selected_exe = Console.select(prompt='Select executable:', variants=variants)
+
+        if selected_exe is None:
             raise ActionCancel
 
-        print(f'Executing "{exe.relative_to(BUILD_DIR)}"...')
+        print(f'Executing "{selected_exe.relative_to(BUILD_DIR)}"...')
         print_hr()
         Console.run_shell_command(
-                command=f'"{exe}"',
+                command=f'"{selected_exe}"',
                 cwd=ROOT_DIR,
                 error_exception=ActionError,
                 )
@@ -574,6 +577,9 @@ def start_cli_mode() -> None:
 
 
 if __name__ == '__main__':
+    if IS_WINDOWS:
+        colorama.init()
+
     if not sys.argv[1:]:
         start_interactive_mode()
     else:

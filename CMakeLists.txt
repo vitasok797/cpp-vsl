@@ -45,7 +45,7 @@ target_sources(${CUR_TARGET} PRIVATE
 option(VSL_BUILD_TESTS "Build tests" ON)
 
 if(VSL_BUILD_TESTS AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-    set(CUR_TARGET run_tests)
+    set(CUR_TARGET tests)
     add_executable(${CUR_TARGET})
 
     target_include_directories(${CUR_TARGET} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
