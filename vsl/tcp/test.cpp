@@ -2,12 +2,12 @@
 #include "tcp_listener.h"
 
 #include <fmt/format.h>
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 #include <array>
-#include <cassert>
 #include <chrono>
 #include <cstdint>
-#include <iostream>
 #include <span>
 #include <string>
 #include <thread>
@@ -17,76 +17,114 @@
 namespace vsl::tcp::test
 {
 
-static const auto server_endpoint = std::pair{"0.0.0.0", 7777};
-static const auto client_remote_endpoint = std::pair{"127.0.0.1", 7777};
+static const auto server_endpoint = std::pair{"0.0.0.0", 8888};
+static const auto client_remote_endpoint = std::pair{"127.0.0.1", 8888};
 
-static auto create_connections(TcpClient::ByteOrder client_byte_order = TcpClient::ByteOrder::NATIVE,
-                               TcpClient::ByteOrder server_byte_order = TcpClient::ByteOrder::NATIVE)
-    -> std::pair<TcpClient, TcpClient>
+class BaseTcpTest : public ::testing::Test
 {
-    auto listener = TcpListener{};
-    listener.start(server_endpoint);
-    assert(listener.is_listening() == true);
+  protected:
+    BaseTcpTest(TcpClient::ByteOrder client_byte_order, TcpClient::ByteOrder server_byte_order)
+        : CLIENT_BYTE_ORDER{client_byte_order},
+          SERVER_BYTE_ORDER{server_byte_order}
+    {}
 
-    auto client = TcpClient{client_byte_order};
-    assert(client.is_active() == false);
+    auto SetUp() -> void override
+    {
+        auto listener = TcpListener{};
+        listener.start(server_endpoint);
+        ASSERT_TRUE(listener.is_listening());
 
-    client.connect(client_remote_endpoint);
-    assert(client.is_active() == true);
+        client_ = TcpClient{CLIENT_BYTE_ORDER};
+        ASSERT_FALSE(client_.is_active());
 
-    auto server = listener.accept_client(server_byte_order);
+        client_.connect(client_remote_endpoint);
+        ASSERT_TRUE(client_.is_active());
 
-    listener.stop();
-    assert(listener.is_listening() == false);
+        server_ = listener.accept_client(SERVER_BYTE_ORDER);
 
-    // testing TcpClient copy/move
-    return {client, std::move(server)};
-}
+        listener.stop();
+        ASSERT_FALSE(listener.is_listening());
+    }
 
-static auto close_connections(TcpClient& client, TcpClient& server) -> void
+    auto TearDown() -> void override
+    {
+        client_.close();
+        server_.close();
+
+        ASSERT_FALSE(client_.is_active());
+        ASSERT_FALSE(server_.is_active());
+    }
+
+    const TcpClient::ByteOrder CLIENT_BYTE_ORDER;
+    const TcpClient::ByteOrder SERVER_BYTE_ORDER;
+
+    TcpClient client_;
+    TcpClient server_;
+};
+
+class TcpTest : public BaseTcpTest
 {
-    client.close();
-    server.close();
-}
+  protected:
+    TcpTest()
+        : BaseTcpTest{TcpClient::ByteOrder::NATIVE, TcpClient::ByteOrder::NATIVE}
+    {}
+};
+
+class TcpEndiannessTest : public BaseTcpTest
+{
+  protected:
+    TcpEndiannessTest()
+        : BaseTcpTest{TcpClient::ByteOrder::LITTLE_ENDIAN, TcpClient::ByteOrder::BIG_ENDIAN}
+    {}
+};
 
 static auto test_connect(auto start_listener, auto connect_client) -> void
 {
     auto listener = TcpListener{};
     start_listener(listener);
-    assert(listener.is_listening() == true);
+    ASSERT_TRUE(listener.is_listening());
 
     auto client = TcpClient{};
-    assert(client.is_active() == false);
+    ASSERT_FALSE(client.is_active());
 
     connect_client(client);
-    assert(client.is_active() == true);
+    ASSERT_TRUE(client.is_active());
 
     auto server = listener.accept_client();
 
     listener.stop();
-    assert(listener.is_listening() == false);
+    ASSERT_FALSE(listener.is_listening());
 
     client.close();
     server.close();
 }
 
-static auto test_connect() -> void
+TEST(TcpConnectTest, SuccessfulConnect1)
 {
     test_connect(                                                     //
         [](auto& listener) { listener.start(server_endpoint); },      //
         [](auto& client) { client.connect(client_remote_endpoint); }  //
     );                                                                //
+}
 
+TEST(TcpConnectTest, SuccessfulConnect2)
+{
     test_connect(                                                        //
         [](auto& listener) { listener.start(server_endpoint.second); },  //
         [](auto& client) { client.connect(client_remote_endpoint); }     //
     );                                                                   //
+}
 
+TEST(TcpConnectTest, SuccessfulConnect3)
+{
     test_connect(                                                                                          //
         [](auto& listener) { listener.start(server_endpoint.first, server_endpoint.second); },             //
         [](auto& client) { client.connect(client_remote_endpoint.first, client_remote_endpoint.second); }  //
     );                                                                                                     //
+}
 
+TEST(TcpConnectTest, SuccessfulConnect4)
+{
     auto server_endpoint_as_str = fmt::format("{}:{}",                                //
                                               server_endpoint.first,                  //
                                               server_endpoint.second);                //
@@ -97,65 +135,50 @@ static auto test_connect() -> void
         [&](auto& listener) { listener.start(server_endpoint_as_str); },              //
         [&](auto& client) { client.connect(client_remote_endpoint_as_str); }          //
     );                                                                                //
-
-    try
-    {
-        // throws TcpClientError
-        test_connect(                                                            //
-            [](auto& listener) { listener.start(server_endpoint.second + 1); },  //
-            [](auto& client) { client.connect(client_remote_endpoint); }         //
-        );                                                                       //
-        assert(false && "Exception is not thrown");
-    }
-    catch (const TcpClientError&)
-    {}
 }
 
-static auto test_options() -> void
+TEST(TcpConnectTest, UnableToBind)
 {
-    auto [client, server] = create_connections();
-
-    // -------------------------------------------------------------------------------
-
-    assert(client.is_active() == true);
-    assert(client.get_no_dalay() == true);
-    assert(client.get_local_endpoint().first == "127.0.0.1");
-    assert(client.get_remote_endpoint().first == "127.0.0.1");
-    assert(client.get_remote_endpoint().second == client_remote_endpoint.second);
-
-    assert(server.is_active() == true);
-    assert(server.get_no_dalay() == true);
-    assert(server.get_local_endpoint().first == "127.0.0.1");
-    assert(server.get_local_endpoint().second == server_endpoint.second);
-    assert(server.get_remote_endpoint().first == "127.0.0.1");
-
-    // -------------------------------------------------------------------------------
-
-    close_connections(client, server);
-
-    assert(client.is_active() == false);
-    assert(server.is_active() == false);
+    auto listener = TcpListener{};
+    listener.start(server_endpoint);
+    EXPECT_THROW(TcpListener{}.start(server_endpoint), TcpListenerError);
 }
 
-static auto test_send_recv() -> void
+TEST(TcpConnectTest, UnableToConnect)
 {
-    auto [client, server] = create_connections();
+    EXPECT_THROW(TcpClient{}.connect(client_remote_endpoint), TcpClientError);
+}
 
-    // -------------------------------------------------------------------------------
+TEST_F(TcpTest, Options)
+{
+    EXPECT_TRUE(client_.is_active());
+    EXPECT_EQ(client_.get_no_dalay(), true);
+    EXPECT_EQ(client_.get_local_endpoint().first, "127.0.0.1");
+    EXPECT_EQ(client_.get_remote_endpoint().first, "127.0.0.1");
+    EXPECT_EQ(client_.get_remote_endpoint().second, client_remote_endpoint.second);
 
+    EXPECT_TRUE(server_.is_active());
+    EXPECT_EQ(server_.get_no_dalay(), true);
+    EXPECT_EQ(server_.get_local_endpoint().first, "127.0.0.1");
+    EXPECT_EQ(server_.get_local_endpoint().second, server_endpoint.second);
+    EXPECT_EQ(server_.get_remote_endpoint().first, "127.0.0.1");
+}
+
+TEST_F(TcpTest, SendRecv)
+{
     auto v1 = std::vector<int64_t>{101, 102, -103};
     auto v2 = std::vector<int32_t>{201, 202, -203};
     auto v3 = std::vector<int16_t>{301, 302, -303};
 
-    client.write_vector(v1);
-    client.write_vector<decltype(v2)::value_type, TcpClient::size64_t>(v2);
-    client.write_vector<decltype(v3)::value_type, TcpClient::size32_t>(v3);
+    client_.write_vector(v1);
+    client_.write_vector<decltype(v2)::value_type, TcpClient::size64_t>(v2);
+    client_.write_vector<decltype(v3)::value_type, TcpClient::size32_t>(v3);
 
-    client.flush();
+    client_.flush();
 
-    assert((server.read_vector<decltype(v1)::value_type, TcpClient::size64_t>()) == v1);
-    assert((server.read_vector<decltype(v2)::value_type>()) == v2);
-    assert((server.read_vector<decltype(v3)::value_type, TcpClient::size32_t>()) == v3);
+    ASSERT_EQ((server_.read_vector<decltype(v1)::value_type, TcpClient::size64_t>()), v1);
+    ASSERT_EQ((server_.read_vector<decltype(v2)::value_type>()), v2);
+    ASSERT_EQ((server_.read_vector<decltype(v3)::value_type, TcpClient::size32_t>()), v3);
 
     // -------------------------------------------------------------------------------
 
@@ -163,15 +186,15 @@ static auto test_send_recv() -> void
     auto s2 = std::string{"World"};
     auto s3 = std::string{"Привет"};
 
-    client.write_string(s1);
-    client.write_string<TcpClient::size64_t>(s2);
-    client.write_string<TcpClient::size32_t>(s3);
+    client_.write_string(s1);
+    client_.write_string<TcpClient::size64_t>(s2);
+    client_.write_string<TcpClient::size32_t>(s3);
 
-    client.flush();
+    client_.flush();
 
-    assert(server.read_string<TcpClient::size64_t>() == s1);
-    assert(server.read_string() == s2);
-    assert(server.read_string<TcpClient::size32_t>() == s3);
+    ASSERT_EQ(server_.read_string<TcpClient::size64_t>(), s1);
+    ASSERT_EQ(server_.read_string(), s2);
+    ASSERT_EQ(server_.read_string<TcpClient::size32_t>(), s3);
 
     // -------------------------------------------------------------------------------
 
@@ -182,259 +205,155 @@ static auto test_send_recv() -> void
     auto i5 = int8_t{-8};
     auto i6 = uint8_t{8};
 
-    client.write(i1);
-    client.write(i2);
-    client.write(i3);
-    client.write(i4);
-    client.write(i5);
-    client.write(i6);
+    client_.write(i1);
+    client_.write(i2);
+    client_.write(i3);
+    client_.write(i4);
+    client_.write(i5);
+    client_.write(i6);
 
-    client.flush();
+    client_.flush();
 
-    assert(server.read<decltype(i1)>() == i1);
-    assert(server.read<decltype(i2)>() == i2);
-    assert(server.read<decltype(i3)>() == i3);
-    assert(server.read<decltype(i4)>() == i4);
-    assert(server.read<decltype(i5)>() == i5);
-    assert(server.read<decltype(i6)>() == i6);
+    ASSERT_EQ(server_.read<decltype(i1)>(), i1);
+    ASSERT_EQ(server_.read<decltype(i2)>(), i2);
+    ASSERT_EQ(server_.read<decltype(i3)>(), i3);
+    ASSERT_EQ(server_.read<decltype(i4)>(), i4);
+    ASSERT_EQ(server_.read<decltype(i5)>(), i5);
+    ASSERT_EQ(server_.read<decltype(i6)>(), i6);
 
     // -------------------------------------------------------------------------------
 
-    client.write<bool>(true);
-    client.write<bool>(false);
+    client_.write<bool>(true);
+    client_.write<bool>(false);
 
-    client.flush();
+    client_.flush();
 
-    assert(server.read<bool>() == true);
-    assert(server.read<bool>() == false);
+    ASSERT_EQ(server_.read<bool>(), true);
+    ASSERT_EQ(server_.read<bool>(), false);
 
     // -------------------------------------------------------------------------------
 
     auto float_val = 333.5f;
     auto double_val = 444.25;
 
-    client.write(float_val);
-    client.write(double_val);
+    client_.write(float_val);
+    client_.write(double_val);
 
-    client.flush();
+    client_.flush();
 
-    assert(server.read<decltype(float_val)>() == float_val);
-    assert(server.read<decltype(double_val)>() == double_val);
-
-    // -------------------------------------------------------------------------------
-
-    close_connections(client, server);
+    ASSERT_EQ(server_.read<decltype(float_val)>(), float_val);
+    ASSERT_EQ(server_.read<decltype(double_val)>(), double_val);
 }
 
-static auto test_send_recv_raw() -> void
+TEST_F(TcpTest, SendRecvRaw)
 {
-    auto [client, server] = create_connections();
-
-    // -------------------------------------------------------------------------------
-
     auto value_sent = int32_t{123};
-    client.write_raw(std::span{reinterpret_cast<unsigned char*>(&value_sent), sizeof(decltype(value_sent))});
-    client.flush();
+    client_.write_raw(std::span{reinterpret_cast<unsigned char*>(&value_sent), sizeof(decltype(value_sent))});
+    client_.flush();
 
     decltype(value_sent) value_received;
-    server.read_raw(std::span{reinterpret_cast<unsigned char*>(&value_received), sizeof(decltype(value_received))});
+    server_.read_raw(std::span{reinterpret_cast<unsigned char*>(&value_received), sizeof(decltype(value_received))});
 
-    assert(value_sent == value_received);
+    ASSERT_EQ(value_sent, value_received);
 
     // -------------------------------------------------------------------------------
 
     auto chars_sent = std::vector<char>{'a', 'b', 'c'};
-    client.write_raw(std::span{chars_sent});
-    client.flush();
+    client_.write_raw(std::span{chars_sent});
+    client_.flush();
 
     std::array<char, 3> chars_received;
-    server.read_raw(std::span{chars_received});
+    server_.read_raw(std::span{chars_received});
 
-    assert(chars_sent[0] == chars_received[0]);
-    assert(chars_sent[1] == chars_received[1]);
-    assert(chars_sent[2] == chars_received[2]);
-
-    // -------------------------------------------------------------------------------
-
-    close_connections(client, server);
+    ASSERT_EQ(chars_sent[0], chars_received[0]);
+    ASSERT_EQ(chars_sent[1], chars_received[1]);
+    ASSERT_EQ(chars_sent[2], chars_received[2]);
 }
 
-static auto test_data_available() -> void
+TEST_F(TcpTest, DataAvailable)
 {
     constexpr auto DELAY = std::chrono::milliseconds(100);
 
-    auto [client, server] = create_connections();
+    ASSERT_EQ(server_.data_available(), 0);
 
-    // -------------------------------------------------------------------------------
-
-    assert(server.data_available() == 0);
-
-    client.write(int16_t{});
-    client.flush();
+    client_.write(int16_t{});
+    client_.flush();
     std::this_thread::sleep_for(DELAY);
-    assert(server.data_available() == 2);
+    ASSERT_EQ(server_.data_available(), 2);
 
-    server.read<int8_t>();
-    assert(server.data_available() == 1);
+    server_.read<int8_t>();
+    ASSERT_EQ(server_.data_available(), 1);
 
-    client.write(int8_t{});
-    client.flush();
+    client_.write(int8_t{});
+    client_.flush();
     std::this_thread::sleep_for(DELAY);
-    assert(server.data_available() == 2);
+    ASSERT_EQ(server_.data_available(), 2);
 
-    server.read<int16_t>();
-    assert(server.data_available() == 0);
+    server_.read<int16_t>();
+    ASSERT_EQ(server_.data_available(), 0);
 
-    client.write(int16_t{});
-    client.flush();
-    client.shutdown();
+    client_.write(int16_t{});
+    client_.flush();
+    client_.shutdown();
     std::this_thread::sleep_for(DELAY);
-    assert(server.data_available() == 2);
+    ASSERT_EQ(server_.data_available(), 2);
 
-    server.read<int8_t>();
-    server.read<int8_t>();
+    server_.read<int8_t>();
+    server_.read<int8_t>();
 
-    try
-    {
-        server.data_available();  // throws TcpClientGracefulShutdown
-        assert(false && "Exception is not thrown");
-    }
-    catch (const TcpClientGracefulShutdown&)
-    {}
-
-    // -------------------------------------------------------------------------------
-
-    close_connections(client, server);
+    ASSERT_THROW(server_.data_available(), TcpClientGracefulShutdown);
 }
 
-static auto test_wait_for_disconnect() -> void
+TEST_F(TcpTest, WaitForDisconnect)
 {
-    auto [client, server] = create_connections();
+    client_.write(0);
+    client_.write(0);
+    client_.write(0);
+    client_.flush();
+    client_.shutdown(TcpClient::ShutdownType::SEND);
 
-    // -------------------------------------------------------------------------------
-
-    client.write(0);
-    client.write(0);
-    client.write(0);
-    client.flush();
-    client.shutdown(TcpClient::ShutdownType::SEND);
-
-    server.wait_for_disconnect();
-
-    // -------------------------------------------------------------------------------
-
-    close_connections(client, server);
+    server_.wait_for_disconnect();
 }
 
-static auto test_graceful_disconnect() -> void
+TEST_F(TcpTest, GracefulDisconnect)
 {
-    auto [client, server] = create_connections();
+    client_.write(int32_t{});
+    client_.flush();
+    client_.shutdown();
 
-    // -------------------------------------------------------------------------------
+    server_.read<int8_t>();
+    server_.read<int8_t>();
+    server_.read<int8_t>();
+    server_.read<int8_t>();
 
-    client.write(int32_t{});
-    client.flush();
-    client.shutdown();
-
-    server.read<int8_t>();
-    server.read<int8_t>();
-    server.read<int8_t>();
-    server.read<int8_t>();
-
-    try
-    {
-        server.read<int8_t>();  // throws TcpClientGracefulShutdown
-        assert(false && "Exception is not thrown");
-    }
-    catch (const TcpClientGracefulShutdown&)
-    {}
-
-    // -------------------------------------------------------------------------------
-
-    close_connections(client, server);
+    ASSERT_THROW(server_.read<int8_t>(), TcpClientGracefulShutdown);
 }
 
-static auto test_connection_reset() -> void
+TEST_F(TcpTest, ConnectionResetOnRead)
 {
-    auto [client, server] = create_connections();
-
-    // -------------------------------------------------------------------------------
-
-    client.shutdown();
-
-    try
-    {
-        client.read<int8_t>();  // throws TcpClientConnectionReset
-        assert(false && "Exception is not thrown");
-    }
-    catch (const TcpClientConnectionReset&)
-    {}
-
-    // -------------------------------------------------------------------------------
-
-    close_connections(client, server);
+    client_.shutdown();
+    ASSERT_THROW(client_.read<int8_t>(), TcpClientConnectionReset);
 }
 
-static auto test_connection_reset2() -> void
+TEST_F(TcpTest, ConnectionResetOnFlush)
 {
-    auto [client, server] = create_connections();
-
-    // -------------------------------------------------------------------------------
-
-    client.shutdown();
-    client.write(0);
-
-    try
-    {
-        client.flush();  // throws TcpClientConnectionReset
-        assert(false && "Exception is not thrown");
-    }
-    catch (const TcpClientConnectionReset&)
-    {}
-
-    // -------------------------------------------------------------------------------
-
-    close_connections(client, server);
+    client_.shutdown();
+    client_.write(0);
+    ASSERT_THROW(client_.flush(), TcpClientConnectionReset);
 }
 
-static auto test_endianness() -> void
+TEST_F(TcpEndiannessTest, SendRecvDiffEndiannessInt)
 {
-    auto [client, server] = create_connections(TcpClient::ByteOrder::LITTLE_ENDIAN, TcpClient::ByteOrder::BIG_ENDIAN);
-
-    // -------------------------------------------------------------------------------
-
     auto value = uint16_t{0x0005};
     auto inverted_value = uint16_t{0x0500};
 
-    client.write(value);
-    client.flush();
-    assert(server.read<uint16_t>() == inverted_value);
+    client_.write(value);
+    client_.flush();
+    ASSERT_EQ(server_.read<uint16_t>(), inverted_value);
 
-    server.write(inverted_value);
-    server.flush();
-    assert(client.read<uint16_t>() == value);
-
-    // -------------------------------------------------------------------------------
-
-    close_connections(client, server);
-}
-
-auto test_tcp() -> void
-{
-    std::cout << "testing \"tcp\": ";
-
-    test_connect();
-    test_options();
-    test_send_recv();
-    test_send_recv_raw();
-    test_data_available();
-    test_wait_for_disconnect();
-    test_graceful_disconnect();
-    test_connection_reset();
-    test_connection_reset2();
-    test_endianness();
-
-    std::cout << "OK" << std::endl;
+    server_.write(inverted_value);
+    server_.flush();
+    ASSERT_EQ(client_.read<uint16_t>(), value);
 }
 
 }  // namespace vsl::tcp::test

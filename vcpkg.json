@@ -2,6 +2,7 @@
     "name": "vsl",
     "dependencies": [
         "fmt",
+        "gtest",
         "ms-gsl",
         {
             "name": "poco",

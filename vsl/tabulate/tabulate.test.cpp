@@ -1,10 +1,10 @@
 #include "tabulate.h"
 
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 #include <tabulate/table.hpp>
 
-#include <cassert>
 #include <format>
-#include <iostream>
 #include <string>
 
 namespace vsl::tabulate::test
@@ -23,67 +23,50 @@ static auto get_table(int row_count, vsl::tabulate::HeaderType header_type) -> s
     return table.str();
 }
 
-static auto test_hide_inner_borders_with_header()
+TEST(TabulateTest, HideInnerBordersWithHeader)
 {
-    assert(get_table(4, vsl::tabulate::HeaderType::SEPARATED)
-           == "+----+----+\n"
-              "| A0 | B0 |\n"
-              "+----+----+\n"
-              "| A1 | B1 |\n"
-              "| A2 | B2 |\n"
-              "| A3 | B3 |\n"
-              "+----+----+");
+    ASSERT_EQ(get_table(4, vsl::tabulate::HeaderType::SEPARATED), "+----+----+\n"
+                                                                  "| A0 | B0 |\n"
+                                                                  "+----+----+\n"
+                                                                  "| A1 | B1 |\n"
+                                                                  "| A2 | B2 |\n"
+                                                                  "| A3 | B3 |\n"
+                                                                  "+----+----+");
 
-    assert(get_table(3, vsl::tabulate::HeaderType::SEPARATED)
-           == "+----+----+\n"
-              "| A0 | B0 |\n"
-              "+----+----+\n"
-              "| A1 | B1 |\n"
-              "| A2 | B2 |\n"
-              "+----+----+");
+    ASSERT_EQ(get_table(3, vsl::tabulate::HeaderType::SEPARATED), "+----+----+\n"
+                                                                  "| A0 | B0 |\n"
+                                                                  "+----+----+\n"
+                                                                  "| A1 | B1 |\n"
+                                                                  "| A2 | B2 |\n"
+                                                                  "+----+----+");
 
-    assert(get_table(2, vsl::tabulate::HeaderType::SEPARATED)
-           == "+----+----+\n"
-              "| A0 | B0 |\n"
-              "+----+----+\n"
-              "| A1 | B1 |\n"
-              "+----+----+");
+    ASSERT_EQ(get_table(2, vsl::tabulate::HeaderType::SEPARATED), "+----+----+\n"
+                                                                  "| A0 | B0 |\n"
+                                                                  "+----+----+\n"
+                                                                  "| A1 | B1 |\n"
+                                                                  "+----+----+");
 
-    assert(get_table(1, vsl::tabulate::HeaderType::SEPARATED)
-           == "+----+----+\n"
-              "| A0 | B0 |\n"
-              "+----+----+");
+    ASSERT_EQ(get_table(1, vsl::tabulate::HeaderType::SEPARATED), "+----+----+\n"
+                                                                  "| A0 | B0 |\n"
+                                                                  "+----+----+");
 }
 
-static auto test_hide_inner_borders_without_header()
+TEST(TabulateTest, HideInnerBordersWithoutHeader)
 {
-    assert(get_table(3, vsl::tabulate::HeaderType::NOT_SEPARATED)
-           == "+----+----+\n"
-              "| A0 | B0 |\n"
-              "| A1 | B1 |\n"
-              "| A2 | B2 |\n"
-              "+----+----+");
+    ASSERT_EQ(get_table(3, vsl::tabulate::HeaderType::NOT_SEPARATED), "+----+----+\n"
+                                                                      "| A0 | B0 |\n"
+                                                                      "| A1 | B1 |\n"
+                                                                      "| A2 | B2 |\n"
+                                                                      "+----+----+");
 
-    assert(get_table(2, vsl::tabulate::HeaderType::NOT_SEPARATED)
-           == "+----+----+\n"
-              "| A0 | B0 |\n"
-              "| A1 | B1 |\n"
-              "+----+----+");
+    ASSERT_EQ(get_table(2, vsl::tabulate::HeaderType::NOT_SEPARATED), "+----+----+\n"
+                                                                      "| A0 | B0 |\n"
+                                                                      "| A1 | B1 |\n"
+                                                                      "+----+----+");
 
-    assert(get_table(1, vsl::tabulate::HeaderType::NOT_SEPARATED)
-           == "+----+----+\n"
-              "| A0 | B0 |\n"
-              "+----+----+");
-}
-
-auto test_tabulate() -> void
-{
-    std::cout << "testing \"tabulate\": ";
-
-    test_hide_inner_borders_with_header();
-    test_hide_inner_borders_without_header();
-
-    std::cout << "OK" << std::endl;
+    ASSERT_EQ(get_table(1, vsl::tabulate::HeaderType::NOT_SEPARATED), "+----+----+\n"
+                                                                      "| A0 | B0 |\n"
+                                                                      "+----+----+");
 }
 
 }  // namespace vsl::tabulate::test

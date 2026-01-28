@@ -45,16 +45,22 @@ target_sources(${CUR_TARGET} PRIVATE
 option(VSL_BUILD_TESTS "Build tests" ON)
 
 if(VSL_BUILD_TESTS AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    enable_testing()
+    find_package(GTest CONFIG REQUIRED)
+
     set(CUR_TARGET tests)
     add_executable(${CUR_TARGET})
 
+    target_link_libraries(${CUR_TARGET} PRIVATE GTest::gtest_main GTest::gmock)
     target_include_directories(${CUR_TARGET} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
     target_link_libraries(${CUR_TARGET} PRIVATE dependencies)
     configure_cxx_options(${CUR_TARGET})
 
     target_sources(${CUR_TARGET} PRIVATE
-        "test/run_tests.cpp"
         "vsl/tabulate/tabulate.test.cpp"
         "vsl/tcp/test.cpp"
         )
+
+    include(GoogleTest)
+    gtest_discover_tests(${CUR_TARGET})
 endif()
