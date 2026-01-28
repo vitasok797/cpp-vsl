@@ -576,9 +576,35 @@ def start_cli_mode() -> None:
     CliActionManager().start()
 
 
+def get_decorated_cur_dir() -> str:
+    absolute_path = Path(__file__).parent.resolve()
+
+    if IS_WINDOWS:
+        return str(absolute_path)
+
+    home_dir = Path.home().resolve()
+
+    if absolute_path == home_dir:
+        return '~'
+
+    try:
+        relative_path = absolute_path.relative_to(home_dir)
+        return f'~/{relative_path}'
+    except ValueError:
+        return str(absolute_path)
+
+
+def update_console_title() -> None:
+    cur_dir = get_decorated_cur_dir()
+    console_title = f'Actions ({cur_dir})'
+    print(colorama.ansi.set_title(console_title), end='', flush=True)
+
+
 if __name__ == '__main__':
     if IS_WINDOWS:
         colorama.init()
+
+    update_console_title()
 
     if not sys.argv[1:]:
         start_interactive_mode()
