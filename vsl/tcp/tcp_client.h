@@ -160,8 +160,8 @@ class TcpClient final
 
     Poco::Net::StreamSocket socket_;
     std::shared_ptr<Poco::Net::SocketStream> socket_stream_;
-    Poco::BinaryReader binary_reader_;
-    Poco::BinaryWriter binary_writer_;
+    std::shared_ptr<Poco::BinaryReader> binary_reader_;
+    std::shared_ptr<Poco::BinaryWriter> binary_writer_;
 };
 
 }  // namespace vsl::tcp

@@ -31,8 +31,14 @@ inline TcpClient::TcpClient(ByteOrder byte_order)
 inline TcpClient::TcpClient(Poco::Net::StreamSocket socket, ByteOrder byte_order)
     : socket_{std::move(socket)},
       socket_stream_{std::make_shared<Poco::Net::SocketStream>(socket_)},
-      binary_reader_{*socket_stream_, static_cast<Poco::BinaryReader::StreamByteOrder>(byte_order)},
-      binary_writer_{*socket_stream_, static_cast<Poco::BinaryWriter::StreamByteOrder>(byte_order)}
+      binary_reader_{
+          std::make_shared<Poco::BinaryReader>(*socket_stream_,                                               //
+                                               static_cast<Poco::BinaryReader::StreamByteOrder>(byte_order))  //
+      },
+      binary_writer_{
+          std::make_shared<Poco::BinaryWriter>(*socket_stream_,                                               //
+                                               static_cast<Poco::BinaryWriter::StreamByteOrder>(byte_order))  //
+      }
 {
     if (socket_.impl()->initialized())
     {
@@ -122,8 +128,8 @@ template<typename T>
 auto TcpClient::read() -> T
 {
     T value;
-    binary_reader_ >> value;
-    check_stream_status(binary_reader_);
+    *binary_reader_ >> value;
+    check_stream_status(*binary_reader_);
     return value;
 }
 
@@ -131,8 +137,8 @@ template<typename T>
     requires vsl::numeric<T>
 auto TcpClient::write(T value) -> void
 {
-    binary_writer_ << value;
-    check_stream_status(binary_writer_);
+    *binary_writer_ << value;
+    check_stream_status(*binary_writer_);
 }
 
 template<typename ItemType, typename SizeType>
@@ -187,8 +193,8 @@ auto TcpClient::read_raw(std::span<T, Extent> buffer) -> void
 {
     auto data_ptr = reinterpret_cast<char*>(buffer.data());
     auto data_size = gsl::narrow<std::streamsize>(buffer.size());
-    binary_reader_.readRaw(data_ptr, data_size);
-    check_stream_status(binary_reader_);
+    binary_reader_->readRaw(data_ptr, data_size);
+    check_stream_status(*binary_reader_);
 }
 
 template<typename T, std::size_t Extent>
@@ -197,22 +203,22 @@ auto TcpClient::write_raw(std::span<T, Extent> buffer) -> void
 {
     auto data_ptr = reinterpret_cast<const char*>(buffer.data());
     auto data_size = gsl::narrow<std::streamsize>(buffer.size());
-    binary_writer_.writeRaw(data_ptr, data_size);
-    check_stream_status(binary_writer_);
+    binary_writer_->writeRaw(data_ptr, data_size);
+    check_stream_status(*binary_writer_);
 }
 
 inline auto TcpClient::flush() -> void
 {
     try
     {
-        binary_writer_.flush();
+        binary_writer_->flush();
     }
     catch (const Poco::Net::NetException&)
     {
         throw TcpClientConnectionReset{};
     }
 
-    check_stream_status(binary_writer_);
+    check_stream_status(*binary_writer_);
 }
 
 inline auto TcpClient::check_connection() -> void
@@ -266,12 +272,12 @@ auto TcpClient::check_stream_status(T& stream) const -> void
 inline auto TcpClient::wait_for_disconnect() -> void
 {
     constexpr auto MAX_STREAM_SIZE = std::numeric_limits<std::streamsize>::max();
-    binary_reader_.stream().ignore(MAX_STREAM_SIZE);
+    binary_reader_->stream().ignore(MAX_STREAM_SIZE);
 }
 
 inline auto TcpClient::data_available() -> int
 {
-    auto in_stream = gsl::narrow<int>(binary_reader_.available());
+    auto in_stream = gsl::narrow<int>(binary_reader_->available());
     auto in_socket = socket_.available();
     auto total = in_stream + in_socket;
     if (total > 0) return total;
