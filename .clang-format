@@ -12,10 +12,12 @@ IncludeCategories:
     Priority: 1
   - Regex: '^<vsl/'
     Priority: 2
-  - Regex: '^<[^/]+/'
+  - Regex: '^<(gmock|gtest)/'
     Priority: 3
-  - Regex: '^<.+>$'
+  - Regex: '^<[^/]+/'
     Priority: 4
+  - Regex: '^<.+>$'
+    Priority: 5
 IncludeBlocks: Regroup
 IncludeIsMainRegex: '$'
 IncludeIsMainSourceRegex: ''
