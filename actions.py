@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 IS_WINDOWS = (sys.platform == 'win32')
-ROOT_DIR = Path(__file__).parent.resolve()
+ROOT_DIR = Path().resolve()
 OUT_DIR = ROOT_DIR / 'out'
 BUILD_DIR = OUT_DIR / 'build'
 DEFAULT_PRESET = ('win' if IS_WINDOWS else 'lin') + '-x64-debug'
@@ -492,7 +492,7 @@ class RunAction(BaseAction):
         if not executables:
             raise ActionError('Executables not found')
 
-        variants = {exe.name: exe for exe in executables}
+        variants = {exe.name: exe for exe in sorted(executables)}
         selected_exe = Console.select(prompt='Select executable:', variants=variants)
 
         if selected_exe is None:
@@ -576,8 +576,8 @@ def start_cli_mode() -> None:
     CliActionManager().start()
 
 
-def get_decorated_cur_dir() -> str:
-    absolute_path = Path(__file__).parent.resolve()
+def get_decorated_root_dir() -> str:
+    absolute_path = ROOT_DIR
 
     if IS_WINDOWS:
         return str(absolute_path)
@@ -595,12 +595,11 @@ def get_decorated_cur_dir() -> str:
 
 
 def update_console_title() -> None:
-    cur_dir = get_decorated_cur_dir()
-    console_title = f'Actions ({cur_dir})'
+    console_title = f'Actions ({get_decorated_root_dir()})'
     print(colorama.ansi.set_title(console_title), end='', flush=True)
 
 
-if __name__ == '__main__':
+def main() -> None:
     if IS_WINDOWS:
         colorama.init()
 
@@ -610,3 +609,7 @@ if __name__ == '__main__':
         start_interactive_mode()
     else:
         start_cli_mode()
+
+
+if __name__ == '__main__':
+    main()
