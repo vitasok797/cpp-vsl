@@ -56,10 +56,11 @@
             }
         },
         {
-            "name": "msvc-fix",
+            "name": "msvc",
             "hidden": true,
             "environment": {
-                "VSLANG": "1033"
+                "VSLANG": "1033",
+                "VSCMD_SKIP_SENDTELEMETRY": "1"
             }
         },
         {
@@ -81,7 +82,7 @@
                 "x64",
                 "win",
                 "cxx",
-                "msvc-fix",
+                "msvc",
                 "vcpkg"
             ],
             "cacheVariables": {
