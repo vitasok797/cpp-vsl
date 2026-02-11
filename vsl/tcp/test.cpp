@@ -102,40 +102,33 @@ auto test_connect(auto start_listener, auto connect_client) -> void
 
 TEST(TcpConnectTest, SuccessfulConnect1)
 {
-    test_connect(                                                     //
-        [](auto& listener) { listener.start(server_endpoint); },      //
-        [](auto& client) { client.connect(client_remote_endpoint); }  //
-    );                                                                //
+    auto start_listener = [](auto& l) { l.start(server_endpoint); };
+    auto connect_client = [](auto& c) { c.connect(client_remote_endpoint); };
+    test_connect(start_listener, connect_client);
 }
 
 TEST(TcpConnectTest, SuccessfulConnect2)
 {
-    test_connect(                                                        //
-        [](auto& listener) { listener.start(server_endpoint.second); },  //
-        [](auto& client) { client.connect(client_remote_endpoint); }     //
-    );                                                                   //
+    auto start_listener = [](auto& l) { l.start(server_endpoint.second); };
+    auto connect_client = [](auto& c) { c.connect(client_remote_endpoint); };
+    test_connect(start_listener, connect_client);
 }
 
 TEST(TcpConnectTest, SuccessfulConnect3)
 {
-    test_connect(                                                                                          //
-        [](auto& listener) { listener.start(server_endpoint.first, server_endpoint.second); },             //
-        [](auto& client) { client.connect(client_remote_endpoint.first, client_remote_endpoint.second); }  //
-    );                                                                                                     //
+    auto start_listener = [](auto& l) { l.start(server_endpoint.first, server_endpoint.second); };
+    auto connect_client = [](auto& c) { c.connect(client_remote_endpoint.first, client_remote_endpoint.second); };
+    test_connect(start_listener, connect_client);
 }
 
 TEST(TcpConnectTest, SuccessfulConnect4)
 {
-    auto server_endpoint_as_str = fmt::format("{}:{}",                                //
-                                              server_endpoint.first,                  //
-                                              server_endpoint.second);                //
-    auto client_remote_endpoint_as_str = fmt::format("{}:{}",                         //
-                                                     client_remote_endpoint.first,    //
-                                                     client_remote_endpoint.second);  //
-    test_connect(                                                                     //
-        [&](auto& listener) { listener.start(server_endpoint_as_str); },              //
-        [&](auto& client) { client.connect(client_remote_endpoint_as_str); }          //
-    );                                                                                //
+    auto server_endpoint_as_str = fmt::format("{}:{}", server_endpoint.first, server_endpoint.second);
+    auto client_remote_endpoint_as_str =
+        fmt::format("{}:{}", client_remote_endpoint.first, client_remote_endpoint.second);
+    auto start_listener = [&](auto& l) { l.start(server_endpoint_as_str); };
+    auto connect_client = [&](auto& c) { c.connect(client_remote_endpoint_as_str); };
+    test_connect(start_listener, connect_client);
 }
 
 TEST(TcpConnectTest, UnableToBind)
@@ -165,7 +158,7 @@ TEST_F(TcpTest, Options)
     EXPECT_EQ(server_.get_remote_endpoint().first, "127.0.0.1");
 }
 
-TEST_F(TcpTest, SendRecv)
+TEST_F(TcpTest, SendRecvVector)
 {
     auto v1 = std::vector<int64_t>{101, 102, -103};
     auto v2 = std::vector<int32_t>{201, 202, -203};
@@ -180,9 +173,10 @@ TEST_F(TcpTest, SendRecv)
     ASSERT_EQ((server_.read_vector<decltype(v1)::value_type, TcpClient::size64_t>()), v1);
     ASSERT_EQ((server_.read_vector<decltype(v2)::value_type>()), v2);
     ASSERT_EQ((server_.read_vector<decltype(v3)::value_type, TcpClient::size32_t>()), v3);
+}
 
-    // -------------------------------------------------------------------------------
-
+TEST_F(TcpTest, SendRecvString)
+{
     auto s1 = std::string{"Hello"};
     auto s2 = std::string{"World"};
     auto s3 = std::string{"Привет"};
@@ -196,9 +190,10 @@ TEST_F(TcpTest, SendRecv)
     ASSERT_EQ(server_.read_string<TcpClient::size64_t>(), s1);
     ASSERT_EQ(server_.read_string(), s2);
     ASSERT_EQ(server_.read_string<TcpClient::size32_t>(), s3);
+}
 
-    // -------------------------------------------------------------------------------
-
+TEST_F(TcpTest, SendRecvInt)
+{
     auto i1 = int64_t{-64};
     auto i2 = uint64_t{64};
     auto i3 = int32_t{-32};
@@ -221,9 +216,10 @@ TEST_F(TcpTest, SendRecv)
     ASSERT_EQ(server_.read<decltype(i4)>(), i4);
     ASSERT_EQ(server_.read<decltype(i5)>(), i5);
     ASSERT_EQ(server_.read<decltype(i6)>(), i6);
+}
 
-    // -------------------------------------------------------------------------------
-
+TEST_F(TcpTest, SendRecvBool)
+{
     client_.write<bool>(true);
     client_.write<bool>(false);
 
@@ -231,9 +227,10 @@ TEST_F(TcpTest, SendRecv)
 
     ASSERT_EQ(server_.read<bool>(), true);
     ASSERT_EQ(server_.read<bool>(), false);
+}
 
-    // -------------------------------------------------------------------------------
-
+TEST_F(TcpTest, SendRecvFloat)
+{
     auto float_val = 333.5f;
     auto double_val = 444.25;
 
@@ -246,7 +243,7 @@ TEST_F(TcpTest, SendRecv)
     ASSERT_EQ(server_.read<decltype(double_val)>(), double_val);
 }
 
-TEST_F(TcpTest, SendRecvRaw)
+TEST_F(TcpTest, SendRecvRawInt)
 {
     auto value_sent = int32_t{123};
     client_.write_raw(std::span{reinterpret_cast<unsigned char*>(&value_sent), sizeof(decltype(value_sent))});
@@ -256,9 +253,10 @@ TEST_F(TcpTest, SendRecvRaw)
     server_.read_raw(std::span{reinterpret_cast<unsigned char*>(&value_received), sizeof(decltype(value_received))});
 
     ASSERT_EQ(value_sent, value_received);
+}
 
-    // -------------------------------------------------------------------------------
-
+TEST_F(TcpTest, SendRecvRawArray)
+{
     auto chars_sent = std::vector<char>{'a', 'b', 'c'};
     client_.write_raw(std::span{chars_sent});
     client_.flush();
@@ -266,9 +264,7 @@ TEST_F(TcpTest, SendRecvRaw)
     std::array<char, 3> chars_received;
     server_.read_raw(std::span{chars_received});
 
-    ASSERT_EQ(chars_sent[0], chars_received[0]);
-    ASSERT_EQ(chars_sent[1], chars_received[1]);
-    ASSERT_EQ(chars_sent[2], chars_received[2]);
+    ASSERT_THAT(chars_received, testing::ElementsAreArray(chars_sent));
 }
 
 TEST_F(TcpTest, DataAvailable)
