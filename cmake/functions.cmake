@@ -3,9 +3,26 @@ function(target_config_compile_options target config scope)
     target_compile_options(${target} ${scope} $<$<CONFIG:${config}>:${options}>)
 endfunction()
 
-function(add_files_compile_options files)
-    set(options ${ARGN})
-    foreach(file ${files})
+function(add_files_compile_options)
+    set(optionsArgs "")
+    set(oneValueArgs CONFIG)
+    set(multiValueArgs FILES OPTIONS)
+    cmake_parse_arguments(ARG "${optionsArgs}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    if(NOT ARG_FILES)
+        message(FATAL_ERROR "add_files_compile_options: FILES argument is not set")
+    endif()
+
+    if(NOT ARG_OPTIONS)
+        message(FATAL_ERROR "add_files_compile_options: OPTIONS argument is not set")
+    endif()
+
+    set(final_options ${ARG_OPTIONS})
+    if(ARG_CONFIG)
+        set(final_options "$<$<CONFIG:${ARG_CONFIG}>:${ARG_OPTIONS}>")
+    endif()
+
+    foreach(file IN LISTS ARG_FILES)
         string(STRIP "${file}" file)
 
         get_source_file_property(cur_options "${file}" COMPILE_OPTIONS)
@@ -13,13 +30,11 @@ function(add_files_compile_options files)
             set(cur_options "")
         endif()
 
-        list(APPEND cur_options ${options})
+        list(APPEND cur_options ${final_options})
+        list(REMOVE_DUPLICATES cur_options)
+
         set_source_files_properties("${file}" PROPERTIES COMPILE_OPTIONS "${cur_options}")
     endforeach()
-endfunction()
-
-function(add_files_config_compile_options files config)
-    add_files_compile_options("${files}" $<$<CONFIG:${config}>:${ARGN}>)
 endfunction()
 
 function(target_treat_warnings_as_errors target)
