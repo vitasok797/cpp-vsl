@@ -79,7 +79,7 @@ class TcpEndiannessTest : public BaseTcpTest
     {}
 };
 
-static auto test_connect(auto start_listener, auto connect_client) -> void
+auto test_connect(auto start_listener, auto connect_client) -> void
 {
     auto listener = TcpListener{};
     start_listener(listener);
