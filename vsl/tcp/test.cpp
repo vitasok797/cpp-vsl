@@ -1,9 +1,10 @@
 #include "tcp_client.h"
 #include "tcp_listener.h"
 
-#include <fmt/format.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+
+#include <fmt/format.h>
 
 #include <array>
 #include <chrono>
