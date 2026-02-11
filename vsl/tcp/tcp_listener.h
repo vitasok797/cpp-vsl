@@ -28,6 +28,7 @@ class TcpListener final
     auto start(const std::string& endpoint) -> void;
     auto stop() -> void;
     auto accept_client(TcpClient::ByteOrder byte_order = TcpClient::ByteOrder::NATIVE) -> TcpClient;
+    auto get_port() -> int;
     auto is_listening() const -> bool;
 
   private:

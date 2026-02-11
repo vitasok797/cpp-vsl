@@ -131,6 +131,35 @@ TEST(TcpConnectTest, SuccessfulConnect4)
     test_connect(start_listener, connect_client);
 }
 
+TEST(TcpConnectTest, ListenerStartStop)
+{
+    auto listener = TcpListener{};
+
+    ASSERT_FALSE(listener.is_listening());
+    listener.start(server_endpoint);
+    ASSERT_TRUE(listener.is_listening());
+    listener.stop();
+    ASSERT_FALSE(listener.is_listening());
+    listener.start(server_endpoint.first, server_endpoint.second + 1);
+    ASSERT_TRUE(listener.is_listening());
+    listener.stop();
+    ASSERT_FALSE(listener.is_listening());
+}
+
+TEST(TcpConnectTest, ListenerBindPort)
+{
+    auto listener = TcpListener{};
+
+    listener.start(server_endpoint);
+    ASSERT_EQ(listener.get_port(), server_endpoint.second);
+    listener.stop();
+
+    listener.start(server_endpoint.first, 0);
+    auto assigned_port = listener.get_port();
+    ASSERT_TRUE(assigned_port >= 1024 && assigned_port <= 65535);
+    listener.stop();
+}
+
 TEST(TcpConnectTest, UnableToBind)
 {
     auto listener = TcpListener{};

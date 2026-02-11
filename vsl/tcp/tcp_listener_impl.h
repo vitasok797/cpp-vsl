@@ -100,6 +100,11 @@ inline auto TcpListener::accept_client(TcpClient::ByteOrder byte_order) -> TcpCl
     }
 }
 
+inline auto TcpListener::get_port() -> int
+{
+    return server_socket_.address().port();
+}
+
 inline auto TcpListener::is_listening() const -> bool
 {
     return is_listening_;
