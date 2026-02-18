@@ -131,6 +131,31 @@ TEST(TcpConnectTest, SuccessfulConnect4)
     test_connect(start_listener, connect_client);
 }
 
+TEST(TcpConnectTest, ReConnect)
+{
+    auto client = TcpClient{};
+
+    auto test_connection = [&client](int port)
+    {
+        ASSERT_FALSE(client.is_active());
+
+        auto listener = TcpListener{};
+        listener.start(server_endpoint.first, port);
+
+        client.connect(client_remote_endpoint.first, port);
+        auto server = listener.accept_client();
+        listener.stop();
+
+        ASSERT_TRUE(client.is_active());
+
+        client.close();  // required to reconnect
+        server.close();
+    };
+
+    ASSERT_NO_FATAL_FAILURE(test_connection(server_endpoint.second));
+    ASSERT_NO_FATAL_FAILURE(test_connection(server_endpoint.second + 1));
+}
+
 TEST(TcpConnectTest, ListenerStartStop)
 {
     auto listener = TcpListener{};
@@ -146,14 +171,17 @@ TEST(TcpConnectTest, ListenerStartStop)
     ASSERT_FALSE(listener.is_listening());
 }
 
-TEST(TcpConnectTest, ListenerBindPort)
+TEST(TcpConnectTest, ListenerGetPort)
 {
     auto listener = TcpListener{};
-
     listener.start(server_endpoint);
     ASSERT_EQ(listener.get_port(), server_endpoint.second);
     listener.stop();
+}
 
+TEST(TcpConnectTest, ListenerBindUnusedPort)
+{
+    auto listener = TcpListener{};
     listener.start(server_endpoint.first, 0);
     auto assigned_port = listener.get_port();
     ASSERT_TRUE(assigned_port >= 1024 && assigned_port <= 65535);
