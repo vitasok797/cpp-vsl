@@ -26,7 +26,7 @@ static auto interrupt_handler() noexcept -> void
 
 auto main() -> int
 {
-    std::cout << "main thread[" << std::this_thread::get_id() << "] " << std::endl;
+    std::cout << "main thread[" << std::this_thread::get_id() << "]" << std::endl;
 
     vsl::interrupt::set_handler(interrupt_handler);
 
