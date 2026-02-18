@@ -32,7 +32,7 @@ inline auto take_handler() noexcept -> HandlerFunc
 
 inline auto WINAPI invoke_handler(DWORD) noexcept -> BOOL
 {
-    interrupted = true;
+    interrupted.store(true);
 
     auto handler = take_handler();
     if (!handler) return false;
@@ -57,7 +57,7 @@ inline auto signals_to_wait = sigset_t{};
 
 inline auto invoke_handler() noexcept -> void
 {
-    interrupted = true;
+    interrupted.store(true);
 
     auto handler = take_handler();
     if (!handler) return;
@@ -120,7 +120,7 @@ inline auto start_handling(SuppressCtrlC suppress_ctrl_c) noexcept -> void
 
 inline auto is_interrupted() noexcept -> bool
 {
-    return static_cast<bool>(detail::interrupted);
+    return detail::interrupted.load();
 }
 
 }  // namespace vsl::interrupt
