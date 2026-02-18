@@ -9,7 +9,7 @@ namespace vsl::tabulate
 enum class HeaderType
 {
     SEPARATED,
-    NOT_SEPARATED
+    NOT_SEPARATED,
 };
 
 inline auto hide_inner_borders(::tabulate::Table& table, HeaderType header_type) -> void

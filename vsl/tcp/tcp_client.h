@@ -73,7 +73,7 @@ class TcpClient final
         NATIVE = 1,
         BIG_ENDIAN = 2,
         NETWORK = 2,
-        LITTLE_ENDIAN = 3
+        LITTLE_ENDIAN = 3,
     };
 
     struct size64_t
