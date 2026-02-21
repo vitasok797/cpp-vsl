@@ -9,13 +9,16 @@
 namespace vsl::tabulate
 {
 
+using Table = ::tabulate::Table;
+using TableRow = Table::Row_t;
+
 enum class HeaderType
 {
     SEPARATED,
     NOT_SEPARATED,
 };
 
-inline auto hide_inner_borders(::tabulate::Table& table, HeaderType header_type) -> void
+inline auto hide_inner_borders(Table& table, HeaderType header_type) -> void
 {
     table.format().hide_border_top();
     table[0].format().show_border_top();
@@ -28,24 +31,21 @@ inline auto hide_inner_borders(::tabulate::Table& table, HeaderType header_type)
 
 auto create_table(const std::ranges::input_range auto& header,
                   const std::ranges::input_range auto& items,
-                  auto item_to_cells) -> std::string
+                  auto item_to_row) -> std::string
 {
-    auto table = ::tabulate::Table{};
-    auto row = ::tabulate::Table::Row_t{};
+    auto table = Table{};
     auto header_type = HeaderType::NOT_SEPARATED;
 
     if (header.size() > 0)
     {
-        row.assign(header.begin(), header.end());
+        auto row = TableRow(header.begin(), header.end());
         table.add_row(row);
         header_type = HeaderType::SEPARATED;
     }
 
     for (auto&& item : items)
     {
-        auto cells = item_to_cells(item);
-        row.assign(cells.begin(), cells.end());
-        table.add_row(row);
+        table.add_row(item_to_row(item));
     }
 
     hide_inner_borders(table, header_type);
