@@ -7,6 +7,8 @@
 #include <functional>
 #include <initializer_list>
 #include <optional>
+#include <string>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 
@@ -77,6 +79,26 @@ template<class... Ts>
 struct overloaded : Ts...
 {
     using Ts::operator()...;
+};
+
+struct StringHash
+{
+    using is_transparent = void;
+
+    std::size_t operator()(const char* str) const
+    {
+        return std::hash<std::string_view>{}(str);
+    }
+
+    std::size_t operator()(std::string_view str) const
+    {
+        return std::hash<std::string_view>{}(str);
+    }
+
+    std::size_t operator()(const std::string& str) const
+    {
+        return std::hash<std::string>{}(str);
+    }
 };
 
 // CRTP underlying type casting helper
