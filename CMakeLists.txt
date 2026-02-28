@@ -58,6 +58,7 @@ if(VSL_BUILD_TESTS AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 
     target_sources(${CUR_TARGET} PRIVATE
         "vsl/math.test.cpp"
+        "vsl/pointer.test.cpp"
         "vsl/tabulate/tabulate.test.cpp"
         "vsl/tcp/test.cpp"
         "vsl/text.test.cpp"
