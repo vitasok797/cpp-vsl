@@ -1,5 +1,5 @@
-#ifndef VSL_ERROR_H
-#define VSL_ERROR_H
+#ifndef VSL_POINTER_H
+#define VSL_POINTER_H
 
 #include <exception>
 
@@ -36,4 +36,4 @@ auto checked_get_ptr(const T& ptr) -> decltype(auto)
 
 }  // namespace vsl
 
-#endif  // VSL_ERROR_H
+#endif  // VSL_POINTER_H
