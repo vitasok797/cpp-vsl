@@ -303,25 +303,25 @@ TEST_F(TcpTest, SendRecvFloat)
 TEST_F(TcpTest, SendRecvRawInt)
 {
     auto value_sent = int32_t{123};
-    client_.write_raw(std::span{reinterpret_cast<unsigned char*>(&value_sent), sizeof(decltype(value_sent))});
+    client_.write_raw(&value_sent, 1);
     client_.flush();
 
     decltype(value_sent) value_received;
-    server_.read_raw(std::span{reinterpret_cast<unsigned char*>(&value_received), sizeof(decltype(value_received))});
+    server_.read_raw(&value_received, 1);
 
     ASSERT_EQ(value_sent, value_received);
 }
 
 TEST_F(TcpTest, SendRecvRawArray)
 {
-    auto chars_sent = std::vector<char>{'a', 'b', 'c'};
-    client_.write_raw(std::span{chars_sent});
+    auto ints_sent = std::vector<int64_t>{101, 102, 103};
+    client_.write_raw(ints_sent.data(), ints_sent.size());
     client_.flush();
 
-    std::array<char, 3> chars_received;
-    server_.read_raw(std::span{chars_received});
+    std::array<int64_t, 3> ints_received;
+    server_.read_raw(ints_received.data(), ints_received.size());
 
-    ASSERT_THAT(chars_received, testing::ElementsAreArray(chars_sent));
+    ASSERT_THAT(ints_received, testing::ElementsAreArray(ints_sent));
 }
 
 TEST_F(TcpTest, DataAvailable)
@@ -414,7 +414,7 @@ TEST_F(TcpTest, Buffer)
         client_.write<int32_t>(102);
         client_.write_vector(vec);
         client_.write_string(str);
-        client_.write_raw(std::span{chars});
+        client_.write_raw(chars.data(), chars.size());
 
         constexpr auto EXPECTED_BUFF_SIZE = sizeof(int32_t)                           //
                                             + sizeof(int32_t)                         //
@@ -440,7 +440,7 @@ TEST_F(TcpTest, Buffer)
         ASSERT_EQ(server_.read_string(), str);
 
         std::array<char, 3> chars_received;
-        server_.read_raw(std::span{chars_received});
+        server_.read_raw(chars_received.data(), chars_received.size());
         ASSERT_THAT(chars_received, testing::ElementsAreArray(chars));
 
         ASSERT_EQ(server_.read<int32_t>(), 2);

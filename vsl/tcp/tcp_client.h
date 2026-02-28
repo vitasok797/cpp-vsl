@@ -13,7 +13,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <span>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -107,11 +106,11 @@ class TcpClient final
         requires vsl::numeric<T>
     auto write(T value) -> void;
 
-    template<typename ItemType, typename SizeType = TcpClient::size64_t>
+    template<vsl::numeric ItemType, typename SizeType = TcpClient::size64_t>
         requires vsl::one_of<SizeType, TcpClient::size64_t, TcpClient::size32_t>
     auto read_vector() -> std::vector<ItemType>;
 
-    template<typename ItemType, typename SizeType = TcpClient::size64_t>
+    template<vsl::numeric ItemType, typename SizeType = TcpClient::size64_t>
         requires vsl::one_of<SizeType, TcpClient::size64_t, TcpClient::size32_t>
     auto write_vector(const std::vector<ItemType>& vec) -> void;
 
@@ -123,13 +122,11 @@ class TcpClient final
         requires vsl::one_of<SizeType, TcpClient::size64_t, TcpClient::size32_t>
     auto write_string(std::string_view str) -> void;
 
-    template<typename T, std::size_t Extent>
-        requires vsl::one_of<T, std::byte, uint8_t, char, unsigned char>
-    auto read_raw(std::span<T, Extent> buffer) -> void;
+    template<typename T, typename Size>
+    auto read_raw(T* buffer, Size length) -> void;
 
-    template<typename T, std::size_t Extent>
-        requires vsl::one_of<T, std::byte, uint8_t, char, unsigned char>
-    auto write_raw(std::span<T, Extent> buffer) -> void;
+    template<typename T, typename Size>
+    auto write_raw(const T* buffer, Size length) -> void;
 
     auto write_buffer() -> void;
 

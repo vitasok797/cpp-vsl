@@ -16,7 +16,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
-#include <span>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -163,30 +162,26 @@ auto TcpClient::write(T value) -> void
     check_stream_status(active_writer);
 }
 
-template<typename ItemType, typename SizeType>
+template<vsl::numeric ItemType, typename SizeType>
     requires vsl::one_of<SizeType, TcpClient::size64_t, TcpClient::size32_t>
 auto TcpClient::read_vector() -> std::vector<ItemType>
 {
     auto size = read<typename SizeType::type>();
     auto vec = std::vector<ItemType>{};
-    vec.reserve(size);
-    for (size_t i = 0; i < size; ++i)
-    {
-        vec.push_back(read<ItemType>());
-    }
+    vec.resize(size);
+
+    read_raw(vec.data(), vec.size());
+
     return vec;
 }
 
-template<typename ItemType, typename SizeType>
+template<vsl::numeric ItemType, typename SizeType>
     requires vsl::one_of<SizeType, TcpClient::size64_t, TcpClient::size32_t>
 auto TcpClient::write_vector(const std::vector<ItemType>& vec) -> void
 {
     auto size = gsl::narrow<typename SizeType::type>(vec.size());
     write(size);
-    for (const auto& el : vec)
-    {
-        write(el);
-    }
+    write_raw(vec.data(), vec.size());
 }
 
 template<typename SizeType>
@@ -196,7 +191,9 @@ auto TcpClient::read_string() -> std::string
     auto size = read<typename SizeType::type>();
     auto str = std::string{};
     str.resize(size);
-    read_raw(std::span{str});
+
+    read_raw(str.data(), str.size());
+
     return str;
 }
 
@@ -206,29 +203,28 @@ auto TcpClient::write_string(std::string_view str) -> void
 {
     auto size = gsl::narrow<typename SizeType::type>(str.size());
     write(size);
-    write_raw(std::span{str});
+    write_raw(str.data(), str.size());
 }
 
-template<typename T, std::size_t Extent>
-    requires vsl::one_of<T, std::byte, uint8_t, char, unsigned char>
-auto TcpClient::read_raw(std::span<T, Extent> buffer) -> void
+template<typename T, typename Size>
+auto TcpClient::read_raw(T* buffer, Size length) -> void
 {
-    auto data_ptr = reinterpret_cast<char*>(buffer.data());
-    auto data_size = gsl::narrow<std::streamsize>(buffer.size());
+    auto data_ptr = reinterpret_cast<char*>(buffer);
+    auto data_size = gsl::narrow<std::streamsize>(length) * sizeof(T);
     binary_reader_->readRaw(data_ptr, data_size);
+
     check_stream_status(*binary_reader_);
 }
 
-template<typename T, std::size_t Extent>
-    requires vsl::one_of<T, std::byte, uint8_t, char, unsigned char>
-auto TcpClient::write_raw(std::span<T, Extent> buffer) -> void
+template<typename T, typename Size>
+auto TcpClient::write_raw(const T* buffer, Size length) -> void
 {
     auto& active_writer = get_active_binary_writer();
 
-    auto data_ptr = reinterpret_cast<const char*>(buffer.data());
-    auto data_size = gsl::narrow<std::streamsize>(buffer.size());
-
+    auto data_ptr = reinterpret_cast<const char*>(buffer);
+    auto data_size = gsl::narrow<std::streamsize>(length) * sizeof(T);
     active_writer.writeRaw(data_ptr, data_size);
+
     check_stream_status(active_writer);
 }
 
@@ -236,7 +232,8 @@ inline auto TcpClient::write_buffer() -> void
 {
     buffer_binary_writer_->flush();
 
-    write_raw(std::span{buffer_stream_->view()});
+    auto view = buffer_stream_->view();
+    write_raw(view.data(), view.size());
 
     // clear buffer
     buffer_stream_->str("");
