@@ -38,7 +38,8 @@ inline TcpClient::TcpClient(Poco::Net::StreamSocket socket, ByteOrder byte_order
           std::make_shared<Poco::BinaryWriter>(*socket_stream_,                                               //
                                                static_cast<Poco::BinaryWriter::StreamByteOrder>(byte_order))  //
       },
-      buffer_stream_{std::make_shared<std::ostringstream>(std::ios::binary)},
+      buffer_streambuf_{std::make_shared<VectorStreamBuf>()},
+      buffer_stream_{std::make_shared<std::ostream>(buffer_streambuf_.get())},
       buffer_binary_writer_{
           std::make_shared<Poco::BinaryWriter>(*buffer_stream_,                                               //
                                                static_cast<Poco::BinaryWriter::StreamByteOrder>(byte_order))  //
@@ -134,7 +135,7 @@ inline auto TcpClient::set_buffer_active(bool state) -> void
 
 inline auto TcpClient::buffer_size() -> int
 {
-    return gsl::narrow<int>(buffer_stream_->view().size());
+    return gsl::narrow<int>(buffer_streambuf_->buffer_size());
 }
 
 inline auto TcpClient::get_active_binary_writer() -> Poco::BinaryWriter&
@@ -232,12 +233,10 @@ inline auto TcpClient::write_buffer() -> void
 {
     buffer_binary_writer_->flush();
 
-    auto view = buffer_stream_->view();
-    write_raw(view.data(), view.size());
+    auto span = buffer_streambuf_->get_span();
+    write_raw(span.data(), span.size());
 
-    // clear buffer
-    buffer_stream_->str("");
-    buffer_stream_->clear();
+    buffer_streambuf_->clear_buffer();
 }
 
 inline auto TcpClient::flush() -> void

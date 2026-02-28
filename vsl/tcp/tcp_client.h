@@ -2,6 +2,7 @@
 #define VSL_TCP_TCP_CLIENT_H
 
 #include <vsl/concepts.h>
+#include <vsl/tcp/tcp_buffer.h>
 
 #include <fmt/format.h>
 #include <Poco/BinaryReader.h>
@@ -13,7 +14,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <sstream>
+#include <ostream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -167,7 +168,8 @@ class TcpClient final
     std::shared_ptr<Poco::BinaryReader> binary_reader_;
     std::shared_ptr<Poco::BinaryWriter> binary_writer_;
 
-    std::shared_ptr<std::ostringstream> buffer_stream_;
+    std::shared_ptr<VectorStreamBuf> buffer_streambuf_;
+    std::shared_ptr<std::ostream> buffer_stream_;
     std::shared_ptr<Poco::BinaryWriter> buffer_binary_writer_;
 
     bool buffer_active_{false};
