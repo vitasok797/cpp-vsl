@@ -397,6 +397,59 @@ TEST_F(TcpTest, DISABLED_ConnectionResetOnFlush)
     ASSERT_THROW(client_.flush(), TcpClientConnectionReset);
 }
 
+TEST_F(TcpTest, Buffer)
+{
+    const auto vec = std::vector<int32_t>{101, 102, -103};
+    const auto str = std::string{"Hello"};
+    const auto chars = std::vector<char>{'a', 'b', 'c'};
+
+    auto test = [&]()
+    {
+        client_.write<int32_t>(1);
+
+        ASSERT_EQ(client_.buffer_size(), 0);
+        client_.set_buffer_active(true);
+        // ---------------------------------------------------------------------------------------
+        client_.write<int32_t>(101);
+        client_.write<int32_t>(102);
+        client_.write_vector(vec);
+        client_.write_string(str);
+        client_.write_raw(std::span{chars});
+
+        constexpr auto EXPECTED_BUFF_SIZE = sizeof(int32_t)                           //
+                                            + sizeof(int32_t)                         //
+                                            + sizeof(uint64_t) + 3 * sizeof(int32_t)  //
+                                            + sizeof(uint64_t) + 5                    //
+                                            + 3;                                      //
+        // ---------------------------------------------------------------------------------------
+        client_.set_buffer_active(false);
+        ASSERT_EQ(client_.buffer_size(), EXPECTED_BUFF_SIZE);
+
+        client_.write<int32_t>(client_.buffer_size());
+        client_.write_buffer();
+        ASSERT_EQ(client_.buffer_size(), 0);
+
+        client_.write<int32_t>(2);
+        client_.flush();
+
+        ASSERT_EQ(server_.read<int32_t>(), 1);
+        ASSERT_EQ(server_.read<int32_t>(), EXPECTED_BUFF_SIZE);
+        ASSERT_EQ(server_.read<int32_t>(), 101);
+        ASSERT_EQ(server_.read<int32_t>(), 102);
+        ASSERT_EQ((server_.read_vector<decltype(vec)::value_type>()), vec);
+        ASSERT_EQ(server_.read_string(), str);
+
+        std::array<char, 3> chars_received;
+        server_.read_raw(std::span{chars_received});
+        ASSERT_THAT(chars_received, testing::ElementsAreArray(chars));
+
+        ASSERT_EQ(server_.read<int32_t>(), 2);
+    };
+
+    ASSERT_NO_FATAL_FAILURE(test());
+    ASSERT_NO_FATAL_FAILURE(test());  // repeat after buffer clean
+}
+
 TEST_F(TcpEndiannessTest, SendRecvDiffEndiannessInt)
 {
     auto value = uint16_t{0x0005};

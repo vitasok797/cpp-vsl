@@ -38,6 +38,11 @@ inline TcpClient::TcpClient(Poco::Net::StreamSocket socket, ByteOrder byte_order
       binary_writer_{
           std::make_shared<Poco::BinaryWriter>(*socket_stream_,                                               //
                                                static_cast<Poco::BinaryWriter::StreamByteOrder>(byte_order))  //
+      },
+      buffer_stream_{std::make_shared<std::ostringstream>(std::ios::binary)},
+      buffer_binary_writer_{
+          std::make_shared<Poco::BinaryWriter>(*buffer_stream_,                                               //
+                                               static_cast<Poco::BinaryWriter::StreamByteOrder>(byte_order))  //
       }
 {
     if (socket_.impl()->initialized())
@@ -123,6 +128,21 @@ inline auto TcpClient::close() -> void
     }
 }
 
+inline auto TcpClient::set_buffer_active(bool state) -> void
+{
+    buffer_active_ = state;
+}
+
+inline auto TcpClient::buffer_size() -> int
+{
+    return gsl::narrow<int>(buffer_stream_->view().size());
+}
+
+inline auto TcpClient::get_active_binary_writer() -> Poco::BinaryWriter&
+{
+    return buffer_active_ ? *buffer_binary_writer_ : *binary_writer_;
+}
+
 template<typename T>
     requires vsl::numeric<T>
 auto TcpClient::read() -> T
@@ -137,8 +157,10 @@ template<typename T>
     requires vsl::numeric<T>
 auto TcpClient::write(T value) -> void
 {
-    *binary_writer_ << value;
-    check_stream_status(*binary_writer_);
+    auto& active_writer = get_active_binary_writer();
+
+    active_writer << value;
+    check_stream_status(active_writer);
 }
 
 template<typename ItemType, typename SizeType>
@@ -201,10 +223,24 @@ template<typename T, std::size_t Extent>
     requires vsl::one_of<T, std::byte, uint8_t, char, unsigned char>
 auto TcpClient::write_raw(std::span<T, Extent> buffer) -> void
 {
+    auto& active_writer = get_active_binary_writer();
+
     auto data_ptr = reinterpret_cast<const char*>(buffer.data());
     auto data_size = gsl::narrow<std::streamsize>(buffer.size());
-    binary_writer_->writeRaw(data_ptr, data_size);
-    check_stream_status(*binary_writer_);
+
+    active_writer.writeRaw(data_ptr, data_size);
+    check_stream_status(active_writer);
+}
+
+inline auto TcpClient::write_buffer() -> void
+{
+    buffer_binary_writer_->flush();
+
+    write_raw(std::span{buffer_stream_->view()});
+
+    // clear buffer
+    buffer_stream_->str("");
+    buffer_stream_->clear();
 }
 
 inline auto TcpClient::flush() -> void

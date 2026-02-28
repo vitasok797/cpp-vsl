@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <memory>
 #include <span>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -95,6 +96,9 @@ class TcpClient final
     auto shutdown(ShutdownType how = ShutdownType::BOTH) -> void;
     auto close() -> void;
 
+    auto set_buffer_active(bool state) -> void;
+    auto buffer_size() -> int;
+
     template<typename T>
         requires vsl::numeric<T>
     auto read() -> T;
@@ -127,6 +131,8 @@ class TcpClient final
         requires vsl::one_of<T, std::byte, uint8_t, char, unsigned char>
     auto write_raw(std::span<T, Extent> buffer) -> void;
 
+    auto write_buffer() -> void;
+
     auto flush() -> void;
 
     auto wait_for_disconnect() -> void;
@@ -152,6 +158,7 @@ class TcpClient final
 
     auto connect(Poco::Net::SocketAddress socket_addr) -> void;
     auto throw_connect_error(std::string_view error_desc) -> void;
+    auto get_active_binary_writer() -> Poco::BinaryWriter&;
     auto check_connection() -> void;
 
     template<typename T>
@@ -162,6 +169,11 @@ class TcpClient final
     std::shared_ptr<Poco::Net::SocketStream> socket_stream_;
     std::shared_ptr<Poco::BinaryReader> binary_reader_;
     std::shared_ptr<Poco::BinaryWriter> binary_writer_;
+
+    std::shared_ptr<std::ostringstream> buffer_stream_;
+    std::shared_ptr<Poco::BinaryWriter> buffer_binary_writer_;
+
+    bool buffer_active_{false};
 };
 
 }  // namespace vsl::tcp
