@@ -399,19 +399,19 @@ TEST_F(TcpTest, DISABLED_ConnectionResetOnFlush)
 
 TEST_F(TcpTest, Buffer)
 {
-    const auto vec = std::vector<int32_t>{101, 102, -103};
+    const auto vec = std::vector<int32_t>{301, 302, -303};
     const auto str = std::string{"Hello"};
     const auto chars = std::vector<char>{'a', 'b', 'c'};
 
     auto test = [&]()
     {
-        client_.write<int32_t>(1);
+        client_.write<int32_t>(101);
 
         ASSERT_EQ(client_.buffer_size(), 0);
         client_.set_buffer_active(true);
         // ---------------------------------------------------------------------------------------
-        client_.write<int32_t>(101);
-        client_.write<int32_t>(102);
+        client_.write<int32_t>(201);
+        client_.write<int32_t>(202);
         client_.write_vector(vec);
         client_.write_string(str);
         client_.write_raw(chars.data(), chars.size());
@@ -429,13 +429,13 @@ TEST_F(TcpTest, Buffer)
         client_.write_buffer();
         ASSERT_EQ(client_.buffer_size(), 0);
 
-        client_.write<int32_t>(2);
+        client_.write<int32_t>(102);
         client_.flush();
 
-        ASSERT_EQ(server_.read<int32_t>(), 1);
-        ASSERT_EQ(server_.read<int32_t>(), EXPECTED_BUFF_SIZE);
         ASSERT_EQ(server_.read<int32_t>(), 101);
-        ASSERT_EQ(server_.read<int32_t>(), 102);
+        ASSERT_EQ(server_.read<int32_t>(), EXPECTED_BUFF_SIZE);
+        ASSERT_EQ(server_.read<int32_t>(), 201);
+        ASSERT_EQ(server_.read<int32_t>(), 202);
         ASSERT_EQ((server_.read_vector<decltype(vec)::value_type>()), vec);
         ASSERT_EQ(server_.read_string(), str);
 
@@ -443,11 +443,29 @@ TEST_F(TcpTest, Buffer)
         server_.read_raw(chars_received.data(), chars_received.size());
         ASSERT_THAT(chars_received, testing::ElementsAreArray(chars));
 
-        ASSERT_EQ(server_.read<int32_t>(), 2);
+        ASSERT_EQ(server_.read<int32_t>(), 102);
     };
 
     ASSERT_NO_FATAL_FAILURE(test());
     ASSERT_NO_FATAL_FAILURE(test());  // repeat after buffer clean
+}
+
+TEST_F(TcpTest, WriteEmptyBuffer)
+{
+    client_.write<int32_t>(101);
+    client_.flush();
+
+    client_.set_buffer_active(true);
+    client_.set_buffer_active(false);
+    ASSERT_EQ(client_.buffer_size(), 0);
+    client_.write_buffer();
+    client_.flush();
+
+    client_.write<int32_t>(102);
+    client_.flush();
+
+    ASSERT_EQ(server_.read<int32_t>(), 101);
+    ASSERT_EQ(server_.read<int32_t>(), 102);
 }
 
 TEST_F(TcpEndiannessTest, SendRecvDiffEndiannessInt)
