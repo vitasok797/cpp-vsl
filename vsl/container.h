@@ -28,6 +28,23 @@ struct StringHash
     }
 };
 
+template<typename T>
+auto get_hash_table_fill_efficiency(const T& container) -> double
+{
+    if (container.empty()) return 1.0;
+
+    auto occupied_buckets = 0;
+    for (auto i = 0; i < container.bucket_count(); ++i)
+    {
+        if (container.bucket_size(i) > 0)
+        {
+            occupied_buckets++;
+        }
+    }
+
+    return static_cast<double>(occupied_buckets) / container.size();
+}
+
 }  // namespace vsl
 
 #endif  // VSL_CONTAINER_H
