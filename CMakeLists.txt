@@ -23,6 +23,9 @@ target_link_libraries(${CUR_TARGET} INTERFACE fmt::fmt)
 find_package(Microsoft.GSL CONFIG REQUIRED)
 target_link_libraries(${CUR_TARGET} INTERFACE Microsoft.GSL::GSL)
 
+find_package(nlohmann_json CONFIG REQUIRED)
+target_link_libraries(${CUR_TARGET} INTERFACE nlohmann_json::nlohmann_json)
+
 find_package(Poco REQUIRED COMPONENTS Encodings Foundation Net)
 target_link_libraries(${CUR_TARGET} INTERFACE Poco::Encodings Poco::Foundation Poco::Net)
 
@@ -57,6 +60,7 @@ if(VSL_BUILD_TESTS AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     configure_cxx_options(${CUR_TARGET})
 
     target_sources(${CUR_TARGET} PRIVATE
+        "vsl/json.test.cpp"
         "vsl/math.test.cpp"
         "vsl/pointer.test.cpp"
         "vsl/tabulate/tabulate.test.cpp"

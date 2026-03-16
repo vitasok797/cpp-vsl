@@ -4,6 +4,7 @@
         "fmt",
         "gtest",
         "ms-gsl",
+        "nlohmann-json",
         {
             "name": "poco",
             "default-features": false,
