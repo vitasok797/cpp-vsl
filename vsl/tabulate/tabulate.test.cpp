@@ -128,7 +128,7 @@ TEST(TabulateTest, CreateTableOneRowNoHeader)
 TEST(TabulateTest, CreateTableVariableCellCount)
 {
     auto items = {1, 2, 3};
-    static auto item_to_row_variable = [](int x)
+    auto item_to_row_variable = [](int x)
     {
         return vsl::tabulate::TableRow(x, fmt::format("{}", x));  //
     };
