@@ -9,7 +9,6 @@
 #include <array>
 #include <chrono>
 #include <cstdint>
-#include <span>
 #include <string>
 #include <thread>
 #include <utility>
@@ -79,7 +78,7 @@ class TcpEndiannessTest : public BaseTcpTest
     {}
 };
 
-auto test_connect(auto start_listener, auto connect_client) -> void
+static auto test_connect(auto start_listener, auto connect_client) -> void
 {
     auto listener = TcpListener{};
     start_listener(listener);
@@ -416,11 +415,11 @@ TEST_F(TcpTest, Buffer)
         client_.write_string(str);
         client_.write_raw(chars.data(), chars.size());
 
-        constexpr auto EXPECTED_BUFF_SIZE = sizeof(int32_t)                           //
-                                            + sizeof(int32_t)                         //
-                                            + sizeof(uint64_t) + 3 * sizeof(int32_t)  //
-                                            + sizeof(uint64_t) + 5                    //
-                                            + 3;                                      //
+        constexpr auto EXPECTED_BUFF_SIZE = sizeof(int32_t)                             //
+                                            + sizeof(int32_t)                           //
+                                            + sizeof(uint64_t) + (3 * sizeof(int32_t))  //
+                                            + sizeof(uint64_t) + 5                      //
+                                            + 3;                                        //
         // ---------------------------------------------------------------------------------------
         client_.set_buffer_active(false);
         ASSERT_EQ(client_.buffer_size(), EXPECTED_BUFF_SIZE);

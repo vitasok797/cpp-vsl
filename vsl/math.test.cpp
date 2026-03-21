@@ -3,7 +3,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include <climits>
+#include <cfloat>
+#include <cstdint>
+#include <limits>
 #include <stdexcept>
 #include <utility>
 

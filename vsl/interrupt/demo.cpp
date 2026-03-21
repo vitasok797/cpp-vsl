@@ -8,18 +8,19 @@
 static auto interrupt_handler() noexcept -> void
 {
 #ifdef _WIN32
-    auto platform_name = "Windows";
+    const auto PLATFORM_NAME = "Windows";
 #else
-    auto platform_name = "Linux";
+    const auto PLATFORM_NAME = "Linux";
 #endif
 
-    std::cout << platform_name << " handler:"                     //
+    std::cout << PLATFORM_NAME << " handler:"                     //
               << " thread[" << std::this_thread::get_id() << "]"  //
               << std::endl;
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    const auto DELAY = 1000;
+    std::this_thread::sleep_for(std::chrono::milliseconds(DELAY));
 
-    std::cout << platform_name << " handler: exit" << std::endl;
+    std::cout << PLATFORM_NAME << " handler: exit" << std::endl;
 
     std::exit(1);
 }
@@ -44,6 +45,7 @@ auto main() -> int
             std::cout << "ok" << std::endl;
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        const auto DELAY = 200;
+        std::this_thread::sleep_for(std::chrono::milliseconds(DELAY));
     }
 }

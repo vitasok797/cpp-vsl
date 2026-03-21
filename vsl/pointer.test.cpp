@@ -4,12 +4,13 @@
 #include <gtest/gtest.h>
 
 #include <memory>
+#include <optional>
 
 namespace vsl::test
 {
 
-static auto good_ptr = std::make_shared<int>(1);
-static auto bad_ptr = std::shared_ptr<int>{nullptr};
+static const auto good_ptr = std::make_shared<int>(1);
+static const auto bad_ptr = std::shared_ptr<int>{nullptr};
 
 TEST(PointerTest, CheckPtr)
 {

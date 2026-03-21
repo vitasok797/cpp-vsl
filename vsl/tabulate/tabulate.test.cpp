@@ -11,9 +11,9 @@
 namespace vsl::tabulate::test
 {
 
-static auto header = {"ID", "Name", "Type"};
-static auto empty_header = std::vector<std::string>{};
-static auto item_to_row = [](int x) -> vsl::tabulate::TableRow
+static const auto header = {"ID", "Name", "Type"};
+static const auto empty_header = std::vector<std::string>{};
+static const auto item_to_row = [](int x) -> vsl::tabulate::TableRow
 {
     auto row = vsl::tabulate::TableRow{};
     row.push_back(fmt::format("{}", x));
@@ -25,7 +25,7 @@ static auto item_to_row = [](int x) -> vsl::tabulate::TableRow
 static auto get_table(int row_count, vsl::tabulate::HeaderType header_type) -> std::string
 {
     auto table = vsl::tabulate::Table{};
-    for (auto i = int{0}; i < row_count; ++i)
+    for (auto i = 0; i < row_count; ++i)
     {
         table.add_row({fmt::format("A{}", i), fmt::format("B{}", i)});
     }

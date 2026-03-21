@@ -3,13 +3,15 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <string>
+
 namespace vsl::test
 {
 
 TEST(JsonTest, JsonToString)
 {
-    auto json_str = R"({"first_name": "John", "last_name": "Smith"})";
-    auto json = nlohmann::json::parse(json_str);
+    const auto json_str = R"({"first_name": "John", "last_name": "Smith"})";
+    const auto json = nlohmann::json::parse(json_str);
 
     EXPECT_EQ(json_to_pretty_oneliner(json), R"({ "first_name": "John", "last_name": "Smith" })");
 }
@@ -25,7 +27,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_ONLY_SERIALIZE(Person, first_name, last_name,
 
 TEST(JsonTest, StructToJsonString)
 {
-    auto p = Person{"John", "Smith", 20};
+    const auto p = Person{"John", "Smith", 20};
 
     EXPECT_EQ(struct_to_pretty_json_oneliner(p), R"({ "first_name": "John", "last_name": "Smith", "age": 20 })");
 }
