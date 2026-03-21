@@ -11,7 +11,7 @@ namespace vsl::test
 TEST(JsonTest, JsonToString)
 {
     const auto json_str = R"({"first_name": "John", "last_name": "Smith"})";
-    const auto json = nlohmann::json::parse(json_str);
+    const auto json = json_from(json_str);
 
     EXPECT_EQ(json_to_pretty_oneliner(json), R"({ "first_name": "John", "last_name": "Smith" })");
 }
@@ -23,7 +23,7 @@ struct Person
     int age;
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_ONLY_SERIALIZE(Person, first_name, last_name, age);
+VSL_JSON_SERIALIZE_TYPE(Person, first_name, last_name, age)
 
 TEST(JsonTest, StructToJsonString)
 {

@@ -6,8 +6,16 @@
 #include <algorithm>
 #include <string>
 
+#define VSL_JSON_SERIALIZE_TYPE(...) NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_ONLY_SERIALIZE(__VA_ARGS__)
+
 namespace vsl
 {
+
+template<typename InputType>
+auto json_from(InputType&& inp) -> auto
+{
+    return nlohmann::json::parse(std::forward<InputType>(inp));
+}
 
 template<typename Json>
 auto json_to_pretty_oneliner(const Json& json) -> std::string
