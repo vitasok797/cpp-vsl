@@ -3,6 +3,7 @@
     "dependencies": [
         "fmt",
         "gtest",
+        "magic-enum",
         "ms-gsl",
         "nlohmann-json",
         {
