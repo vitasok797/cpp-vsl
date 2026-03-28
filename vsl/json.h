@@ -28,12 +28,14 @@ template<typename T>
     requires std::is_enum_v<T>
 struct adl_serializer<T>
 {
-    static void to_json(json& j, const T& e)
+    template<typename JsonType>
+    static void to_json(JsonType& j, const T& e)
     {
         j = magic_enum::enum_contains<T>(e) ? magic_enum::enum_name(e) : "???";
     }
 
-    static void from_json(const json& j, T& e)
+    template<typename JsonType>
+    static void from_json(const JsonType& j, T& e)
     {
         const auto name = j.get<std::string_view>();
         const auto value = magic_enum::enum_cast<T>(name, magic_enum::case_insensitive);

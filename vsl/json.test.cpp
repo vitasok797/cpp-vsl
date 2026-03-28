@@ -308,6 +308,14 @@ TEST(JsonTest, Enum)
 
     json = Json::parse(R"({"val":"BAD"})");
     EXPECT_THROW(json["val"].get<DemoEnum>(), json_type_error);
+
+    auto ord_json = OrderedJson{};
+
+    ord_json["val"] = DemoEnum::OPTION_C;
+    EXPECT_EQ(ord_json.dump(), R"({"val":"OPTION_C"})");
+
+    ord_json = Json::parse(R"({"val":"Option_C"})");
+    EXPECT_EQ(ord_json["val"].get<DemoEnum>(), DemoEnum::OPTION_C);
 }
 
 }  // namespace vsl::test
