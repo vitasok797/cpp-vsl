@@ -3,24 +3,130 @@
 
 #define JSON_USE_IMPLICIT_CONVERSIONS 0
 
+#include <vsl/concepts.h>
+
 #include <fmt/format.h>
 #include <magic_enum/magic_enum.hpp>
 #include <nlohmann/json.hpp>
 
 #include <algorithm>
+#include <concepts>
+#include <initializer_list>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <type_traits>
 #include <utility>
 
-#define VSL_JSON(...) NLOHMANN_DEFINE_TYPE_INTRUSIVE(__VA_ARGS__)
-#define VSL_JSON_WITH_DEFAULT(...) NLOHMANN_DEFINE_TYPE_INTRUSIVE_WITH_DEFAULT(__VA_ARGS__)
-#define VSL_JSON_ONLY_SERIALIZE(...) NLOHMANN_DEFINE_TYPE_INTRUSIVE_ONLY_SERIALIZE(__VA_ARGS__)
+namespace vsl::detail
+{
 
-#define VSL_JSON_TYPE(...) NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(__VA_ARGS__)
-#define VSL_JSON_TYPE_WITH_DEFAULT(...) NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(__VA_ARGS__)
-#define VSL_JSON_TYPE_ONLY_SERIALIZE(...) NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_ONLY_SERIALIZE(__VA_ARGS__)
+template<typename T>
+concept is_basic_json = nlohmann::detail::is_basic_json<T>::value;
+
+template<is_basic_json BasicJsonType, vsl::string_range R>
+auto check_json_keys(const BasicJsonType& json, const R& allowed_keys) -> void
+{
+    if (!json.is_object()) return;
+    for (auto&& el : json.items())
+    {
+        if (std::ranges::find(allowed_keys, el.key()) == allowed_keys.end())
+        {
+            const auto msg = fmt::format("Unknown JSON key {:?}", el.key());
+            throw nlohmann::json::out_of_range::create(403, msg, &json);
+        }
+    }
+}
+
+template<typename InputJsonType, typename ReferenceJsonType>
+auto check_json_for_extra_keys(const InputJsonType& input, const ReferenceJsonType& reference) -> void
+{
+    if (!input.is_object() || !reference.is_object()) return;
+    for (auto& [key, val] : input.items())
+    {
+        if (!reference.contains(key))
+        {
+            const auto msg = fmt::format("Unknown JSON key {:?}", key);
+            throw nlohmann::json::out_of_range::create(403, msg, &input);
+        }
+
+        auto& ref_val = reference[key];
+        if (val.is_object() && ref_val.is_object())
+        {
+            check_json_for_extra_keys(val, ref_val);
+        }
+    }
+}
+
+}  // namespace vsl::detail
+
+#define VSL_DETAIL_JSON_KEY_STR(v1) #v1,
+
+#define VSL_JSON_STRICT_INLINE(Type, ...)                                                       \
+    template<vsl::detail::is_basic_json BasicJsonType>                                          \
+    friend void to_json(BasicJsonType& nlohmann_json_j, const Type& nlohmann_json_t)            \
+    {                                                                                           \
+        NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(NLOHMANN_JSON_TO, __VA_ARGS__))                \
+    }                                                                                           \
+    template<vsl::detail::is_basic_json BasicJsonType>                                          \
+    friend void from_json(const BasicJsonType& nlohmann_json_j, Type& nlohmann_json_t)          \
+    {                                                                                           \
+        vsl::detail::check_json_keys(nlohmann_json_j, std::initializer_list<std::string_view>   \
+            {NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(VSL_DETAIL_JSON_KEY_STR, __VA_ARGS__))}); \
+        NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(NLOHMANN_JSON_FROM, __VA_ARGS__))              \
+    }
+
+#define VSL_JSON_STRICT_INLINE_WITH_DEFAULT(Type, ...)                                          \
+    template<vsl::detail::is_basic_json BasicJsonType>                                          \
+    friend void to_json(BasicJsonType& nlohmann_json_j, const Type& nlohmann_json_t)            \
+    {                                                                                           \
+        NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(NLOHMANN_JSON_TO, __VA_ARGS__))                \
+    }                                                                                           \
+    template<vsl::detail::is_basic_json BasicJsonType>                                          \
+    friend void from_json(const BasicJsonType& nlohmann_json_j, Type& nlohmann_json_t)          \
+    {                                                                                           \
+        vsl::detail::check_json_keys(nlohmann_json_j, std::initializer_list<std::string_view>   \
+            {NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(VSL_DETAIL_JSON_KEY_STR, __VA_ARGS__))}); \
+        const auto nlohmann_json_default_obj = Type{};                                          \
+        NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(NLOHMANN_JSON_FROM_WITH_DEFAULT, __VA_ARGS__)) \
+    }
+
+#define VSL_JSON_STRICT(Type, ...)                                                              \
+    template<vsl::detail::is_basic_json BasicJsonType>                                          \
+    void to_json(BasicJsonType& nlohmann_json_j, const Type& nlohmann_json_t)                   \
+    {                                                                                           \
+        NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(NLOHMANN_JSON_TO, __VA_ARGS__))                \
+    }                                                                                           \
+    template<vsl::detail::is_basic_json BasicJsonType>                                          \
+    void from_json(const BasicJsonType& nlohmann_json_j, Type& nlohmann_json_t)                 \
+    {                                                                                           \
+        vsl::detail::check_json_keys(nlohmann_json_j, std::initializer_list<std::string_view>   \
+            {NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(VSL_DETAIL_JSON_KEY_STR, __VA_ARGS__))}); \
+        NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(NLOHMANN_JSON_FROM, __VA_ARGS__))              \
+    }
+
+#define VSL_JSON_STRICT_WITH_DEFAULT(Type, ...)                                                 \
+    template<vsl::detail::is_basic_json BasicJsonType>                                          \
+    void to_json(BasicJsonType& nlohmann_json_j, const Type& nlohmann_json_t)                   \
+    {                                                                                           \
+        NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(NLOHMANN_JSON_TO, __VA_ARGS__))                \
+    }                                                                                           \
+    template<vsl::detail::is_basic_json BasicJsonType>                                          \
+    void from_json(const BasicJsonType& nlohmann_json_j, Type& nlohmann_json_t)                 \
+    {                                                                                           \
+        vsl::detail::check_json_keys(nlohmann_json_j, std::initializer_list<std::string_view>   \
+            {NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(VSL_DETAIL_JSON_KEY_STR, __VA_ARGS__))}); \
+        const auto nlohmann_json_default_obj = Type{};                                          \
+        NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(NLOHMANN_JSON_FROM_WITH_DEFAULT, __VA_ARGS__)) \
+    }
+
+#define VSL_JSON_INLINE(...) NLOHMANN_DEFINE_TYPE_INTRUSIVE(__VA_ARGS__)
+#define VSL_JSON_INLINE_WITH_DEFAULT(...) NLOHMANN_DEFINE_TYPE_INTRUSIVE_WITH_DEFAULT(__VA_ARGS__)
+#define VSL_JSON_INLINE_ONLY_SERIALIZE(...) NLOHMANN_DEFINE_TYPE_INTRUSIVE_ONLY_SERIALIZE(__VA_ARGS__)
+
+#define VSL_JSON(...) NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(__VA_ARGS__)
+#define VSL_JSON_WITH_DEFAULT(...) NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(__VA_ARGS__)
+#define VSL_JSON_ONLY_SERIALIZE(...) NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_ONLY_SERIALIZE(__VA_ARGS__)
 
 NLOHMANN_JSON_NAMESPACE_BEGIN
 
@@ -77,29 +183,8 @@ inline auto is_valid_json_string(std::string_view str) -> bool
     return Json::accept(str);
 }
 
-template<typename InputJsonType, typename ReferenceJsonType>
-auto json_has_extra_keys(const InputJsonType& input, const ReferenceJsonType& reference) -> bool
-{
-    if (!input.is_object() || !reference.is_object()) return false;
-    for (auto& [key, val] : input.items())
-    {
-        if (!reference.contains(key))
-        {
-            return true;
-        }
-
-        auto& ref_val = reference[key];
-        if (!val.is_object() || !ref_val.is_object()) continue;
-        if (json_has_extra_keys(val, ref_val))
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
 template<typename ValueType, typename JsonType>
-auto json_try_get(const JsonType& json) -> std::optional<ValueType>
+auto try_get_from_json(const JsonType& json) -> std::optional<ValueType>
 {
     try
     {
@@ -113,24 +198,20 @@ auto json_try_get(const JsonType& json) -> std::optional<ValueType>
 
 template<typename StructType, typename JsonType>
     requires std::is_class_v<StructType>
-auto json_get_exact_struct(const JsonType& json) -> StructType
+auto get_strict_struct_from_json(const JsonType& json) -> StructType
 {
     auto res_struct = json.get<StructType>();
-    if (json_has_extra_keys(json, JsonType(res_struct)))
-    {
-        const auto msg = "JSON has extra unused keys";
-        throw nlohmann::json::out_of_range::create(403, msg, &json);
-    }
+    detail::check_json_for_extra_keys(json, JsonType(res_struct));
     return res_struct;
 }
 
 template<typename StructType, typename JsonType>
     requires std::is_class_v<StructType>
-auto json_try_get_exact_struct(const JsonType& json) -> std::optional<StructType>
+auto try_get_strict_struct_from_json(const JsonType& json) -> std::optional<StructType>
 {
     try
     {
-        return json_get_exact_struct<StructType>(json);
+        return get_strict_struct_from_json<StructType>(json);
     }
     catch (const json_exception&)
     {

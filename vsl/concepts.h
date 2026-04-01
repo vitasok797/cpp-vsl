@@ -2,6 +2,8 @@
 #define VSL_CONCEPTS_H
 
 #include <concepts>
+#include <ranges>
+#include <string_view>
 #include <type_traits>
 
 namespace vsl
@@ -21,6 +23,10 @@ concept one_of = (std::same_as<std::decay_t<T>, Types> || ...);
 
 template<typename T, typename U>
 concept same_type_as = std::same_as<std::decay_t<T>, U>;
+
+template<typename T>
+concept string_range =
+    std::ranges::forward_range<T> && std::convertible_to<std::ranges::range_value_t<T>, std::string_view>;
 
 }  // namespace vsl
 

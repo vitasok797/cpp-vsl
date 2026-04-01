@@ -19,7 +19,7 @@ struct PersonInline
 
     auto operator<=>(const PersonInline&) const = default;
 
-    VSL_JSON(PersonInline, name, age)
+    VSL_JSON_INLINE(PersonInline, name, age)
 };
 
 struct PersonInlineWithDefault
@@ -29,7 +29,7 @@ struct PersonInlineWithDefault
 
     auto operator<=>(const PersonInlineWithDefault&) const = default;
 
-    VSL_JSON_WITH_DEFAULT(PersonInlineWithDefault, name, age)
+    VSL_JSON_INLINE_WITH_DEFAULT(PersonInlineWithDefault, name, age)
 };
 
 struct PersonInlineNonDefaultConstructible
@@ -46,7 +46,7 @@ struct PersonInlineNonDefaultConstructible
 
     auto operator<=>(const PersonInlineNonDefaultConstructible&) const = default;
 
-    VSL_JSON_ONLY_SERIALIZE(PersonInlineNonDefaultConstructible, name, age)
+    VSL_JSON_INLINE_ONLY_SERIALIZE(PersonInlineNonDefaultConstructible, name, age)
 };
 
 struct Person
@@ -80,9 +80,48 @@ struct PersonNonDefaultConstructible
     auto operator<=>(const PersonNonDefaultConstructible&) const = default;
 };
 
-VSL_JSON_TYPE(Person, name, age)
-VSL_JSON_TYPE_WITH_DEFAULT(PersonWithDefault, name, age)
-VSL_JSON_TYPE_ONLY_SERIALIZE(PersonNonDefaultConstructible, name, age)
+struct PersonStrictInline
+{
+    std::string name;
+    int age;
+
+    auto operator<=>(const PersonStrictInline&) const = default;
+
+    VSL_JSON_STRICT_INLINE(PersonStrictInline, name, age)
+};
+
+struct PersonStrictInlineWithDefault
+{
+    std::string name{"Noname"};
+    int age{-1};
+
+    auto operator<=>(const PersonStrictInlineWithDefault&) const = default;
+
+    VSL_JSON_STRICT_INLINE_WITH_DEFAULT(PersonStrictInlineWithDefault, name, age)
+};
+
+struct PersonStrict
+{
+    std::string name;
+    int age;
+
+    auto operator<=>(const PersonStrict&) const = default;
+};
+
+struct PersonStrictWithDefault
+{
+    std::string name{"Noname"};
+    int age{-1};
+
+    auto operator<=>(const PersonStrictWithDefault&) const = default;
+};
+
+VSL_JSON(Person, name, age)
+VSL_JSON_WITH_DEFAULT(PersonWithDefault, name, age)
+VSL_JSON_ONLY_SERIALIZE(PersonNonDefaultConstructible, name, age)
+
+VSL_JSON_STRICT(PersonStrict, name, age)
+VSL_JSON_STRICT_WITH_DEFAULT(PersonStrictWithDefault, name, age)
 
 static const auto PERSON_STRUCT_INLINE = PersonInline{.name = "John", .age = 20};
 static const auto PERSON_STRUCT_INLINE_DEF = PersonInlineWithDefault{.name = "John"};
@@ -90,6 +129,11 @@ static const auto PERSON_STRUCT_INLINE_NDC = PersonInlineNonDefaultConstructible
 static const auto PERSON_STRUCT = Person{.name = "John", .age = 20};
 static const auto PERSON_STRUCT_DEF = PersonWithDefault{.name = "John"};
 static const auto PERSON_STRUCT_NDC = PersonNonDefaultConstructible("John", 20);
+
+static const auto PERSON_STRUCT_STRICT_INLINE = PersonStrictInline{.name = "John", .age = 20};
+static const auto PERSON_STRUCT_STRICT_INLINE_DEF = PersonStrictInlineWithDefault{.name = "John"};
+static const auto PERSON_STRUCT_STRICT = PersonStrict{.name = "John", .age = 20};
+static const auto PERSON_STRUCT_STRICT_DEF = PersonStrictWithDefault{.name = "John"};
 
 static constexpr auto PERSON_STR = R"({"name":"John","age":20})";
 static constexpr auto PERSON_STR_DEF = R"({"name":"John","age":-1})";
@@ -102,7 +146,7 @@ static constexpr auto PERSON_STR_BAD = R"("name": "no closing quotes)";
 static constexpr auto PERSON_STR_PRETTY = R"({ "name": "John", "age": 20 })";
 static constexpr auto PERSON_STR_SORTED_PRETTY = R"({ "age": 20, "name": "John" })";
 
-TEST(JsonTest, JsonCreate)
+TEST(JsonTest, Create)
 {
     const auto json = Json{};
     EXPECT_TRUE(json.empty());
@@ -125,7 +169,7 @@ TEST(JsonTest, JsonCreate)
     EXPECT_EQ(json_from_initializer_list.dump(), R"({"A":1,"B":2})");
 }
 
-TEST(JsonTest, JsonCreateFromStruct)
+TEST(JsonTest, CreateFromStruct)
 {
     EXPECT_EQ(Json(PERSON_STRUCT_INLINE).dump(), PERSON_STR_SORTED);
     EXPECT_EQ(Json(PERSON_STRUCT_INLINE_DEF).dump(), PERSON_STR_SORTED_DEF);
@@ -135,6 +179,12 @@ TEST(JsonTest, JsonCreateFromStruct)
     EXPECT_EQ(Json(PERSON_STRUCT_DEF).dump(), PERSON_STR_SORTED_DEF);
     EXPECT_EQ(Json(PERSON_STRUCT_NDC).dump(), PERSON_STR_SORTED);
 
+    EXPECT_EQ(Json(PERSON_STRUCT_STRICT_INLINE).dump(), PERSON_STR_SORTED);
+    EXPECT_EQ(Json(PERSON_STRUCT_STRICT_INLINE_DEF).dump(), PERSON_STR_SORTED_DEF);
+
+    EXPECT_EQ(Json(PERSON_STRUCT_STRICT).dump(), PERSON_STR_SORTED);
+    EXPECT_EQ(Json(PERSON_STRUCT_STRICT_DEF).dump(), PERSON_STR_SORTED_DEF);
+
     EXPECT_EQ(OrderedJson(PERSON_STRUCT_INLINE).dump(), PERSON_STR);
     EXPECT_EQ(OrderedJson(PERSON_STRUCT_INLINE_DEF).dump(), PERSON_STR_DEF);
     EXPECT_EQ(OrderedJson(PERSON_STRUCT_INLINE_NDC).dump(), PERSON_STR);
@@ -142,9 +192,15 @@ TEST(JsonTest, JsonCreateFromStruct)
     EXPECT_EQ(OrderedJson(PERSON_STRUCT).dump(), PERSON_STR);
     EXPECT_EQ(OrderedJson(PERSON_STRUCT_DEF).dump(), PERSON_STR_DEF);
     EXPECT_EQ(OrderedJson(PERSON_STRUCT_NDC).dump(), PERSON_STR);
+
+    EXPECT_EQ(OrderedJson(PERSON_STRUCT_STRICT_INLINE).dump(), PERSON_STR);
+    EXPECT_EQ(OrderedJson(PERSON_STRUCT_STRICT_INLINE_DEF).dump(), PERSON_STR_DEF);
+
+    EXPECT_EQ(OrderedJson(PERSON_STRUCT_STRICT).dump(), PERSON_STR);
+    EXPECT_EQ(OrderedJson(PERSON_STRUCT_STRICT_DEF).dump(), PERSON_STR_DEF);
 }
 
-TEST(JsonTest, JsonParse)
+TEST(JsonTest, Parse)
 {
     EXPECT_EQ(Json::parse(PERSON_STR).dump(), PERSON_STR_SORTED);
     EXPECT_EQ(OrderedJson::parse(PERSON_STR).dump(), PERSON_STR);
@@ -170,24 +226,6 @@ TEST(JsonTest, IsValidJsonString)
     EXPECT_FALSE(is_valid_json_string(PERSON_STR_BAD));
 }
 
-TEST(JsonTest, JsonHasExtraKeys)
-{
-    {
-        const auto json = Json::parse(PERSON_STR);
-        const auto json_partial = Json::parse(PERSON_STR_PARTIAL);
-        EXPECT_TRUE(json_has_extra_keys(json, json_partial));
-        EXPECT_FALSE(json_has_extra_keys(json_partial, json));
-        EXPECT_FALSE(json_has_extra_keys(json, json));
-    }
-    {
-        const auto json = Json::parse(R"({"name":"John","sub":{"sub1":1,"sub2":2}})");
-        const auto json_partial = Json::parse(R"({"name":"John","sub":{"sub2":2}})");
-        EXPECT_TRUE(json_has_extra_keys(json, json_partial));
-        EXPECT_FALSE(json_has_extra_keys(json_partial, json));
-        EXPECT_FALSE(json_has_extra_keys(json, json));
-    }
-}
-
 TEST(JsonTest, Get)
 {
     {
@@ -209,17 +247,23 @@ TEST(JsonTest, GetStruct)
     const auto json = Json::parse(PERSON_STR);
     EXPECT_EQ(json.get<PersonInline>(), PERSON_STRUCT_INLINE);
     EXPECT_EQ(json.get<Person>(), PERSON_STRUCT);
+    EXPECT_EQ(json.get<PersonStrictInline>(), PERSON_STRUCT_STRICT_INLINE);
+    EXPECT_EQ(json.get<PersonStrict>(), PERSON_STRUCT_STRICT);
 }
 
 TEST(JsonTest, GetStructWithDefault)
 {
-    const auto json_partial = Json::parse(R"({"name":"John","extra_key":0})");
+    const auto json_partial = Json::parse(PERSON_STR_PARTIAL);
     EXPECT_EQ(json_partial.get<PersonInlineWithDefault>(), PERSON_STRUCT_INLINE_DEF);
     EXPECT_EQ(json_partial.get<PersonWithDefault>(), PERSON_STRUCT_DEF);
+    EXPECT_EQ(json_partial.get<PersonStrictInlineWithDefault>(), PERSON_STRUCT_STRICT_INLINE_DEF);
+    EXPECT_EQ(json_partial.get<PersonStrictWithDefault>(), PERSON_STRUCT_STRICT_DEF);
 
-    const auto json_empty = Json::parse("{}");
+    const auto json_empty = Json{};
     EXPECT_EQ(json_empty.get<PersonInlineWithDefault>(), (PersonInlineWithDefault{}));
     EXPECT_EQ(json_empty.get<PersonWithDefault>(), (PersonWithDefault{}));
+    EXPECT_EQ(json_empty.get<PersonStrictInlineWithDefault>(), (PersonStrictInlineWithDefault{}));
+    EXPECT_EQ(json_empty.get<PersonStrictWithDefault>(), (PersonStrictWithDefault{}));
 }
 
 TEST(JsonTest, GetStructPartialError)
@@ -227,6 +271,27 @@ TEST(JsonTest, GetStructPartialError)
     const auto json_partial = Json::parse(PERSON_STR_PARTIAL);
     EXPECT_THROW(json_partial.get<PersonInline>(), json_out_of_range);
     EXPECT_THROW(json_partial.get<Person>(), json_out_of_range);
+    EXPECT_THROW(json_partial.get<PersonStrictInline>(), json_out_of_range);
+    EXPECT_THROW(json_partial.get<PersonStrict>(), json_out_of_range);
+}
+
+TEST(JsonTest, GetStructExtraKeyError)
+{
+    auto json_extra = Json::parse(PERSON_STR);
+    json_extra["extra_key"] = 0;
+
+    EXPECT_EQ(json_extra.get<PersonInline>(), PERSON_STRUCT_INLINE);
+    EXPECT_EQ(json_extra.get<Person>(), PERSON_STRUCT);
+    EXPECT_THROW(json_extra.get<PersonStrictInline>(), json_out_of_range);
+    EXPECT_THROW(json_extra.get<PersonStrict>(), json_out_of_range);
+
+    auto json_partial_extra = Json::parse(PERSON_STR_PARTIAL);
+    json_partial_extra["extra_key"] = 0;
+
+    EXPECT_EQ(json_partial_extra.get<PersonInlineWithDefault>(), PERSON_STRUCT_INLINE_DEF);
+    EXPECT_EQ(json_partial_extra.get<PersonWithDefault>(), PERSON_STRUCT_DEF);
+    EXPECT_THROW(json_partial_extra.get<PersonStrictInlineWithDefault>(), json_out_of_range);
+    EXPECT_THROW(json_partial_extra.get<PersonStrictWithDefault>(), json_out_of_range);
 }
 
 TEST(JsonTest, GetStructTypeError)
@@ -234,23 +299,43 @@ TEST(JsonTest, GetStructTypeError)
     const auto json = Json::parse(R"({"name":1,"age":20})");
     EXPECT_THROW(json.get<PersonInline>(), json_type_error);
     EXPECT_THROW(json.get<Person>(), json_type_error);
+    EXPECT_THROW(json.get<PersonStrictInline>(), json_type_error);
+    EXPECT_THROW(json.get<PersonStrict>(), json_type_error);
 }
 
-TEST(JsonTest, JsonTryGet)
+TEST(JsonTest, TryGet)
 {
     const auto json = Json::parse(PERSON_STR);
-    EXPECT_THAT(json_try_get<std::string>(json["name"]), testing::Optional(std::string{"John"}));
-    EXPECT_THAT(json_try_get<Person>(json), testing::Optional(PERSON_STRUCT));
-    EXPECT_EQ(json_try_get<int>(json["name"]), std::nullopt);
+    EXPECT_THAT(try_get_from_json<std::string>(json["name"]), testing::Optional(std::string{"John"}));
+    EXPECT_THAT(try_get_from_json<Person>(json), testing::Optional(PERSON_STRUCT));
+    EXPECT_EQ(try_get_from_json<int>(json["name"]), std::nullopt);
 
     const auto json_partial = Json::parse(PERSON_STR_PARTIAL);
-    EXPECT_THAT(json_try_get<PersonInlineWithDefault>(json_partial), testing::Optional(PERSON_STRUCT_INLINE_DEF));
-    EXPECT_THAT(json_try_get<PersonWithDefault>(json_partial), testing::Optional(PERSON_STRUCT_DEF));
-    EXPECT_EQ(json_try_get<PersonInline>(json_partial), std::nullopt);
-    EXPECT_EQ(json_try_get<Person>(json_partial), std::nullopt);
+    EXPECT_THAT(try_get_from_json<PersonInlineWithDefault>(json_partial), testing::Optional(PERSON_STRUCT_INLINE_DEF));
+    EXPECT_THAT(try_get_from_json<PersonWithDefault>(json_partial), testing::Optional(PERSON_STRUCT_DEF));
+    EXPECT_EQ(try_get_from_json<PersonInline>(json_partial), std::nullopt);
+    EXPECT_EQ(try_get_from_json<Person>(json_partial), std::nullopt);
 }
 
-TEST(JsonTest, JsonExactStruct)
+TEST(JsonTest, CheckForExtraKeys)
+{
+    {
+        const auto json = Json::parse(PERSON_STR);
+        const auto json_partial = Json::parse(PERSON_STR_PARTIAL);
+        vsl::detail::check_json_for_extra_keys(json, json);
+        vsl::detail::check_json_for_extra_keys(json_partial, json);
+        EXPECT_THROW(vsl::detail::check_json_for_extra_keys(json, json_partial), json_out_of_range);
+    }
+    {
+        const auto json = Json::parse(R"({"name":"John","sub":{"sub1":1,"sub2":2}})");
+        const auto json_partial = Json::parse(R"({"name":"John","sub":{"sub2":2}})");
+        vsl::detail::check_json_for_extra_keys(json, json);
+        vsl::detail::check_json_for_extra_keys(json_partial, json);
+        EXPECT_THROW(vsl::detail::check_json_for_extra_keys(json, json_partial), json_out_of_range);
+    }
+}
+
+TEST(JsonTest, GetStrictStruct)
 {
     const auto json_ok = Json(PERSON_STRUCT);
 
@@ -260,14 +345,14 @@ TEST(JsonTest, JsonExactStruct)
     auto json_wrong_type = json_ok;
     json_wrong_type["name"] = 1;
 
-    EXPECT_EQ(json_get_exact_struct<Person>(json_ok), PERSON_STRUCT);
-    EXPECT_THAT(json_try_get_exact_struct<Person>(json_ok), testing::Optional(PERSON_STRUCT));
+    EXPECT_EQ(get_strict_struct_from_json<Person>(json_ok), PERSON_STRUCT);
+    EXPECT_THAT(try_get_strict_struct_from_json<Person>(json_ok), testing::Optional(PERSON_STRUCT));
 
-    EXPECT_THROW(json_get_exact_struct<Person>(json_extra_key), json_out_of_range);
-    EXPECT_EQ(json_try_get_exact_struct<Person>(json_extra_key), std::nullopt);
+    EXPECT_THROW(get_strict_struct_from_json<Person>(json_extra_key), json_out_of_range);
+    EXPECT_EQ(try_get_strict_struct_from_json<Person>(json_extra_key), std::nullopt);
 
-    EXPECT_THROW(json_get_exact_struct<Person>(json_wrong_type), json_type_error);
-    EXPECT_EQ(json_try_get_exact_struct<Person>(json_wrong_type), std::nullopt);
+    EXPECT_THROW(get_strict_struct_from_json<Person>(json_wrong_type), json_type_error);
+    EXPECT_EQ(try_get_strict_struct_from_json<Person>(json_wrong_type), std::nullopt);
 }
 
 TEST(JsonTest, JsonToPrettyLine)
