@@ -56,7 +56,7 @@
             }
         },
         {
-            "name": "msvc",
+            "name": "msvc_support",
             "hidden": true,
             "environment": {
                 "VSLANG": "1033",
@@ -92,13 +92,13 @@
                 "x64",
                 "win",
                 "cxx",
-                "msvc",
+                "msvc_support",
                 "vs-clang-tidy",
                 "vcpkg"
             ],
             "cacheVariables": {
                 "VCPKG_TARGET_TRIPLET": "x64-windows-static",
-                "CRT_LINKAGE_STATIC": "YES"
+                "MSVC_RUNTIME_STATIC_LINKAGE": "YES"
             }
         },
         {
