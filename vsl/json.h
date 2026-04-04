@@ -143,7 +143,7 @@ struct adl_serializer<T>
     template<typename JsonType>
     static void from_json(const JsonType& j, T& e)
     {
-        const auto name = j.get<std::string_view>();
+        const auto name = j.template get<std::string_view>();
         const auto value = magic_enum::enum_cast<T>(name, magic_enum::case_insensitive);
         if (value.has_value())
         {
@@ -188,7 +188,7 @@ auto try_get_from_json(const JsonType& json) -> std::optional<ValueType>
 {
     try
     {
-        return json.get<ValueType>();
+        return json.template get<ValueType>();
     }
     catch (const json_exception&)
     {
@@ -200,7 +200,7 @@ template<typename StructType, typename JsonType>
     requires std::is_class_v<StructType>
 auto get_strict_struct_from_json(const JsonType& json) -> StructType
 {
-    auto res_struct = json.get<StructType>();
+    auto res_struct = json.template get<StructType>();
     detail::check_json_for_extra_keys(json, JsonType(res_struct));
     return res_struct;
 }
