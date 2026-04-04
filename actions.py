@@ -407,6 +407,19 @@ class PresetListAction(BaseAction):
                 )
 
 
+class VcpkgLibListAction(BaseAction):
+    PROMPT_SHORTCUT = 'll'
+    DESC = 'VCPKG lib list'
+
+    def execute(self) -> None:
+        vcpkg_installed_dir = BUILD_DIR / self.manager.active_preset / 'vcpkg_installed'
+        Console.run_shell_command(
+                command=f'vcpkg list --x-install-root="{vcpkg_installed_dir}"',
+                cwd=ROOT_DIR,
+                error_exception=ActionError,
+                )
+
+
 class CleanAction(BaseAction):
     PROMPT_SHORTCUT = 'cl'
     CLI_COMMAND = 'clean'
@@ -515,7 +528,7 @@ class RunAction(BaseAction):
             if IS_WINDOWS:
                 return item.suffix == '.exe'
             else:
-                return os.access(item, os.X_OK)
+                return os.access(item, os.X_OK) and item.suffix != '.so'
 
         executables = [item for item in dir_to_search.glob('*') if is_executable(item)]
         executables = [exe for exe in executables if
