@@ -3,6 +3,8 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <cstdint>
+
 namespace vsl::test
 {
 
@@ -18,6 +20,13 @@ TEST(TextTest, Indent)
     EXPECT_EQ(indent(" ", 1), "  ");
     EXPECT_EQ(indent(" \n ", 1), "  \n  ");
     EXPECT_EQ(indent("AAA", 2), "  AAA");
+}
+
+TEST(TextTest, OutOf)
+{
+    EXPECT_EQ(out_of(3, 3), "3");
+    EXPECT_EQ(out_of(3, 4), "3/4");
+    EXPECT_EQ(out_of(int16_t{3}, uint64_t{4}), "3/4");
 }
 
 }  // namespace vsl::test

@@ -5,8 +5,10 @@
 #include <Poco/RegularExpression.h>
 
 #include <algorithm>
+#include <concepts>
 #include <string>
 #include <string_view>
+#include <utility>
 
 namespace vsl
 {
@@ -24,6 +26,19 @@ inline auto indent(std::string_view text, int width) -> std::string
     auto repl = fmt::format("{: <{}}$0", "", std::max(0, width));
     re.subst(result, repl, Re::RE_GLOBAL);
     return result;
+}
+
+template<std::integral CountType, std::integral TotalCountType>
+auto out_of(CountType count, TotalCountType total_count) -> std::string
+{
+    if (std::cmp_equal(count, total_count))
+    {
+        return fmt::format("{}", count);
+    }
+    else
+    {
+        return fmt::format("{}/{}", count, total_count);
+    }
 }
 
 }  // namespace vsl
