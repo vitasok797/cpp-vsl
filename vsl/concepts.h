@@ -25,8 +25,20 @@ template<typename T, typename U>
 concept same_type_as = std::same_as<std::decay_t<T>, U>;
 
 template<typename T>
-concept string_range =
+concept string_input_range =
+    std::ranges::input_range<T> && std::convertible_to<std::ranges::range_value_t<T>, std::string_view>;
+
+template<typename T>
+concept string_forward_range =
     std::ranges::forward_range<T> && std::convertible_to<std::ranges::range_value_t<T>, std::string_view>;
+
+template<typename T>
+concept string_bidirectional_range =
+    std::ranges::bidirectional_range<T> && std::convertible_to<std::ranges::range_value_t<T>, std::string_view>;
+
+template<typename T>
+concept string_random_access_range =
+    std::ranges::random_access_range<T> && std::convertible_to<std::ranges::range_value_t<T>, std::string_view>;
 
 }  // namespace vsl
 

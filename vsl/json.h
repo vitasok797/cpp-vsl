@@ -24,7 +24,7 @@ namespace vsl::detail
 template<typename T>
 concept is_basic_json = nlohmann::detail::is_basic_json<T>::value;
 
-template<is_basic_json BasicJsonType, vsl::string_range R>
+template<is_basic_json BasicJsonType, vsl::string_input_range R>
 auto check_json_keys(const BasicJsonType& json, const R& allowed_keys) -> void
 {
     if (!json.is_object()) return;

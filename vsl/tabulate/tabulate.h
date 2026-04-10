@@ -1,6 +1,8 @@
 #ifndef VSL_TABULATE_TABULATE_H
 #define VSL_TABULATE_TABULATE_H
 
+#include <vsl/concepts.h>
+
 #include <tabulate/table.hpp>
 
 #include <ranges>
@@ -29,7 +31,7 @@ inline auto hide_inner_borders(Table& table, HeaderType header_type) -> void
     }
 }
 
-auto create_table(const std::ranges::input_range auto& header,
+auto create_table(const vsl::string_input_range auto& header,
                   const std::ranges::input_range auto& items,
                   auto item_to_row) -> std::string
 {
