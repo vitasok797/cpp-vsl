@@ -2,6 +2,7 @@
 #define VSL_TABULATE_TABULATE_H
 
 #include <vsl/concepts.h>
+#include <vsl/util.h>
 
 #include <tabulate/table.hpp>
 
@@ -14,20 +15,26 @@ namespace vsl::tabulate
 using Table = ::tabulate::Table;
 using TableRow = Table::Row_t;
 
-enum class HeaderType
+enum class RowBorders
 {
-    SEPARATED,
-    NOT_SEPARATED,
+    FULL,
+    HEADER,
+    NONE,
 };
 
-inline auto hide_inner_borders(Table& table, HeaderType header_type) -> void
+inline auto format_table(Table& table, RowBorders row_borders = RowBorders::HEADER) -> void
 {
-    table.format().hide_border_top();
-    table[0].format().show_border_top();
+    table.format().show_border_top();
 
-    if (table.size() > 1 && header_type == HeaderType::SEPARATED)
+    if (vsl::is_one_of(row_borders, {RowBorders::HEADER, RowBorders::NONE}))
     {
-        table[1].format().show_border_top();
+        table.format().hide_border_top();
+        table[0].format().show_border_top();
+
+        if (row_borders == RowBorders::HEADER && table.size() > 1)
+        {
+            table[1].format().show_border_top();
+        }
     }
 }
 
@@ -36,13 +43,11 @@ auto create_table(const vsl::string_input_range auto& header,
                   auto item_to_row) -> std::string
 {
     auto table = Table{};
-    auto header_type = HeaderType::NOT_SEPARATED;
 
     if (header.size() > 0)
     {
         auto row = TableRow(header.begin(), header.end());
         table.add_row(row);
-        header_type = HeaderType::SEPARATED;
     }
 
     for (auto&& item : items)
@@ -50,7 +55,8 @@ auto create_table(const vsl::string_input_range auto& header,
         table.add_row(item_to_row(item));
     }
 
-    hide_inner_borders(table, header_type);
+    format_table(table, (header.size() > 0) ? RowBorders::HEADER : RowBorders::NONE);
+
     return table.str();
 }
 

@@ -22,7 +22,7 @@ static const auto item_to_row = [](int x) -> vsl::tabulate::TableRow
     return row;
 };
 
-static auto get_table(int row_count, vsl::tabulate::HeaderType header_type) -> std::string
+static auto get_table(int row_count, vsl::tabulate::RowBorders row_borders) -> std::string
 {
     auto table = vsl::tabulate::Table{};
     for (auto i = 0; i < row_count; ++i)
@@ -30,55 +30,86 @@ static auto get_table(int row_count, vsl::tabulate::HeaderType header_type) -> s
         table.add_row({fmt::format("A{}", i), fmt::format("B{}", i)});
     }
 
-    vsl::tabulate::hide_inner_borders(table, header_type);
+    vsl::tabulate::format_table(table, row_borders);
 
     return table.str();
 }
 
-TEST(TabulateTest, HideInnerBordersWithHeader)
+TEST(TabulateTest, RowBordersFull)
 {
-    ASSERT_EQ(get_table(4, vsl::tabulate::HeaderType::SEPARATED), "+----+----+\n"
-                                                                  "| A0 | B0 |\n"
-                                                                  "+----+----+\n"
-                                                                  "| A1 | B1 |\n"
-                                                                  "| A2 | B2 |\n"
-                                                                  "| A3 | B3 |\n"
-                                                                  "+----+----+");
+    ASSERT_EQ(get_table(4, vsl::tabulate::RowBorders::FULL), "+----+----+\n"
+                                                             "| A0 | B0 |\n"
+                                                             "+----+----+\n"
+                                                             "| A1 | B1 |\n"
+                                                             "+----+----+\n"
+                                                             "| A2 | B2 |\n"
+                                                             "+----+----+\n"
+                                                             "| A3 | B3 |\n"
+                                                             "+----+----+");
 
-    ASSERT_EQ(get_table(3, vsl::tabulate::HeaderType::SEPARATED), "+----+----+\n"
-                                                                  "| A0 | B0 |\n"
-                                                                  "+----+----+\n"
-                                                                  "| A1 | B1 |\n"
-                                                                  "| A2 | B2 |\n"
-                                                                  "+----+----+");
+    ASSERT_EQ(get_table(3, vsl::tabulate::RowBorders::FULL), "+----+----+\n"
+                                                             "| A0 | B0 |\n"
+                                                             "+----+----+\n"
+                                                             "| A1 | B1 |\n"
+                                                             "+----+----+\n"
+                                                             "| A2 | B2 |\n"
+                                                             "+----+----+");
 
-    ASSERT_EQ(get_table(2, vsl::tabulate::HeaderType::SEPARATED), "+----+----+\n"
-                                                                  "| A0 | B0 |\n"
-                                                                  "+----+----+\n"
-                                                                  "| A1 | B1 |\n"
-                                                                  "+----+----+");
+    ASSERT_EQ(get_table(2, vsl::tabulate::RowBorders::FULL), "+----+----+\n"
+                                                             "| A0 | B0 |\n"
+                                                             "+----+----+\n"
+                                                             "| A1 | B1 |\n"
+                                                             "+----+----+");
 
-    ASSERT_EQ(get_table(1, vsl::tabulate::HeaderType::SEPARATED), "+----+----+\n"
-                                                                  "| A0 | B0 |\n"
-                                                                  "+----+----+");
+    ASSERT_EQ(get_table(1, vsl::tabulate::RowBorders::FULL), "+----+----+\n"
+                                                             "| A0 | B0 |\n"
+                                                             "+----+----+");
 }
 
-TEST(TabulateTest, HideInnerBordersWithoutHeader)
+TEST(TabulateTest, RowBordersHeader)
 {
-    ASSERT_EQ(get_table(3, vsl::tabulate::HeaderType::NOT_SEPARATED), "+----+----+\n"
-                                                                      "| A0 | B0 |\n"
-                                                                      "| A1 | B1 |\n"
-                                                                      "| A2 | B2 |\n"
-                                                                      "+----+----+");
+    ASSERT_EQ(get_table(4, vsl::tabulate::RowBorders::HEADER), "+----+----+\n"
+                                                               "| A0 | B0 |\n"
+                                                               "+----+----+\n"
+                                                               "| A1 | B1 |\n"
+                                                               "| A2 | B2 |\n"
+                                                               "| A3 | B3 |\n"
+                                                               "+----+----+");
 
-    ASSERT_EQ(get_table(2, vsl::tabulate::HeaderType::NOT_SEPARATED), "+----+----+\n"
-                                                                      "| A0 | B0 |\n"
-                                                                      "| A1 | B1 |\n"
-                                                                      "+----+----+");
+    ASSERT_EQ(get_table(3, vsl::tabulate::RowBorders::HEADER), "+----+----+\n"
+                                                               "| A0 | B0 |\n"
+                                                               "+----+----+\n"
+                                                               "| A1 | B1 |\n"
+                                                               "| A2 | B2 |\n"
+                                                               "+----+----+");
 
-    ASSERT_EQ(get_table(1, vsl::tabulate::HeaderType::NOT_SEPARATED), "+----+----+\n"
-                                                                      "| A0 | B0 |\n"
-                                                                      "+----+----+");
+    ASSERT_EQ(get_table(2, vsl::tabulate::RowBorders::HEADER), "+----+----+\n"
+                                                               "| A0 | B0 |\n"
+                                                               "+----+----+\n"
+                                                               "| A1 | B1 |\n"
+                                                               "+----+----+");
+
+    ASSERT_EQ(get_table(1, vsl::tabulate::RowBorders::HEADER), "+----+----+\n"
+                                                               "| A0 | B0 |\n"
+                                                               "+----+----+");
+}
+
+TEST(TabulateTest, RowBordersNone)
+{
+    ASSERT_EQ(get_table(3, vsl::tabulate::RowBorders::NONE), "+----+----+\n"
+                                                             "| A0 | B0 |\n"
+                                                             "| A1 | B1 |\n"
+                                                             "| A2 | B2 |\n"
+                                                             "+----+----+");
+
+    ASSERT_EQ(get_table(2, vsl::tabulate::RowBorders::NONE), "+----+----+\n"
+                                                             "| A0 | B0 |\n"
+                                                             "| A1 | B1 |\n"
+                                                             "+----+----+");
+
+    ASSERT_EQ(get_table(1, vsl::tabulate::RowBorders::NONE), "+----+----+\n"
+                                                             "| A0 | B0 |\n"
+                                                             "+----+----+");
 }
 
 TEST(TabulateTest, CreateTable)
