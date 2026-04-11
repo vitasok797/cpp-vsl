@@ -17,12 +17,12 @@ using TableRow = Table::Row_t;
 
 enum class RowBorders
 {
-    FULL,
+    ALL,
     HEADER,
     NONE,
 };
 
-inline auto format_table(Table& table, RowBorders row_borders = RowBorders::HEADER) -> void
+inline auto format_row_borders(Table& table, RowBorders row_borders) -> void
 {
     table.format().show_border_top();
 
@@ -55,7 +55,7 @@ auto create_table(const vsl::string_input_range auto& header,
         table.add_row(item_to_row(item));
     }
 
-    format_table(table, (header.size() > 0) ? RowBorders::HEADER : RowBorders::NONE);
+    format_row_borders(table, (header.size() > 0) ? RowBorders::HEADER : RowBorders::NONE);
 
     return table.str();
 }
