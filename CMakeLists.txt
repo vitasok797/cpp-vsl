@@ -26,6 +26,9 @@ target_link_libraries(${CUR_TARGET} INTERFACE magic_enum::magic_enum)
 find_package(Microsoft.GSL CONFIG REQUIRED)
 target_link_libraries(${CUR_TARGET} INTERFACE Microsoft.GSL::GSL)
 
+find_package(nameof CONFIG REQUIRED)
+target_link_libraries(${CUR_TARGET} INTERFACE nameof::nameof)
+
 find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(${CUR_TARGET} INTERFACE nlohmann_json::nlohmann_json)
 
@@ -66,6 +69,7 @@ if(VSL_BUILD_TESTS AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         "vsl/json.test.cpp"
         "vsl/math.test.cpp"
         "vsl/pointer.test.cpp"
+        "vsl/reflection.test.cpp"
         "vsl/tabulate.test.cpp"
         "vsl/tcp/test.cpp"
         "vsl/text.test.cpp"

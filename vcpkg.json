@@ -5,6 +5,7 @@
         "gtest",
         "magic-enum",
         "ms-gsl",
+        "nameof",
         "nlohmann-json",
         {
             "name": "poco",
