@@ -1,5 +1,5 @@
-#ifndef VSL_TABULATE_TABULATE_H
-#define VSL_TABULATE_TABULATE_H
+#ifndef VSL_TABULATE_H
+#define VSL_TABULATE_H
 
 #include <vsl/concepts.h>
 #include <vsl/util.h>
@@ -62,4 +62,4 @@ auto create_table(const vsl::string_input_range auto& header,
 
 }  // namespace vsl::tabulate
 
-#endif  // VSL_TABULATE_TABULATE_H
+#endif  // VSL_TABULATE_H
