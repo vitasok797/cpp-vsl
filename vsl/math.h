@@ -17,8 +17,8 @@
 namespace vsl
 {
 
-inline constexpr auto double_max = std::numeric_limits<double>::max();
-inline constexpr auto double_max_neg = std::numeric_limits<double>::lowest();
+inline constexpr auto DOUBLE_MAX = std::numeric_limits<double>::max();
+inline constexpr auto DOUBLE_MAX_NEG = std::numeric_limits<double>::lowest();
 
 inline auto almost_equal(double a, double b, double abs_epsilon) -> bool
 {
@@ -30,12 +30,12 @@ inline auto almost_equal_rel(double a, double b, double rel_epsilon = 1e-6) -> b
     return std::abs(a - b) <= (std::fmax(std::abs(a), std::abs(b)) * rel_epsilon);
 }
 
-inline auto ftrim(double value, std::pair<double, double> bounds) -> double
+inline auto fclamp(double value, std::pair<double, double> bounds) -> double
 {
     auto [lo, hi] = bounds;
     if (lo > hi)
     {
-        throw std::invalid_argument{"ftrim bounds error (low > high)"};
+        throw std::invalid_argument{"fclamp bounds error (low > high)"};
     }
     return std::clamp(value, lo, hi);
 }

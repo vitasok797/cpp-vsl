@@ -14,8 +14,8 @@ namespace vsl::test
 
 TEST(MathTest, DoubleMax)
 {
-    EXPECT_EQ(double_max, DBL_MAX);
-    EXPECT_EQ(double_max_neg, -DBL_MAX);
+    EXPECT_EQ(vsl::DOUBLE_MAX, DBL_MAX);
+    EXPECT_EQ(vsl::DOUBLE_MAX_NEG, -DBL_MAX);
 }
 
 TEST(MathTest, AlmostEqual)
@@ -41,21 +41,21 @@ TEST(MathTest, AlmostEqualRel)
     EXPECT_FALSE(almost_equal_rel(-2.0, -2.01, 0.001));
 }
 
-TEST(MathTest, Ftrim)
+TEST(MathTest, Fclamp)
 {
-    EXPECT_EQ(ftrim(-1.0, {0, 2.0}), 0);
-    EXPECT_EQ(ftrim(1.0, {0, 2.0}), 1.0);
-    EXPECT_EQ(ftrim(3.0, {0, 2.0}), 2.0);
+    EXPECT_EQ(fclamp(-1.0, {0, 2.0}), 0);
+    EXPECT_EQ(fclamp(1.0, {0, 2.0}), 1.0);
+    EXPECT_EQ(fclamp(3.0, {0, 2.0}), 2.0);
 
-    EXPECT_EQ(ftrim(100.0, {0, INF}), 100.0);
-    EXPECT_EQ(ftrim(-100.0, {0, INF}), 0.0);
+    EXPECT_EQ(fclamp(100.0, {0, INF}), 100.0);
+    EXPECT_EQ(fclamp(-100.0, {0, INF}), 0.0);
 
-    EXPECT_EQ(ftrim(100.0, {-INF, 0}), 0.0);
-    EXPECT_EQ(ftrim(-100.0, {-INF, 0}), -100.0);
+    EXPECT_EQ(fclamp(100.0, {-INF, 0}), 0.0);
+    EXPECT_EQ(fclamp(-100.0, {-INF, 0}), -100.0);
 
-    EXPECT_EQ(ftrim(5.0, {1.0, 1.0}), 1.0);
+    EXPECT_EQ(fclamp(5.0, {1.0, 1.0}), 1.0);
 
-    EXPECT_THROW(ftrim(5.0, {1.0, -1.0}), std::invalid_argument);
+    EXPECT_THROW(fclamp(5.0, {1.0, -1.0}), std::invalid_argument);
 }
 
 TEST(MathTest, CeilDiv)
