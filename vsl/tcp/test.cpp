@@ -402,7 +402,7 @@ TEST_F(TcpTest, Buffer)
     const auto str = std::string{"Hello"};
     const auto chars = std::vector<char>{'a', 'b', 'c'};
 
-    auto test = [&]()
+    auto test = [&]
     {
         client_.write<int32_t>(101);
 
