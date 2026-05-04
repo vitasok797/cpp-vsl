@@ -4,9 +4,9 @@
 #define JSON_USE_IMPLICIT_CONVERSIONS 0
 
 #include <vsl/concepts.h>
+#include <vsl/enum.h>
 
 #include <fmt/format.h>
-#include <magic_enum/magic_enum.hpp>
 #include <nlohmann/json.hpp>
 
 #include <algorithm>
@@ -137,14 +137,14 @@ struct adl_serializer<T>
     template<typename JsonType>
     static void to_json(JsonType& j, const T& e)
     {
-        j = magic_enum::enum_contains<T>(e) ? magic_enum::enum_name(e) : "???";
+        j = vsl::enum_contains<T>(e) ? vsl::enum_name(e) : "???";
     }
 
     template<typename JsonType>
     static void from_json(const JsonType& j, T& e)
     {
         const auto name = j.template get<std::string_view>();
-        const auto value = magic_enum::enum_cast<T>(name, magic_enum::case_insensitive);
+        const auto value = vsl::enum_from_string_icase<T>(name);
         if (value.has_value())
         {
             e = value.value();

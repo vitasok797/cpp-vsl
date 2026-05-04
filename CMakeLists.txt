@@ -66,6 +66,7 @@ if(VSL_BUILD_TESTS AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     configure_cxx_options(${CUR_TARGET})
 
     target_sources(${CUR_TARGET} PRIVATE
+        "vsl/enum.test.cpp"
         "vsl/json.test.cpp"
         "vsl/math.test.cpp"
         "vsl/pointer.test.cpp"
