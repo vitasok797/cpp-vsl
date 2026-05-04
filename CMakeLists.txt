@@ -23,9 +23,6 @@ target_link_libraries(${CUR_TARGET} INTERFACE fmt::fmt)
 find_package(magic_enum CONFIG REQUIRED)
 target_link_libraries(${CUR_TARGET} INTERFACE magic_enum::magic_enum)
 
-find_package(Microsoft.GSL CONFIG REQUIRED)
-target_link_libraries(${CUR_TARGET} INTERFACE Microsoft.GSL::GSL)
-
 find_package(nameof CONFIG REQUIRED)
 target_link_libraries(${CUR_TARGET} INTERFACE nameof::nameof)
 
@@ -74,6 +71,7 @@ if(VSL_BUILD_TESTS AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         "vsl/tabulate.test.cpp"
         "vsl/tcp/test.cpp"
         "vsl/text.test.cpp"
+        "vsl/types.test.cpp"
         "vsl/util.test.cpp"
         )
 

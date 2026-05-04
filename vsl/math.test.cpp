@@ -1,9 +1,10 @@
 #include "math.h"
 
+#include <vsl/types.h>
+
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include <cfloat>
 #include <cstdint>
 #include <limits>
 #include <stdexcept>
@@ -11,12 +12,6 @@
 
 namespace vsl::test
 {
-
-TEST(MathTest, DoubleMax)
-{
-    EXPECT_EQ(vsl::DOUBLE_MAX, DBL_MAX);
-    EXPECT_EQ(vsl::DOUBLE_MAX_NEG, -DBL_MAX);
-}
 
 TEST(MathTest, AlmostEqual)
 {
@@ -47,11 +42,11 @@ TEST(MathTest, Fclamp)
     EXPECT_EQ(fclamp(1.0, {0, 2.0}), 1.0);
     EXPECT_EQ(fclamp(3.0, {0, 2.0}), 2.0);
 
-    EXPECT_EQ(fclamp(100.0, {0, INF}), 100.0);
-    EXPECT_EQ(fclamp(-100.0, {0, INF}), 0.0);
+    EXPECT_EQ(fclamp(100.0, {0, vsl::INF}), 100.0);
+    EXPECT_EQ(fclamp(-100.0, {0, vsl::INF}), 0.0);
 
-    EXPECT_EQ(fclamp(100.0, {-INF, 0}), 0.0);
-    EXPECT_EQ(fclamp(-100.0, {-INF, 0}), -100.0);
+    EXPECT_EQ(fclamp(100.0, {-vsl::INF, 0}), 0.0);
+    EXPECT_EQ(fclamp(-100.0, {-vsl::INF, 0}), -100.0);
 
     EXPECT_EQ(fclamp(5.0, {1.0, 1.0}), 1.0);
 

@@ -3,8 +3,8 @@
 
 #include <vsl/concepts.h>
 #include <vsl/scope_guard.h>
+#include <vsl/types.h>
 
-#include <gsl/narrow>
 #include <Poco/BinaryReader.h>
 #include <Poco/BinaryWriter.h>
 #include <Poco/Exception.h>
@@ -60,7 +60,7 @@ inline auto TcpClient::connect(const std::string& host, int port) -> void
 {
     try
     {
-        const auto socket_addr = Poco::Net::SocketAddress{host, gsl::narrow<uint16_t>(port)};
+        const auto socket_addr = Poco::Net::SocketAddress{host, vsl::numeric_cast<uint16_t>(port)};
         connect(socket_addr);
     }
     catch (const Poco::Exception& ex)
@@ -135,7 +135,7 @@ inline auto TcpClient::set_buffer_active(bool state) -> void
 
 inline auto TcpClient::buffer_size() -> int
 {
-    return gsl::narrow<int>(buffer_streambuf_->buffer_size());
+    return vsl::numeric_cast<int>(buffer_streambuf_->buffer_size());
 }
 
 inline auto TcpClient::get_active_binary_writer() -> Poco::BinaryWriter&
@@ -180,7 +180,7 @@ template<vsl::numeric ItemType, typename SizeType>
     requires vsl::one_of<SizeType, TcpClient::size64_t, TcpClient::size32_t>
 auto TcpClient::write_vector(const std::vector<ItemType>& vec) -> void
 {
-    auto size = gsl::narrow<typename SizeType::type>(vec.size());
+    auto size = vsl::numeric_cast<typename SizeType::type>(vec.size());
     write(size);
     write_raw(vec.data(), vec.size());
 }
@@ -202,7 +202,7 @@ template<typename SizeType>
     requires vsl::one_of<SizeType, TcpClient::size64_t, TcpClient::size32_t>
 auto TcpClient::write_string(std::string_view str) -> void
 {
-    auto size = gsl::narrow<typename SizeType::type>(str.size());
+    auto size = vsl::numeric_cast<typename SizeType::type>(str.size());
     write(size);
     write_raw(str.data(), str.size());
 }
@@ -211,7 +211,7 @@ template<typename T, typename Size>
 auto TcpClient::read_raw(T* buffer, Size length) -> void
 {
     auto data_ptr = reinterpret_cast<char*>(buffer);
-    auto data_size = gsl::narrow<std::streamsize>(length) * sizeof(T);
+    auto data_size = vsl::numeric_cast<std::streamsize>(length) * sizeof(T);
     binary_reader_->readRaw(data_ptr, data_size);
 
     check_stream_status(*binary_reader_);
@@ -223,7 +223,7 @@ auto TcpClient::write_raw(const T* buffer, Size length) -> void
     auto& active_writer = get_active_binary_writer();
 
     auto data_ptr = reinterpret_cast<const char*>(buffer);
-    auto data_size = gsl::narrow<std::streamsize>(length) * sizeof(T);
+    auto data_size = vsl::numeric_cast<std::streamsize>(length) * sizeof(T);
     active_writer.writeRaw(data_ptr, data_size);
 
     check_stream_status(active_writer);
@@ -309,7 +309,7 @@ inline auto TcpClient::wait_for_disconnect() -> void
 
 inline auto TcpClient::data_available() -> int
 {
-    auto in_stream = gsl::narrow<int>(binary_reader_->available());
+    auto in_stream = vsl::numeric_cast<int>(binary_reader_->available());
     auto in_socket = socket_.available();
     auto total = in_stream + in_socket;
     if (total > 0) return total;

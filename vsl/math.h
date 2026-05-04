@@ -12,13 +12,8 @@
 #include <type_traits>
 #include <utility>
 
-#define INF HUGE_VAL
-
 namespace vsl
 {
-
-inline constexpr auto DOUBLE_MAX = std::numeric_limits<double>::max();
-inline constexpr auto DOUBLE_MAX_NEG = std::numeric_limits<double>::lowest();
 
 inline auto almost_equal(double a, double b, double abs_epsilon) -> bool
 {

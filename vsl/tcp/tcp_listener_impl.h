@@ -1,7 +1,8 @@
 #ifndef VSL_TCP_TCP_LISTENER_IMPL_H
 #define VSL_TCP_TCP_LISTENER_IMPL_H
 
-#include <gsl/narrow>
+#include <vsl/types.h>
+
 #include <Poco/Exception.h>
 #include <Poco/Net/SocketAddress.h>
 
@@ -16,7 +17,7 @@ inline auto TcpListener::start(int port) -> void
 {
     try
     {
-        const auto socket_addr = Poco::Net::SocketAddress{gsl::narrow<uint16_t>(port)};
+        const auto socket_addr = Poco::Net::SocketAddress{vsl::numeric_cast<uint16_t>(port)};
         start(socket_addr);
     }
     catch (const Poco::Exception& ex)
@@ -34,7 +35,7 @@ inline auto TcpListener::start(const std::string& ip, int port) -> void
 {
     try
     {
-        const auto socket_addr = Poco::Net::SocketAddress{ip, gsl::narrow<uint16_t>(port)};
+        const auto socket_addr = Poco::Net::SocketAddress{ip, vsl::numeric_cast<uint16_t>(port)};
         start(socket_addr);
     }
     catch (const Poco::Exception& ex)

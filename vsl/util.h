@@ -1,12 +1,10 @@
 #ifndef VSL_UTIL_H
 #define VSL_UTIL_H
 
+#include <vsl/types.h>
+
 #include <algorithm>
-#include <cstddef>
-#include <cstdint>
-#include <functional>
 #include <initializer_list>
-#include <optional>
 #include <type_traits>
 #include <utility>
 
@@ -15,31 +13,11 @@
 namespace vsl
 {
 
-using cstring = const char*;
-
-using Index = std::ptrdiff_t;
-using SignedSize = std::ptrdiff_t;
-
-template<typename T>
-constexpr auto as_signed(T t) noexcept -> auto
-{
-    return std::make_signed_t<T>(t);
-}
-
-template<typename T>
-constexpr auto as_unsigned(T t) noexcept -> auto
-{
-    return std::make_unsigned_t<T>(t);
-}
-
 template<typename T>
 constexpr auto signed_size(const T& t) noexcept -> auto
 {
     return as_signed(t.size());
 }
-
-template<typename T>
-using optional_ref = std::optional<std::reference_wrapper<T>>;
 
 template<typename T, typename U>
 constexpr auto forward_like(U&& x) noexcept -> auto&&
@@ -73,7 +51,7 @@ bool is_one_of(const T& value, const std::initializer_list<T>& options)
     return std::ranges::find(options, value) != options.end();
 }
 
-template<class... Ts>
+template<typename... Ts>
 struct overloaded : Ts...
 {
     using Ts::operator()...;
