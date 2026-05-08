@@ -9,43 +9,12 @@
 #include <syncstream>
 #include <type_traits>
 
-#define VSL_REF_INFO(x) VSL_IS_VALUE(x) << VSL_IS_REF(x) << VSL_IS_RVALUE_REF(x)
 #define VSL_IS_VALUE(x) (std::is_reference_v<decltype(x)> ? "" : "VAL")
 #define VSL_IS_REF(x) (std::is_lvalue_reference_v<decltype(x)> ? "REF" : "")
 #define VSL_IS_RVALUE_REF(x) (std::is_rvalue_reference_v<decltype(x)> ? "RVAL_REF" : "")
 
-#define VSL_TYPE_INFO(x) vsl::debug::get_type_info<decltype(x)>()
-
-#ifdef _MSC_VER
-#define VSL_FUNC_INFO __FUNCSIG__
-#else
-#define VSL_FUNC_INFO __PRETTY_FUNCTION__
-#endif
-
 namespace vsl::debug
 {
-
-template<typename T>
-constexpr auto get_type_info()
-{
-    std::string_view name, prefix, suffix;
-#ifdef __clang__
-    name = __PRETTY_FUNCTION__;
-    prefix = "auto vsl::debug::get_type_info() [T = ";
-    suffix = "]";
-#elif defined(__GNUC__)
-    name = __PRETTY_FUNCTION__;
-    prefix = "constexpr auto vsl::debug::get_type_info() [with T = ";
-    suffix = "]";
-#elif defined(_MSC_VER)
-    name = __FUNCSIG__;
-    prefix = "auto __cdecl vsl::debug::get_type_info<";
-    suffix = ">(void)";
-#endif
-    name.remove_prefix(prefix.size());
-    name.remove_suffix(suffix.size());
-    return name;
-}
 
 inline auto get_thread_unique_num() noexcept -> int
 {
