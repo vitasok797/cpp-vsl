@@ -90,7 +90,9 @@ TEST(EnumTest, EnumFromUnderlying)
 
 TEST(EnumTest, EnumIndex)
 {
-    EXPECT_EQ(vsl::enum_index(Color::GREEN), 1);
+    EXPECT_EQ(vsl::enum_index<Color::GREEN>(), 1);
+    EXPECT_EQ(vsl::enum_index(Color::BLUE).value(), 2);
+    EXPECT_FALSE(vsl::enum_index(static_cast<Color>(999)).has_value());
 }
 
 TEST(EnumTest, EnumInteger)
