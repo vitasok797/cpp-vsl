@@ -20,6 +20,8 @@ TEST(TextTest, Indent)
     EXPECT_EQ(indent(" ", 1), "  ");
     EXPECT_EQ(indent(" \n ", 1), "  \n  ");
     EXPECT_EQ(indent("AAA", 2), "  AAA");
+    EXPECT_EQ(indent("раз\nдва\nтри", 2), "  раз\n  два\n  три");
+    EXPECT_EQ(indent("раз\r\nдва\r\nтри", 2), "  раз\r\n  два\r\n  три");
 }
 
 TEST(TextTest, OutOf)
