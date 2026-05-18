@@ -459,31 +459,33 @@ TEST(RegexTest, ReFlags)
 
     // icase (ascii)
     {
-        const auto str = "__TEST__";
-        const auto pattern = "[a-z]..[a-z]";
+        const auto str = "EXAMPLE";
+        const auto pattern = "a.p";
         auto match = vsl::ReMatch{};
 
         EXPECT_FALSE(vsl::re_search(str, vsl::ReAscii{pattern}));
         EXPECT_FALSE(vsl::re_search(str, vsl::Re{pattern}));
 
         EXPECT_TRUE(vsl::re_search(str, vsl::ReAscii{pattern, vsl::Re::icase}, match));
-        EXPECT_EQ(match.str(), "TEST");
+        EXPECT_EQ(match.str(), "AMP");
 
         EXPECT_TRUE(vsl::re_search(str, vsl::Re{pattern, vsl::Re::icase}, match));
-        EXPECT_EQ(match.str(), "TEST");
+        EXPECT_EQ(match.str(), "AMP");
     }
 
     // icase (utf-8)
     {
-        const auto str = "__ТЕСТ__";
-        const auto pattern = "[а-я]..[а-я]";
+        const auto str = "ПРИМЕР";
+        const auto pattern = "и.е";
         auto match = vsl::ReMatch{};
 
         EXPECT_FALSE(vsl::re_search(str, vsl::ReAscii{pattern}));
         EXPECT_FALSE(vsl::re_search(str, vsl::Re{pattern}));
 
+        EXPECT_FALSE(vsl::re_search(str, vsl::ReAscii{pattern, vsl::Re::icase}));
+
         EXPECT_TRUE(vsl::re_search(str, vsl::Re{pattern, vsl::Re::icase}, match));
-        EXPECT_EQ(match.str(), "ТЕСТ");
+        EXPECT_EQ(match.str(), "ИМЕ");
     }
 }
 
