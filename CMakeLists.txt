@@ -32,9 +32,6 @@ target_link_libraries(${CUR_TARGET} INTERFACE nlohmann_json::nlohmann_json)
 find_package(Poco REQUIRED COMPONENTS Encodings Foundation Net)
 target_link_libraries(${CUR_TARGET} INTERFACE Poco::Encodings Poco::Foundation Poco::Net)
 
-find_path(SRELL_INCLUDE_DIR "srell.hpp" REQUIRED)
-target_include_directories(${CUR_TARGET} INTERFACE ${SRELL_INCLUDE_DIR})
-
 find_package(tabulate CONFIG REQUIRED)
 target_link_libraries(${CUR_TARGET} INTERFACE tabulate::tabulate)
 

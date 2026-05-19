@@ -4,7 +4,7 @@
 #include <vsl/concepts.h>
 #include <vsl/types.h>
 
-#include <./srell.hpp>
+#include <srell/srell.hpp>
 
 #include <functional>
 #include <iterator>
