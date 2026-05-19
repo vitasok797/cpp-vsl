@@ -11,6 +11,7 @@
 // Reference:
 // https://github.com/Neargye/nameof/blob/master/doc/reference.md
 
+// Disable fmtlib range formatter for nameof::cstring
 template<std::uint16_t N, typename Char>
 struct fmt::range_format_kind<nameof::cstring<N>, Char>
     : std::integral_constant<fmt::range_format, fmt::range_format::disabled>
@@ -19,6 +20,7 @@ struct fmt::range_format_kind<nameof::cstring<N>, Char>
 namespace nameof
 {
 
+// fmtlib formatting support for nameof::cstring
 template<std::uint16_t N>
 auto format_as(const nameof::cstring<N>& obj) -> std::string_view
 {
