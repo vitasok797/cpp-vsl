@@ -61,11 +61,15 @@ if(VSL_BUILD_TESTS AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     add_executable(${CUR_TARGET})
 
     target_link_libraries(${CUR_TARGET} PRIVATE GTest::gtest_main GTest::gmock)
+
     target_include_directories(${CUR_TARGET} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+    target_include_directories(${CUR_TARGET} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/vsl/external")
+
     target_link_libraries(${CUR_TARGET} PRIVATE dependencies)
     configure_cxx_options(${CUR_TARGET})
 
     target_sources(${CUR_TARGET} PRIVATE
+        "vsl/csv.test.cpp"
         "vsl/enum.test.cpp"
         "vsl/json.test.cpp"
         "vsl/math.test.cpp"
