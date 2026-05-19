@@ -1,5 +1,7 @@
 #include "regex.h"
 
+#include <vsl/types.h>
+
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
@@ -149,7 +151,8 @@ TEST(RegexTest, FullMatchOnlyFull)
 
 TEST(RegexTest, Search)
 {
-    auto test_search = [](auto&& str, auto&& re, vsl::ReMatch* match, vsl::ReMatchFlagType flags, cstring expected_res)
+    auto test_search =
+        [](auto&& str, auto&& re, vsl::ReMatch* match, vsl::ReMatchFlagType flags, vsl::czstring expected_res)
     {
         const auto success = [&]
         {
@@ -256,7 +259,8 @@ TEST(RegexTest, SearchSubmatches)
 
 TEST(RegexTest, FindAll)
 {
-    auto test_find_all = [](auto&& str, auto&& re, vsl::ReMatchFlagType flags, const std::vector<cstring>& expected_res)
+    auto test_find_all =
+        [](auto&& str, auto&& re, vsl::ReMatchFlagType flags, const std::vector<vsl::czstring>& expected_res)
     {
         const auto matched_strings =
             vsl::re_find_all(str, re, flags) | std::views::transform([](auto&& m) { return m.str(); });
@@ -321,7 +325,7 @@ TEST(RegexTest, Replace)
 
 TEST(RegexTest, ReplaceIter)
 {
-    auto test_replace = [](auto&& str, auto&& re, auto&& repl, vsl::ReMatchFlagType flags, cstring expected_res)
+    auto test_replace = [](auto&& str, auto&& re, auto&& repl, vsl::ReMatchFlagType flags, vsl::czstring expected_res)
     {
         auto res = std::string{"res = ["};
         auto it = std::back_inserter(res);

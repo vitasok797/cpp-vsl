@@ -28,7 +28,7 @@ static auto get_default_format() -> vsl::CsvFormat
     return format;
 }
 
-static auto process_text(const auto& format, cstring text) -> std::string
+static auto process_text(const auto& format, vsl::czstring text) -> std::string
 {
     auto ss = std::stringstream(text);
     auto csv = vsl::CsvReader{ss, format};
@@ -71,7 +71,7 @@ static auto process_text(const auto& format, cstring text) -> std::string
     return content;
 }
 
-static auto test_all(const vsl::CsvFormat& format, cstring expected_res) -> void
+static auto test_all(const vsl::CsvFormat& format, vsl::czstring expected_res) -> void
 {
     ASSERT_EQ(process_text(format, TEXT_LF), expected_res);
     ASSERT_EQ(process_text(format, TEXT_CRLF), expected_res);

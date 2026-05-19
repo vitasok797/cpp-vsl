@@ -22,8 +22,6 @@ using u16 = std::uint16_t;
 using u32 = std::uint32_t;
 using u64 = std::uint64_t;
 
-using cstring = const char*;
-
 namespace vsl
 {
 
@@ -48,6 +46,9 @@ inline constexpr auto U64_MAX = std::numeric_limits<u64>::max();
 inline constexpr auto DOUBLE_MAX = std::numeric_limits<double>::max();
 inline constexpr auto DOUBLE_MAX_NEG = std::numeric_limits<double>::lowest();
 inline constexpr auto INF = std::numeric_limits<double>::infinity();
+
+using zstring = char*;
+using czstring = const char*;
 
 using Index = std::ptrdiff_t;
 using SignedSize = std::ptrdiff_t;
