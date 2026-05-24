@@ -10,11 +10,11 @@
 #include <string_view>
 #include <type_traits>
 
-namespace vsl
-{
-
 // Reference:
 // https://github.com/Neargye/magic_enum/blob/master/doc/reference.md
+
+namespace vsl
+{
 
 using magic_enum::enum_constant;
 using magic_enum::enum_entries;

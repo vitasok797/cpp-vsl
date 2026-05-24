@@ -18,6 +18,9 @@
 #include <type_traits>
 #include <utility>
 
+// Reference:
+// https://json.nlohmann.me/
+
 namespace vsl::detail
 {
 

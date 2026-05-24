@@ -14,12 +14,12 @@
 #include <type_traits>
 #include <utility>
 
-namespace vsl
-{
-
 // Reference:
 // https://en.cppreference.com/cpp/regex
 // https://www.akenotsuki.com/misc/srell/en/
+
+namespace vsl
+{
 
 // Re ctor flags (https://en.cppreference.com/cpp/regex/syntax_option_type):
 // * Re::multiline

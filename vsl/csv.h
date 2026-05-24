@@ -3,11 +3,11 @@
 
 #include <vincentlaucsb-csv-parser/csv.hpp>
 
-namespace vsl
-{
-
 // Reference:
 // https://vincentlaucsb.github.io/csv-parser/
+
+namespace vsl
+{
 
 using CsvDataType = csv::DataType;
 using CsvColumnNamePolicy = csv::ColumnNamePolicy;
