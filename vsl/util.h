@@ -1,10 +1,12 @@
 #ifndef VSL_UTIL_H
 #define VSL_UTIL_H
 
+#include <vsl/concepts.h>
 #include <vsl/types.h>
 
 #include <algorithm>
 #include <initializer_list>
+#include <ranges>
 #include <type_traits>
 #include <utility>
 
@@ -40,13 +42,20 @@ constexpr auto forward_like(U&& x) noexcept -> auto&&
 }
 
 template<typename T, typename... Options>
-bool is_one_of(const T& value, const Options&... options)
+auto is_one_of(const T& value, const Options&... options) -> bool
 {
     return ((value == options) || ...);
 }
 
 template<typename T>
-bool is_one_of(const T& value, const std::initializer_list<T>& options)
+auto is_one_of(const T& value, const std::initializer_list<T>& options) -> bool
+{
+    return std::ranges::find(options, value) != options.end();
+}
+
+template<typename T, std::ranges::input_range R>
+    requires vsl::range_of<R, T>
+auto is_one_of(const T& value, const R& options) -> bool
 {
     return std::ranges::find(options, value) != options.end();
 }

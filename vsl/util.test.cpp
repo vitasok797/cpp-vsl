@@ -3,6 +3,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <array>
+#include <vector>
+
 namespace vsl::test
 {
 
@@ -24,6 +27,12 @@ TEST(UtilTest, IsOneOf)
 
     EXPECT_TRUE(vsl::is_one_of(opt, {Options::OPT1, Options::OPT3, Options::OPT4}));
     EXPECT_FALSE(vsl::is_one_of(opt, {Options::OPT1, Options::OPT2, Options::OPT4}));
+
+    EXPECT_TRUE(vsl::is_one_of(opt, std::vector{Options::OPT1, Options::OPT3, Options::OPT4}));
+    EXPECT_FALSE(vsl::is_one_of(opt, std::vector{Options::OPT1, Options::OPT2, Options::OPT4}));
+
+    EXPECT_TRUE(vsl::is_one_of(opt, std::array{Options::OPT1, Options::OPT3, Options::OPT4}));
+    EXPECT_FALSE(vsl::is_one_of(opt, std::array{Options::OPT1, Options::OPT2, Options::OPT4}));
 }
 
 template<typename Underlying>
