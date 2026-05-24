@@ -35,6 +35,9 @@ target_link_libraries(${CUR_TARGET} INTERFACE Poco::Encodings Poco::Foundation P
 find_package(tabulate CONFIG REQUIRED)
 target_link_libraries(${CUR_TARGET} INTERFACE tabulate::tabulate)
 
+find_package(uni-algo CONFIG REQUIRED)
+target_link_libraries(${CUR_TARGET} INTERFACE uni-algo::uni-algo)
+
 #--- interrupt demo ------------------------------------------------------------------------------
 
 set(CUR_TARGET interrupt_demo)
