@@ -38,9 +38,9 @@ inline auto format_row_borders(Table& table, RowBorders row_borders) -> void
     }
 }
 
-auto create_table(const vsl::string_input_range auto& header,
-                  const std::ranges::input_range auto& items,
-                  auto item_to_row) -> std::string
+template<std::ranges::input_range Header, std::ranges::input_range Items>
+auto create_table(const Header& header, const Items& items, auto item_to_row) -> std::string
+    requires vsl::range_of_strings<Header>
 {
     auto table = Table{};
 
