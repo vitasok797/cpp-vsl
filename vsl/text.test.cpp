@@ -12,26 +12,6 @@
 namespace vsl::test
 {
 
-TEST(TextTest, IsValidUtf8)
-{
-    EXPECT_TRUE(vsl::is_valid_utf8(""));
-    EXPECT_TRUE(vsl::is_valid_utf8(" \n "));
-    EXPECT_TRUE(vsl::is_valid_utf8("test"));
-    EXPECT_TRUE(vsl::is_valid_utf8("тест"));
-    EXPECT_TRUE(vsl::is_valid_utf8("Straße"));
-    EXPECT_FALSE(vsl::is_valid_utf8("\xFF"));
-}
-
-TEST(TextTest, IsAscii)
-{
-    EXPECT_TRUE(vsl::is_ascii(""));
-    EXPECT_TRUE(vsl::is_ascii(" \n "));
-    EXPECT_TRUE(vsl::is_ascii("test"));
-    EXPECT_FALSE(vsl::is_ascii("тест"));
-    EXPECT_FALSE(vsl::is_ascii("Straße"));
-    EXPECT_FALSE(vsl::is_ascii("\xFF"));
-}
-
 TEST(TextTest, Case)
 {
     EXPECT_EQ(vsl::to_casefold("LIGATURE ﬃ"), "ligature ffi");

@@ -72,6 +72,7 @@ if(VSL_BUILD_TESTS AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         "vsl/concepts.test.cpp"
         "vsl/csv.test.cpp"
         "vsl/debug.test.cpp"
+        "vsl/encoding.test.cpp"
         "vsl/enum.test.cpp"
         "vsl/json.test.cpp"
         "vsl/math.test.cpp"

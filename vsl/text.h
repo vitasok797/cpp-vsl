@@ -6,7 +6,6 @@
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 #include <uni_algo/case.h>
-#include <uni_algo/conv.h>
 
 #include <algorithm>
 #include <array>
@@ -16,24 +15,10 @@
 #include <string_view>
 #include <utility>
 
-// Reference (uni-algo):
-// https://github.com/uni-algo/uni-algo
-// https://github.com/uni-algo/uni-algo/blob/main/doc/API.md
-
 namespace vsl
 {
 
 using FoundStr = una::found;
-
-inline auto is_valid_utf8(std::string_view str) -> bool
-{
-    return una::is_valid_utf8<char>(str);
-}
-
-inline auto is_ascii(std::string_view str) -> bool
-{
-    return std::ranges::all_of(str, [](char c) { return static_cast<unsigned char>(c) < 128; });
-}
 
 inline auto to_casefold(std::string_view str) -> std::string
 {
