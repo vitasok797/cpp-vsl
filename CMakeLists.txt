@@ -67,6 +67,7 @@ if(VSL_BUILD_TESTS AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 
     target_sources(${CUR_TARGET} PRIVATE
         "vsl/csv.test.cpp"
+        "vsl/debug.test.cpp"
         "vsl/enum.test.cpp"
         "vsl/json.test.cpp"
         "vsl/math.test.cpp"

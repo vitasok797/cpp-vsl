@@ -1,13 +1,19 @@
 #ifndef VSL_DEBUG_H
 #define VSL_DEBUG_H
 
+#include <vsl/types.h>
+
+#include <fmt/format.h>
+
 #include <atomic>
+#include <functional>
 #include <iostream>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <syncstream>
 #include <type_traits>
+#include <utility>
 
 #define VSL_IS_VALUE(x) (std::is_reference_v<decltype(x)> ? "" : "VAL")
 #define VSL_IS_REF(x) (std::is_lvalue_reference_v<decltype(x)> ? "REF" : "")
@@ -222,31 +228,54 @@ using CopyWatcher = WatcherBase<detail::copy_watcher_config>;
 using CtorWatcher = WatcherBase<detail::ctor_watcher_config>;
 using ThreadWatcher = WatcherBase<>;
 
+enum class DebugAllocatorOperation
+{
+    ALLOCATE,
+    DEALLOCATE,
+};
+
 template<typename T>
 class DebugAllocator
 {
   public:
     using value_type = T;
+    using Handler =
+        std::function<void(DebugAllocatorOperation op, size_t total_size, size_t count, size_t size_of_type)>;
+
+    static auto create_default() -> DebugAllocator
+    {
+        return DebugAllocator<T>{DebugAllocator<T>::default_handler};
+    }
 
     DebugAllocator() = default;
 
-    DebugAllocator(const std::string& tag) noexcept
-        : tag_{tag}
+    DebugAllocator(Handler handler) noexcept
+        : handler_{std::move(handler)}
     {}
 
     template<typename U>
     constexpr DebugAllocator(const DebugAllocator<U>&) noexcept
     {}
 
-    T* allocate(std::size_t n)
+    T* allocate(size_t count)
     {
-        output("alloc", n);
-        return static_cast<T*>(::operator new(n * sizeof(T)));
+        if (handler_)
+        {
+            const auto size_of_type = sizeof(value_type);
+            const auto total_size = count * size_of_type;
+            handler_(DebugAllocatorOperation::ALLOCATE, total_size, count, size_of_type);
+        }
+        return static_cast<T*>(::operator new(count * sizeof(T)));
     }
 
-    void deallocate(T* p, std::size_t n) noexcept
+    void deallocate(T* p, size_t count) noexcept
     {
-        output("dealloc", n);
+        if (handler_)
+        {
+            const auto size_of_type = sizeof(value_type);
+            const auto total_size = count * size_of_type;
+            handler_(DebugAllocatorOperation::DEALLOCATE, total_size, count, size_of_type);
+        }
         ::operator delete(p);
     }
 
@@ -261,17 +290,15 @@ class DebugAllocator
     }
 
   private:
-    auto output(std::string_view operation, std::size_t n) -> void
+    static auto default_handler(DebugAllocatorOperation op, size_t total_size, size_t count, size_t size_of_type)
+        -> void
     {
-        std::clog << "[" << prompt_;
-        if (!tag_.empty()) std::clog << ":" << tag_;
-        std::clog << "] " << operation << " ";
-        std::clog << n * sizeof(T) << " (" << n << " of size=" << sizeof(T) << ")";
-        std::clog << std::endl;
+        const auto op_mark = op == DebugAllocatorOperation::ALLOCATE ? '+' : '-';
+        const auto msg = fmt::format("({}) {} ({} of size={})", op_mark, total_size, count, size_of_type);
+        std::clog << msg << std::endl;
     }
 
-    const std::string_view prompt_{"ALLOCATOR"};
-    std::string tag_{};
+    Handler handler_{};
 };
 
 }  // namespace vsl::debug
