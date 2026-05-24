@@ -10,8 +10,8 @@
 #include <nlohmann/json.hpp>
 
 #include <algorithm>
+#include <array>
 #include <concepts>
-#include <initializer_list>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -74,8 +74,9 @@ auto check_json_for_extra_keys(const InputJsonType& input, const ReferenceJsonTy
     template<vsl::detail::is_basic_json BasicJsonType>                                          \
     friend void from_json(const BasicJsonType& nlohmann_json_j, Type& nlohmann_json_t)          \
     {                                                                                           \
-        vsl::detail::check_json_keys(nlohmann_json_j, std::initializer_list<std::string_view>   \
-            {NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(VSL_DETAIL_JSON_KEY_STR, __VA_ARGS__))}); \
+        constexpr auto allowed_keys = std::array                                                \
+            {NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(VSL_DETAIL_JSON_KEY_STR, __VA_ARGS__))};  \
+        vsl::detail::check_json_keys(nlohmann_json_j, allowed_keys);                            \
         NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(NLOHMANN_JSON_FROM, __VA_ARGS__))              \
     }
 
@@ -88,8 +89,9 @@ auto check_json_for_extra_keys(const InputJsonType& input, const ReferenceJsonTy
     template<vsl::detail::is_basic_json BasicJsonType>                                          \
     friend void from_json(const BasicJsonType& nlohmann_json_j, Type& nlohmann_json_t)          \
     {                                                                                           \
-        vsl::detail::check_json_keys(nlohmann_json_j, std::initializer_list<std::string_view>   \
-            {NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(VSL_DETAIL_JSON_KEY_STR, __VA_ARGS__))}); \
+        constexpr auto allowed_keys = std::array                                                \
+            {NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(VSL_DETAIL_JSON_KEY_STR, __VA_ARGS__))};  \
+        vsl::detail::check_json_keys(nlohmann_json_j, allowed_keys);                            \
         const auto nlohmann_json_default_obj = Type{};                                          \
         NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(NLOHMANN_JSON_FROM_WITH_DEFAULT, __VA_ARGS__)) \
     }
@@ -103,8 +105,9 @@ auto check_json_for_extra_keys(const InputJsonType& input, const ReferenceJsonTy
     template<vsl::detail::is_basic_json BasicJsonType>                                          \
     void from_json(const BasicJsonType& nlohmann_json_j, Type& nlohmann_json_t)                 \
     {                                                                                           \
-        vsl::detail::check_json_keys(nlohmann_json_j, std::initializer_list<std::string_view>   \
-            {NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(VSL_DETAIL_JSON_KEY_STR, __VA_ARGS__))}); \
+        constexpr auto allowed_keys = std::array                                                \
+            {NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(VSL_DETAIL_JSON_KEY_STR, __VA_ARGS__))};  \
+        vsl::detail::check_json_keys(nlohmann_json_j, allowed_keys);                            \
         NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(NLOHMANN_JSON_FROM, __VA_ARGS__))              \
     }
 
@@ -117,8 +120,9 @@ auto check_json_for_extra_keys(const InputJsonType& input, const ReferenceJsonTy
     template<vsl::detail::is_basic_json BasicJsonType>                                          \
     void from_json(const BasicJsonType& nlohmann_json_j, Type& nlohmann_json_t)                 \
     {                                                                                           \
-        vsl::detail::check_json_keys(nlohmann_json_j, std::initializer_list<std::string_view>   \
-            {NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(VSL_DETAIL_JSON_KEY_STR, __VA_ARGS__))}); \
+        constexpr auto allowed_keys = std::array                                                \
+            {NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(VSL_DETAIL_JSON_KEY_STR, __VA_ARGS__))};  \
+        vsl::detail::check_json_keys(nlohmann_json_j, allowed_keys);                            \
         const auto nlohmann_json_default_obj = Type{};                                          \
         NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(NLOHMANN_JSON_FROM_WITH_DEFAULT, __VA_ARGS__)) \
     }
