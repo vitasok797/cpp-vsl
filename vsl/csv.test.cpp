@@ -46,16 +46,9 @@ static auto process_text(const auto& format, vsl::czstring text) -> std::string
 
     for (const auto& row : csv)
     {
-        if (row.empty())
+        if (vsl::is_csv_row_empty(row))
         {
-            content += "empty row | ";
-            continue;
-        }
-
-        auto is_single_empty_cell = (row.size() == 1 && row[0].is_null());
-        if (is_single_empty_cell)
-        {
-            content += "empty cell | ";
+            content += "empty | ";
             continue;
         }
 
@@ -94,7 +87,7 @@ TEST(CsvTest, NoHeader)
     format.no_header();
     // format.variable_columns(vsl::CsvVariableColumnPolicy::KEEP);  // default
 
-    const auto expected_res = " H [col1][col2] | [val1][001] | empty cell | [val2][002] | empty row | [val3] | "
+    const auto expected_res = " H [col1][col2] | [val1][001] | empty | [val2][002] | empty | [val3] | "
                               "[val4][004][xxx] | [val5][005] | ";
 
     ASSERT_NO_FATAL_FAILURE(test_all(format, expected_res));
@@ -107,7 +100,7 @@ TEST(CsvTest, NoHeaderKeepNonEmpty)
     format.variable_columns(vsl::CsvVariableColumnPolicy::KEEP_NON_EMPTY);
 
     const auto expected_res =
-        " H [col1][col2] | [val1][001] | empty cell | [val2][002] | [val3] | [val4][004][xxx] | [val5][005] | ";
+        " H [col1][col2] | [val1][001] | empty | [val2][002] | [val3] | [val4][004][xxx] | [val5][005] | ";
 
     ASSERT_NO_FATAL_FAILURE(test_all(format, expected_res));
 }

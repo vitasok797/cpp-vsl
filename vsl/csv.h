@@ -29,6 +29,12 @@ using CsvField = csv::CSVField;
 // * get_col_names()
 // * ...
 
+inline auto is_csv_row_empty(const CsvRow& row) -> bool
+{
+    const auto is_single_empty_cell = (row.size() == 1 && row[0].is_null());
+    return (row.empty() || is_single_empty_cell);
+}
+
 }  // namespace vsl
 
 #endif  // VSL_CSV_H
