@@ -10,10 +10,7 @@
         {
             "name": "poco",
             "default-features": false,
-            "features": [
-                "encodings",
-                "net"
-            ]
+            "features": ["net"]
         },
         "tabulate",
         "uni-algo"
