@@ -5,6 +5,7 @@
         "gtest",
         "magic-enum",
         "nameof",
+        "nanobench",
         "nlohmann-json",
         {
             "name": "poco",

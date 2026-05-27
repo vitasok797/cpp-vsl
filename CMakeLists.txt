@@ -26,6 +26,9 @@ target_link_libraries(${CUR_TARGET} INTERFACE magic_enum::magic_enum)
 find_package(nameof CONFIG REQUIRED)
 target_link_libraries(${CUR_TARGET} INTERFACE nameof::nameof)
 
+find_package(nanobench CONFIG REQUIRED)
+target_link_libraries(${CUR_TARGET} INTERFACE nanobench::nanobench)
+
 find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(${CUR_TARGET} INTERFACE nlohmann_json::nlohmann_json)
 
