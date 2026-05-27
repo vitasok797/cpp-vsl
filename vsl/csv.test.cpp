@@ -23,6 +23,7 @@ static constexpr auto TEXT_LF_BOM = "\xEF\xBB\xBF"
 static auto get_default_format() -> vsl::CsvFormat
 {
     auto format = vsl::CsvFormat{};
+    format.threading(false);
     format.delimiter({';', ','});
     format.trim({' ', '\t'});
     return format;
