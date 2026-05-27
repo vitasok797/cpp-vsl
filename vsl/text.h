@@ -7,7 +7,6 @@
 #include <fmt/ranges.h>
 #include <uni_algo/case.h>
 
-#include <algorithm>
 #include <array>
 #include <concepts>
 #include <ranges>
@@ -38,28 +37,6 @@ inline auto to_uppercase(std::string_view str) -> std::string
 inline auto to_titlecase(std::string_view str) -> std::string
 {
     return una::cases::to_titlecase_utf8<char>(str);
-}
-
-inline auto to_lowercase_ascii(std::string_view str) -> std::string
-{
-    auto res = std::string{};
-    res.reserve(str.size());
-
-    std::transform(str.begin(), str.end(), std::back_inserter(res),
-                   [](unsigned char c) { return (c >= 'A' && c <= 'Z') ? (c + 32) : c; });
-
-    return res;
-}
-
-inline auto to_uppercase_ascii(std::string_view str) -> std::string
-{
-    auto res = std::string{};
-    res.reserve(str.size());
-
-    std::transform(str.begin(), str.end(), std::back_inserter(res),
-                   [](unsigned char c) { return (c >= 'a' && c <= 'z') ? (c - 32) : c; });
-
-    return res;
 }
 
 inline auto compare_str(std::string_view str1, std::string_view str2) -> bool

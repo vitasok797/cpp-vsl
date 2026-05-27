@@ -21,15 +21,6 @@ TEST(TextTest, Case)
     EXPECT_EQ(vsl::to_titlecase("teMPuS eDAX reRuM"), "Tempus Edax Rerum");
 }
 
-TEST(TextTest, CaseAscii)
-{
-    EXPECT_EQ(vsl::to_lowercase_ascii("A_Test_Z"), "a_test_z");
-    EXPECT_EQ(vsl::to_uppercase_ascii("a_Test_z"), "A_TEST_Z");
-
-    EXPECT_EQ(vsl::to_lowercase_ascii("Тест"), "Тест");
-    EXPECT_EQ(vsl::to_uppercase_ascii("Тест"), "Тест");
-}
-
 TEST(TextTest, CompareStr)
 {
     EXPECT_TRUE(vsl::compare_str("тест", "тест"));
