@@ -56,17 +56,24 @@ TEST(TextTest, Collate)
 
 TEST(TextTest, FindStr)
 {
+    // operator bool()
+    const FoundStr found = vsl::find_str("aaa bbb ccc", "bbb");
+    EXPECT_TRUE(found);
+
+    // icase
     EXPECT_TRUE(vsl::find_str("раз два три", "два"));
     EXPECT_FALSE(vsl::find_str("раз два три", "ДВА"));
     EXPECT_TRUE(vsl::find_str_icase("раз два три", "ДВА"));
 
+    // icase
     EXPECT_TRUE(vsl::find_str("Ligature ﬃ search", "ﬃ"));
     EXPECT_FALSE(vsl::find_str("Ligature ﬃ search", "ffi"));
     EXPECT_TRUE(vsl::find_str_icase("Ligature ﬃ search", "ffi"));
 
-    const FoundStr found = vsl::find_str_icase("Ligature ﬃ search", "ffi");
-    EXPECT_EQ(found.pos(), 9);
-    EXPECT_EQ(found.end_pos(), 12);
+    // pos + icase
+    const FoundStr found2 = vsl::find_str_icase("Ligature ﬃ search", "ffi");
+    EXPECT_EQ(found2.pos(), 9);
+    EXPECT_EQ(found2.end_pos(), 12);
 }
 
 TEST(TextTest, Trim)
