@@ -171,6 +171,51 @@ auto re_replace(std::string_view s,
     return res;
 }
 
+inline auto re_escape(std::string_view s) -> std::string
+{
+    auto res = detail::create_result_string_for(s);
+    for (char c : s)
+    {
+        switch (c)
+        {
+        case '.':
+        case '^':
+        case '$':
+        case '*':
+        case '+':
+        case '?':
+        case '|':
+        case '(':
+        case ')':
+        case '[':
+        case ']':
+        case '{':
+        case '}':
+        case '\\':
+            res += '\\';
+            break;
+        }
+        res += c;
+    }
+    return res;
+}
+
+inline auto re_escape_repl(std::string_view s) -> std::string
+{
+    auto res = detail::create_result_string_for(s);
+    for (char c : s)
+    {
+        switch (c)
+        {
+        case '$':
+            res += '$';
+            break;
+        }
+        res += c;
+    }
+    return res;
+}
+
 inline auto sv(const ReMatch& m) noexcept -> std::string_view
 {
     return std::string_view(m[0].first, m[0].second);
