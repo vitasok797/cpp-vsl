@@ -171,21 +171,14 @@ auto re_replace(std::string_view s,
     return res;
 }
 
-template<typename T>
-auto match_to_sv(const T& m) noexcept -> std::string_view
+inline auto sv(const ReMatch& m) noexcept -> std::string_view
 {
-    if constexpr (vsl::same_type_as<T, ReMatch>)
-    {
-        return std::string_view(m[0].first, m[0].second);
-    }
-    else if constexpr (vsl::same_type_as<T, ReSubMatch>)
-    {
-        return std::string_view(m.first, m.second);
-    }
-    else
-    {
-        static_assert(false, "Not a match/submatch type");
-    }
+    return std::string_view(m[0].first, m[0].second);
+}
+
+inline auto sv(const ReSubMatch& m) noexcept -> std::string_view
+{
+    return std::string_view(m.first, m.second);
 }
 
 }  // namespace vsl

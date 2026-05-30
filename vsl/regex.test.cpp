@@ -9,6 +9,7 @@
 #include <ranges>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <vector>
 
 namespace vsl::test
@@ -402,9 +403,17 @@ TEST(RegexTest, MatchToStringView)
 
     vsl::re_full_match(str, re, match);
 
-    EXPECT_EQ(vsl::match_to_sv(match), str);
-    EXPECT_EQ(vsl::match_to_sv(match[0]), str);
-    EXPECT_EQ(vsl::match_to_sv(match[1]), "abc");
+    auto res1 = vsl::sv(match);
+    auto res2 = vsl::sv(match[0]);
+    auto res3 = vsl::sv(match[1]);
+
+    EXPECT_EQ(res1, str);
+    EXPECT_EQ(res2, str);
+    EXPECT_EQ(res3, "abc");
+
+    static_assert(std::is_same_v<decltype(res1), std::string_view>);
+    static_assert(std::is_same_v<decltype(res2), std::string_view>);
+    static_assert(std::is_same_v<decltype(res3), std::string_view>);
 }
 
 TEST(RegexTest, MatchFromBegin)
