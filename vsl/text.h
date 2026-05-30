@@ -93,36 +93,21 @@ inline constexpr auto is_whitespace(char c) noexcept -> bool
 
 }  // namespace detail
 
-inline constexpr auto trim_left_sv(std::string_view str) noexcept -> std::string_view
+inline constexpr auto trim_left(std::string_view str) noexcept -> std::string_view
 {
     const auto start = std::find_if_not(str.begin(), str.end(), detail::is_whitespace);
     return std::string_view(start, str.end());
 }
 
-inline constexpr auto trim_right_sv(std::string_view str) noexcept -> std::string_view
+inline constexpr auto trim_right(std::string_view str) noexcept -> std::string_view
 {
     const auto end = std::find_if_not(str.rbegin(), str.rend(), detail::is_whitespace).base();
     return std::string_view(str.begin(), end);
 }
 
-inline constexpr auto trim_sv(std::string_view str) noexcept -> std::string_view
+inline constexpr auto trim(std::string_view str) noexcept -> std::string_view
 {
-    return trim_right_sv(trim_left_sv(str));
-}
-
-inline auto trim_left(std::string_view str) -> std::string
-{
-    return std::string{trim_left_sv(str)};
-}
-
-inline auto trim_right(std::string_view str) -> std::string
-{
-    return std::string{trim_right_sv(str)};
-}
-
-inline auto trim(std::string_view str) -> std::string
-{
-    return std::string{trim_sv(str)};
+    return trim_right(trim_left(str));
 }
 
 template<std::ranges::input_range R>

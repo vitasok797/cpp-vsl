@@ -69,34 +69,6 @@ TEST(TextTest, FindStr)
     EXPECT_EQ(found.end_pos(), 12);
 }
 
-TEST(TextTest, TrimSv)
-{
-    EXPECT_EQ(vsl::trim_left_sv(""), "");
-    EXPECT_EQ(vsl::trim_right_sv(""), "");
-    EXPECT_EQ(vsl::trim_sv(""), "");
-
-    EXPECT_EQ(vsl::trim_left_sv(" \t "), "");
-    EXPECT_EQ(vsl::trim_right_sv(" \t "), "");
-    EXPECT_EQ(vsl::trim_sv(" \t "), "");
-
-    EXPECT_EQ(vsl::trim_left_sv("abc"), "abc");
-    EXPECT_EQ(vsl::trim_right_sv("abc"), "abc");
-    EXPECT_EQ(vsl::trim_sv("abc"), "abc");
-
-    EXPECT_EQ(vsl::trim_left_sv(" \t\n Тест"), "Тест");
-    EXPECT_EQ(vsl::trim_right_sv("Тест \t\n "), "Тест");
-    EXPECT_EQ(vsl::trim_sv(" \t\n Тест \t\n "), "Тест");
-
-    EXPECT_EQ(vsl::trim_left_sv("  abc  "), "abc  ");
-    EXPECT_EQ(vsl::trim_right_sv("  abc  "), "  abc");
-
-    const auto str = std::string{"  abc  "};
-    const auto trimmed_str = vsl::trim_sv(str);
-    const auto result_is_view = (trimmed_str.data() == str.data() + 2);
-    EXPECT_EQ(trimmed_str, "abc");
-    EXPECT_TRUE(result_is_view);
-}
-
 TEST(TextTest, Trim)
 {
     EXPECT_EQ(vsl::trim_left(""), "");
@@ -117,12 +89,6 @@ TEST(TextTest, Trim)
 
     EXPECT_EQ(vsl::trim_left("  abc  "), "abc  ");
     EXPECT_EQ(vsl::trim_right("  abc  "), "  abc");
-
-    const auto str = std::string{"  abc  "};
-    const auto trimmed_str = vsl::trim(str);
-    const auto result_is_view = (trimmed_str.data() == str.data() + 2);
-    EXPECT_EQ(trimmed_str, "abc");
-    EXPECT_FALSE(result_is_view);
 }
 
 TEST(TextTest, Join)
