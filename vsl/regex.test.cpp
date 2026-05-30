@@ -16,25 +16,22 @@ namespace vsl::test
 
 TEST(RegexTest, Create)
 {
-    auto test_create = [](auto&& good_pattern, auto&& bad_pattern)
+    auto test_good_pattern = [](auto&& pattern)
     {
+        EXPECT_NO_THROW(auto re = vsl::Re(pattern));
+        EXPECT_NO_THROW(auto re = vsl::ReAscii(pattern));
+
         const auto flags = vsl::Re::multiline | vsl::Re::dotall | vsl::Re::icase | vsl::Re::nosubs | vsl::Re::optimize;
-
-        EXPECT_NO_THROW(auto re = vsl::Re(good_pattern));
-        EXPECT_NO_THROW(auto re = vsl::ReAscii(good_pattern));
-
-        EXPECT_NO_THROW(auto re = vsl::Re(good_pattern, flags));
-        EXPECT_NO_THROW(auto re = vsl::ReAscii(good_pattern, flags));
-
-        EXPECT_THROW(auto re = vsl::Re(bad_pattern), vsl::ReError);
-        EXPECT_THROW(auto re = vsl::ReAscii(bad_pattern), vsl::ReError);
+        EXPECT_NO_THROW(auto re = vsl::Re(pattern, flags));
+        EXPECT_NO_THROW(auto re = vsl::ReAscii(pattern, flags));
     };
 
     const auto good_pattern = "\\d+";
-    const auto bad_pattern = "+";
+    test_good_pattern(good_pattern);
+    test_good_pattern(std::string{good_pattern});
 
-    test_create(good_pattern, bad_pattern);
-    test_create(std::string{good_pattern}, std::string{bad_pattern});
+    EXPECT_THROW(auto re = vsl::Re("+"), vsl::ReError);
+    EXPECT_THROW(auto re = vsl::ReAscii("[]]"), vsl::ReError);
 }
 
 TEST(RegexTest, FullMatch)
@@ -102,7 +99,7 @@ TEST(RegexTest, FullMatch)
     test_full_match(s, vsl::Re{"\\d+"}, &match, flags, false);
 }
 
-TEST(RegexTest, FullMatchSubmatches)
+TEST(RegexTest, FullMatchAndSubmatches)
 {
     const auto str = "123abc456";
     const auto re = vsl::Re{"\\d+(\\D+)\\d+|(\\D+)"};
@@ -128,6 +125,8 @@ TEST(RegexTest, FullMatchSubmatches)
     EXPECT_EQ(match.str(1), "abc");
     EXPECT_EQ(match[0].str(), str);
     EXPECT_EQ(match[1].str(), "abc");
+    EXPECT_EQ(match[0], str);    // <=> operator
+    EXPECT_EQ(match[1], "abc");  // <=> operator
 
     EXPECT_EQ(match.length(), 9);
     EXPECT_EQ(match.length(0), 9);
@@ -215,7 +214,7 @@ TEST(RegexTest, Search)
     test_search(s, vsl::Re{"\\D{4}"}, &match, flags, nullptr);
 }
 
-TEST(RegexTest, SearchSubmatches)
+TEST(RegexTest, SearchAndSubmatches)
 {
     const auto re = vsl::Re{"\\D(\\D+)"};
 
@@ -242,6 +241,8 @@ TEST(RegexTest, SearchSubmatches)
     EXPECT_EQ(match.str(1), "bc");
     EXPECT_EQ(match[0].str(), "abc");
     EXPECT_EQ(match[1].str(), "bc");
+    EXPECT_EQ(match[0], "abc");  // <=> operator
+    EXPECT_EQ(match[1], "bc");   // <=> operator
 
     EXPECT_EQ(match.length(), 3);
     EXPECT_EQ(match.length(0), 3);
