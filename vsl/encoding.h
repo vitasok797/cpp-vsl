@@ -46,11 +46,11 @@ inline auto utf16to8(std::u16string_view str) -> std::string
 namespace detail
 {
 
-inline constexpr auto LEAST_NONASCII_SYMBOL = u32{0x80};
-inline constexpr auto UTF_REPL_CHAR = "\xEF\xBF\xBD";
-
 using ToCharsetMap = std::unordered_map<u32, std::string_view>;
 using FromCharsetMap = std::array<std::string_view, 128>;
+
+inline constexpr auto LEAST_NONASCII_SYMBOL = u32{0x80};
+inline constexpr auto UTF_REPL_CHAR = "\xEF\xBF\xBD";
 
 inline const auto to_translit_map = ToCharsetMap{
     // ГОСТ 7.79-2000, Схема Б
@@ -384,7 +384,7 @@ inline const auto to_cp866_map = ToCharsetMap{
     {0x00A0, "\xFF"},
 };
 
-inline const auto from_cp1251_map = FromCharsetMap{
+inline constexpr auto from_cp1251_map = FromCharsetMap{
     "\xD0\x82",     "\xD0\x83",     "\xE2\x80\x9A", "\xD1\x93",     "\xE2\x80\x9E", "\xE2\x80\xA6", "\xE2\x80\xA0",
     "\xE2\x80\xA1", "\xE2\x82\xAC", "\xE2\x80\xB0", "\xD0\x89",     "\xE2\x80\xB9", "\xD0\x8A",     "\xD0\x8C",
     "\xD0\x8B",     "\xD0\x8F",     "\xD1\x92",     "\xE2\x80\x98", "\xE2\x80\x99", "\xE2\x80\x9C", "\xE2\x80\x9D",
@@ -406,7 +406,7 @@ inline const auto from_cp1251_map = FromCharsetMap{
     "\xD1\x8E",     "\xD1\x8F",
 };
 
-inline const auto from_cp866_map = FromCharsetMap{
+inline constexpr auto from_cp866_map = FromCharsetMap{
     "\xD0\x90",     "\xD0\x91",     "\xD0\x92",     "\xD0\x93",     "\xD0\x94",     "\xD0\x95",     "\xD0\x96",
     "\xD0\x97",     "\xD0\x98",     "\xD0\x99",     "\xD0\x9A",     "\xD0\x9B",     "\xD0\x9C",     "\xD0\x9D",
     "\xD0\x9E",     "\xD0\x9F",     "\xD0\xA0",     "\xD0\xA1",     "\xD0\xA2",     "\xD0\xA3",     "\xD0\xA4",
