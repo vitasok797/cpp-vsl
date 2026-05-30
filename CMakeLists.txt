@@ -96,3 +96,18 @@ if(VSL_BUILD_TESTS AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     include(GoogleTest)
     gtest_discover_tests(${CUR_TARGET})
 endif()
+
+#--- benchmark executable ------------------------------------------------------------------------
+
+set(CUR_TARGET benchmark)
+add_executable(${CUR_TARGET})
+
+target_include_directories(${CUR_TARGET} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+target_include_directories(${CUR_TARGET} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/vsl/external")
+
+target_link_libraries(${CUR_TARGET} PRIVATE dependencies)
+configure_cxx_options(${CUR_TARGET})
+
+target_sources(${CUR_TARGET} PRIVATE
+    "vsl/benchmark/benchmark.cpp"
+    )
