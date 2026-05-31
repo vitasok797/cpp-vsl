@@ -2,11 +2,13 @@
 #define VSL_REGEX_H
 
 #include <vsl/concepts.h>
+#include <vsl/enum.h>
 #include <vsl/types.h>
 
 #include <srell/srell.hpp>
 
 #include <functional>
+#include <initializer_list>
 #include <iterator>
 #include <ranges>
 #include <string>
@@ -85,6 +87,16 @@ inline auto create_result_string_for(std::string_view s) -> std::string
 
 }  // namespace detail
 
+inline auto sv(const ReMatch& m) noexcept -> std::string_view
+{
+    return std::string_view(m[0].first, m[0].second);
+}
+
+inline auto sv(const ReSubMatch& m) noexcept -> std::string_view
+{
+    return std::string_view(m.first, m.second);
+}
+
 template<detail::regex_type R>
 auto re_full_match(std::string_view s, const R& re, ReMatchFlagType flags = re_const::match_default) -> bool
 {
@@ -110,13 +122,111 @@ auto re_search(std::string_view s, const R& re, ReMatch& match, ReMatchFlagType 
     return srell::regex_search(s.begin(), s.end(), match, re, flags);
 }
 
+// Ensure that the regex object (re) passed to the function outlives the returned range
 template<detail::regex_type R>
-    requires std::is_lvalue_reference_v<R>
-auto re_find_all(std::string_view s, R&& re, ReMatchFlagType flags = re_const::match_default) -> auto
+    requires std::is_lvalue_reference_v<R&&>
+auto re_find_matches(std::string_view s, R&& re, ReMatchFlagType flags = re_const::match_default) -> auto
 {
     auto matches_begin = srell::regex_iterator(s.begin(), s.end(), re, flags);
     auto matches_end = decltype(matches_begin){};
     return std::ranges::subrange(std::move(matches_begin), std::move(matches_end));
+}
+
+// Ensure that the regex object (re) passed to the function outlives the returned range
+template<detail::regex_type R>
+    requires std::is_lvalue_reference_v<R&&>
+auto re_find_matches_sv(std::string_view s, R&& re, ReMatchFlagType flags = re_const::match_default) -> auto
+{
+    return re_find_matches(s, re, flags) | std::views::transform([](const ReMatch& m) { return sv(m); });
+}
+
+namespace detail
+{
+
+template<regex_type R, typename Submatches>
+    requires std::is_lvalue_reference_v<R&&>
+auto re_find_submatches_impl(std::string_view s, R&& re, Submatches&& submatches, ReMatchFlagType flags) -> auto
+{
+    auto matches_begin =
+        srell::regex_token_iterator(s.begin(), s.end(), re, std::forward<Submatches>(submatches), flags);
+    auto matches_end = decltype(matches_begin){};
+    return std::ranges::subrange(std::move(matches_begin), std::move(matches_end))
+           | std::views::transform([](const ReSubMatch& sm) { return sv(sm); });
+}
+
+}  // namespace detail
+
+// Ensure that the regex object (re) passed to the function outlives the returned range
+template<detail::regex_type R>
+    requires std::is_lvalue_reference_v<R&&>
+auto re_find_submatches(std::string_view s, R&& re, int submatches, ReMatchFlagType flags = re_const::match_default)
+    -> auto
+{
+    return detail::re_find_submatches_impl(s, re, submatches, flags);
+}
+
+// Ensure that the regex object (re) passed to the function outlives the returned range
+template<detail::regex_type R>
+    requires std::is_lvalue_reference_v<R&&>
+auto re_find_submatches(std::string_view s,
+                        R&& re,
+                        const std::vector<int>& submatches,
+                        ReMatchFlagType flags = re_const::match_default) -> auto
+{
+    return detail::re_find_submatches_impl(s, re, submatches, flags);
+}
+
+// Ensure that the regex object (re) passed to the function outlives the returned range
+template<detail::regex_type R>
+    requires std::is_lvalue_reference_v<R&&>
+auto re_find_submatches(std::string_view s,
+                        R&& re,
+                        std::initializer_list<int> submatches,
+                        ReMatchFlagType flags = re_const::match_default) -> auto
+{
+    return detail::re_find_submatches_impl(s, re, submatches, flags);
+}
+
+namespace detail
+{
+
+inline constexpr auto WHITESPACES = " \n\r\t\f\v";
+
+inline constexpr auto trim(std::string_view s) noexcept -> std::string_view
+{
+    const auto first = s.find_first_not_of(WHITESPACES);
+    if (first == std::string_view::npos) return {};
+
+    const auto last = s.find_last_not_of(WHITESPACES);
+    const auto count = last - first + 1;
+
+    return s.substr(first, count);
+}
+
+}  // namespace detail
+
+enum class ReSplitOptions : u32
+{
+    NONE = 0,
+    TRIM = u32{1} << 0,
+    SKIP_EMPTY = u32{1} << 1,
+};
+VSL_DECLARE_ENUM_FLAGS(ReSplitOptions)
+
+// Ensure that the regex object (re) passed to the function outlives the returned range
+template<detail::regex_type R>
+    requires std::is_lvalue_reference_v<R&&>
+auto re_split(std::string_view s,
+              R&& re,
+              ReSplitOptions opt = ReSplitOptions::NONE,
+              ReMatchFlagType flags = re_const::match_default) -> auto
+{
+    const auto trim_tokens = vsl::enum_contains_flags(opt, ReSplitOptions::TRIM);
+    const auto skip_empty = vsl::enum_contains_flags(opt, ReSplitOptions::SKIP_EMPTY);
+    return re_find_submatches(s, re, -1, flags)
+           | std::views::transform([trim_tokens](std::string_view sv) noexcept
+                                   { return trim_tokens ? detail::trim(sv) : sv; })
+           | std::views::filter([skip_empty](std::string_view sv) noexcept { return !(skip_empty && sv.empty()); });
 }
 
 template<typename OutputIt, typename BidirIt, detail::regex_type R, detail::repl_type Repl>
@@ -151,7 +261,7 @@ auto re_replace(std::string_view s,
     auto res = detail::create_result_string_for(s);
     auto last_pos = ReMatch::size_type{0};
 
-    const auto matches = re_find_all(s, re, flags);
+    const auto matches = re_find_matches(s, re, flags);
     for (auto&& match : matches)
     {
         if (copy_unmatched)
@@ -214,16 +324,6 @@ inline auto re_escape_repl(std::string_view s) -> std::string
         res += c;
     }
     return res;
-}
-
-inline auto sv(const ReMatch& m) noexcept -> std::string_view
-{
-    return std::string_view(m[0].first, m[0].second);
-}
-
-inline auto sv(const ReSubMatch& m) noexcept -> std::string_view
-{
-    return std::string_view(m.first, m.second);
 }
 
 }  // namespace vsl
