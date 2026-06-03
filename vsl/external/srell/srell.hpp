@@ -11578,19 +11578,32 @@ public:
 	{
 		if (this != &that)
 		{
-			this->result_ = that.result_;
-			if (this->result_)
+			this->result_ = NULL;
+			if (that.result_)
 			{
 				this->position_ = that.position_;
 				this->suffix_ = that.suffix_;
 				this->N_ = that.N_;
 				this->subs_ = that.subs_;
+
+				if (that.result_ == &that.suffix_)
+				{
+					this->result_ = &this->suffix_;
+				}
+				else if (that.result_ == &((*that.position_).prefix()))
+				{
+					this->result_ = &((*this->position_).prefix());
+				}
+				else
+				{
+					this->result_ = &((*this->position_)[this->subs_[this->N_]]);
+				}
 			}
 		}
 		return *this;
 	}
 
-	bool operator==(const regex_token_iterator &right)
+	bool operator==(const regex_token_iterator &right) const
 	{
 		if (right.result_ == NULL || this->result_ == NULL)
 			return this->result_ == right.result_;
@@ -11603,17 +11616,17 @@ public:
 			&& this->subs_ == right.subs_;
 	}
 
-	bool operator!=(const regex_token_iterator &right)
+	bool operator!=(const regex_token_iterator &right) const
 	{
 		return !(*this == right);
 	}
 
-	const value_type &operator*()
+	const value_type &operator*() const
 	{
 		return *result_;
 	}
 
-	const value_type *operator->()
+	const value_type *operator->() const
 	{
 		return result_;
 	}
