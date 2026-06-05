@@ -13,11 +13,13 @@
 #include <string>
 #include <string_view>
 #include <utility>
+#include <vector>
 
 namespace vsl
 {
 
 using FoundStr = una::found;
+using SplitOptions = vsl::ReSplitOptions;
 
 inline auto to_casefold(std::string_view str) -> std::string
 {
@@ -108,6 +110,15 @@ inline constexpr auto trim_right(std::string_view str) noexcept -> std::string_v
 inline constexpr auto trim(std::string_view str) noexcept -> std::string_view
 {
     return trim_right(trim_left(str));
+}
+
+inline auto split(std::string_view str, std::string_view separator, SplitOptions opt = SplitOptions::NONE)
+    -> std::vector<std::string_view>
+{
+    const auto pattern = vsl::re_escape(separator);
+    const auto re = vsl::Re{pattern};
+    auto tokens = vsl::re_split(str, re, opt);
+    return std::vector(tokens.begin(), tokens.end());
 }
 
 template<std::ranges::input_range R>

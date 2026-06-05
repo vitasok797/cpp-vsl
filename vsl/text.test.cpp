@@ -98,6 +98,88 @@ TEST(TextTest, Trim)
     EXPECT_EQ(vsl::trim_right("  abc  "), "  abc");
 }
 
+TEST(TextTest, Split)
+{
+    const auto sep = ";";
+    const auto no_opt = vsl::SplitOptions::NONE;
+    const auto empty_res = std::vector<std::string_view>{};
+
+    {
+        const auto s = "";
+        const auto expected_res = empty_res;
+        EXPECT_THAT(vsl::split(s, sep, no_opt), testing::ElementsAreArray(expected_res));
+    }
+    {
+        const auto s = "1;2;3";
+        const auto expected_res = {"1", "2", "3"};
+        EXPECT_THAT(vsl::split(s, sep, no_opt), testing::ElementsAreArray(expected_res));
+    }
+    {
+        const auto s = " 1; 2; 3 \n";
+        const auto expected_res = {" 1", " 2", " 3 \n"};
+        EXPECT_THAT(vsl::split(s, sep, no_opt), testing::ElementsAreArray(expected_res));
+    }
+    {
+        const auto s = " 1; 2; 3 \n";
+        const auto opt = vsl::SplitOptions::TRIM;
+        const auto expected_res = {"1", "2", "3"};
+        EXPECT_THAT(vsl::split(s, sep, opt), testing::ElementsAreArray(expected_res));
+    }
+    {
+        const auto s = "1;;3";
+        const auto expected_res = {"1", "", "3"};
+        EXPECT_THAT(vsl::split(s, sep, no_opt), testing::ElementsAreArray(expected_res));
+    }
+    {
+        const auto s = "1;;3";
+        const auto opt = vsl::SplitOptions::SKIP_EMPTY;
+        const auto expected_res = {"1", "3"};
+        EXPECT_THAT(vsl::split(s, sep, opt), testing::ElementsAreArray(expected_res));
+    }
+    {
+        const auto s = "1; ;3";
+        const auto opt = vsl::SplitOptions::SKIP_EMPTY;
+        const auto expected_res = {"1", " ", "3"};
+        EXPECT_THAT(vsl::split(s, sep, opt), testing::ElementsAreArray(expected_res));
+    }
+    {
+        const auto s = "1; ;3";
+        const auto opt = vsl::SplitOptions::TRIM | vsl::SplitOptions::SKIP_EMPTY;
+        const auto expected_res = {"1", "3"};
+        EXPECT_THAT(vsl::split(s, sep, opt), testing::ElementsAreArray(expected_res));
+    }
+    {
+        const auto s = "1";
+        const auto expected_res = {"1"};
+        EXPECT_THAT(vsl::split(s, sep, no_opt), testing::ElementsAreArray(expected_res));
+    }
+    {
+        const auto s = " 1 ";
+        const auto opt = vsl::SplitOptions::TRIM;
+        const auto expected_res = {"1"};
+        EXPECT_THAT(vsl::split(s, sep, opt), testing::ElementsAreArray(expected_res));
+    }
+    {
+        const auto s = "  ";
+        const auto opt = vsl::SplitOptions::SKIP_EMPTY;
+        const auto expected_res = {"  "};
+        EXPECT_THAT(vsl::split(s, sep, opt), testing::ElementsAreArray(expected_res));
+    }
+    {
+        const auto s = "  ";
+        const auto opt = vsl::SplitOptions::TRIM | vsl::SplitOptions::SKIP_EMPTY;
+        const auto expected_res = empty_res;
+        EXPECT_THAT(vsl::split(s, sep, opt), testing::ElementsAreArray(expected_res));
+    }
+    {
+        const auto s = "1 \\d+ 2 \\d+ 3";
+        const auto pattern_like_sep = "\\d+";
+        const auto opt = vsl::SplitOptions::TRIM;
+        const auto expected_res = {"1", "2", "3"};
+        EXPECT_THAT(vsl::split(s, pattern_like_sep, opt), testing::ElementsAreArray(expected_res));
+    }
+}
+
 TEST(TextTest, Join)
 {
     const auto empty = std::vector<int>{};
