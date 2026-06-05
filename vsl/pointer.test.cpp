@@ -38,16 +38,16 @@ TEST(PointerTest, CheckedGetPtr)
 TEST(PointerTest, AsPtr)
 {
     auto opt = std::optional<int>{1};
-    EXPECT_EQ(*as_ptr(opt), 1);
+    EXPECT_EQ(*vsl::as_ptr(opt), 1);
 
     const auto opt_const = std::optional<int>{2};
-    EXPECT_EQ(*as_ptr(opt_const), 2);
+    EXPECT_EQ(*vsl::as_ptr(opt_const), 2);
 
     auto opt_null = std::optional<int>{std::nullopt};
-    EXPECT_EQ(as_ptr(opt_null), nullptr);
+    EXPECT_EQ(vsl::as_ptr(opt_null), nullptr);
 
     const auto opt_const_null = std::optional<int>{std::nullopt};
-    EXPECT_EQ(as_ptr(opt_const_null), nullptr);
+    EXPECT_EQ(vsl::as_ptr(opt_const_null), nullptr);
 }
 
 }  // namespace vsl::test

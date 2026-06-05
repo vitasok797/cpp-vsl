@@ -35,8 +35,6 @@ auto checked_get_ptr(const T& ptr) -> decltype(auto)
     return ptr.get();
 }
 
-}  // namespace vsl
-
 template<typename T>
 constexpr auto as_ptr(std::optional<T>& opt) noexcept -> T*
 {
@@ -48,5 +46,7 @@ constexpr auto as_ptr(const std::optional<T>& opt) noexcept -> const T*
 {
     return opt.has_value() ? &(*opt) : nullptr;
 }
+
+}  // namespace vsl
 
 #endif  // VSL_POINTER_H
