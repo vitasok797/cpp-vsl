@@ -1,5 +1,6 @@
 #include "enum.h"
 
+#include <vsl/types.h>
 #include <vsl/util.h>
 
 #include <gmock/gmock.h>
@@ -131,6 +132,52 @@ TEST(EnumTest, EnumTypeName)
 TEST(EnumTest, EnumValues)
 {
     EXPECT_EQ(vsl::enum_values<Color>(), (std::array{Color::RED, Color::GREEN, Color::BLUE}));
+}
+
+enum class Options : u32
+{
+    NONE = 0,
+    A = u32{1} << 0,
+    B = u32{1} << 1,
+    C = u32{1} << 2,
+};
+VSL_DECLARE_ENUM_FLAGS(Options)
+
+static constexpr auto NONE = Options::NONE;
+static constexpr auto A = Options::A;
+static constexpr auto B = Options::B;
+static constexpr auto C = Options::C;
+
+TEST(EnumTest, BitwiseOperators)
+{
+    auto flags = A;
+    flags |= B;
+    EXPECT_EQ(flags, A | B);
+
+    EXPECT_EQ(flags & A, A);
+    EXPECT_EQ(flags & C, NONE);
+
+    EXPECT_EQ((~A) & A, NONE);
+}
+
+TEST(EnumTest, EnumContainsFlags)
+{
+    EXPECT_EQ(vsl::enum_contains_flags(A, B), false);
+    EXPECT_EQ(vsl::enum_contains_flags(A, A), true);
+
+    EXPECT_EQ(vsl::enum_contains_flags(A | C, B), false);
+    EXPECT_EQ(vsl::enum_contains_flags(A | C, C), true);
+
+    EXPECT_EQ(vsl::enum_contains_flags(A, A | C), false);
+    EXPECT_EQ(vsl::enum_contains_flags(A | B, A | C), false);
+    EXPECT_EQ(vsl::enum_contains_flags(A | C, A | C), true);
+    EXPECT_EQ(vsl::enum_contains_flags(A | B | C, A | C), true);
+
+    EXPECT_EQ(vsl::enum_contains_flags(NONE, NONE), false);
+    EXPECT_EQ(vsl::enum_contains_flags(NONE, A), false);
+
+    EXPECT_EQ(vsl::enum_contains_flags(A, NONE), false);
+    EXPECT_EQ(vsl::enum_contains_flags(B | C, NONE), false);
 }
 
 }  // namespace vsl::test
