@@ -3,7 +3,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-namespace vsl::test
+namespace test
 {
 
 static constexpr auto ASCII_SYMBOLS =
@@ -153,4 +153,4 @@ TEST(EncodingTest, ToCharsetAndBack)
     EXPECT_NE(vsl::from_cp866(vsl::to_cp866("Тест ⚠️")), "Тест ⚠️");
 }
 
-}  // namespace vsl::test
+}  // namespace test

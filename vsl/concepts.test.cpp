@@ -7,7 +7,7 @@
 #include <string_view>
 #include <vector>
 
-namespace vsl::test
+namespace test
 {
 
 static auto regular_func(int, double) -> int
@@ -162,4 +162,4 @@ TEST(ConceptsTest, CompileCheck)
     static_assert(!vsl::range_of_strings<std::vector<int>>);
 }
 
-}  // namespace vsl::test
+}  // namespace test

@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <limits>
 
-namespace vsl::test
+namespace test
 {
 
 TEST(TypesTest, Constants)
@@ -74,8 +74,8 @@ TEST(TypesTest, NumericCastFloating)
     EXPECT_EQ(vsl::numeric_cast<float>(i32{-7}), -7.0f);
     EXPECT_EQ(vsl::numeric_cast<double>(i32{-7}), -7.0);
 
-    EXPECT_THROW(vsl::numeric_cast<float>(U32_MAX), vsl::NarrowingError);
-    EXPECT_THROW(vsl::numeric_cast<double>(U64_MAX), vsl::NarrowingError);
+    EXPECT_THROW(vsl::numeric_cast<float>(vsl::U32_MAX), vsl::NarrowingError);
+    EXPECT_THROW(vsl::numeric_cast<double>(vsl::U64_MAX), vsl::NarrowingError);
 
     EXPECT_THROW(vsl::numeric_cast<i32>(std::numeric_limits<double>::quiet_NaN()), vsl::NarrowingError);
 }
@@ -105,11 +105,11 @@ TEST(TypesTest, NumericCastSigned)
     EXPECT_EQ(vsl::numeric_cast<i16>(u16{7}), 7);
     EXPECT_EQ(vsl::numeric_cast<i16>(u32{7}), 7);
 
-    EXPECT_EQ(vsl::numeric_cast<i16>(I16_MIN), I16_MIN);
-    EXPECT_EQ(vsl::numeric_cast<i16>(I16_MAX), I16_MAX);
-    EXPECT_THROW(vsl::numeric_cast<i16>(i32{I16_MIN - 1}), vsl::NarrowingError);
-    EXPECT_THROW(vsl::numeric_cast<i16>(i32{I16_MAX + 1}), vsl::NarrowingError);
-    EXPECT_THROW(vsl::numeric_cast<i16>(u16{I16_MAX + 1}), vsl::NarrowingError);
+    EXPECT_EQ(vsl::numeric_cast<i16>(vsl::I16_MIN), vsl::I16_MIN);
+    EXPECT_EQ(vsl::numeric_cast<i16>(vsl::I16_MAX), vsl::I16_MAX);
+    EXPECT_THROW(vsl::numeric_cast<i16>(i32{vsl::I16_MIN - 1}), vsl::NarrowingError);
+    EXPECT_THROW(vsl::numeric_cast<i16>(i32{vsl::I16_MAX + 1}), vsl::NarrowingError);
+    EXPECT_THROW(vsl::numeric_cast<i16>(u16{vsl::I16_MAX + 1}), vsl::NarrowingError);
 
     EXPECT_EQ(vsl::numeric_cast<i16>(float{7.0f}), 7);
     EXPECT_EQ(vsl::numeric_cast<i16>(double{7.0}), 7);
@@ -147,8 +147,8 @@ TEST(TypesTest, NumericCastUnsigned)
     EXPECT_EQ(vsl::numeric_cast<u16>(u16{7}), 7);
     EXPECT_EQ(vsl::numeric_cast<u16>(u32{7}), 7);
 
-    EXPECT_EQ(vsl::numeric_cast<u16>(U16_MAX), U16_MAX);
-    EXPECT_THROW(vsl::numeric_cast<u16>(i32{U16_MAX + 1}), vsl::NarrowingError);
+    EXPECT_EQ(vsl::numeric_cast<u16>(vsl::U16_MAX), vsl::U16_MAX);
+    EXPECT_THROW(vsl::numeric_cast<u16>(i32{vsl::U16_MAX + 1}), vsl::NarrowingError);
 
     EXPECT_EQ(vsl::numeric_cast<u16>(float{7.0f}), 7);
     EXPECT_EQ(vsl::numeric_cast<u16>(double{7.0}), 7);
@@ -160,4 +160,4 @@ TEST(TypesTest, NumericCastUnsigned)
     EXPECT_THROW(vsl::numeric_cast<u16>(double{1e5}), vsl::NarrowingError);
 }
 
-}  // namespace vsl::test
+}  // namespace test

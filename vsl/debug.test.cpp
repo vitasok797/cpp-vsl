@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-namespace vsl::debug::test
+namespace test
 {
 
 TEST(DebugTest, DebugAllocator)
@@ -51,4 +51,4 @@ TEST(DebugTest, DebugAllocator)
     EXPECT_EQ(log, expected_log);
 }
 
-}  // namespace vsl::debug::test
+}  // namespace test

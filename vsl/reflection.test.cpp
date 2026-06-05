@@ -5,7 +5,7 @@
 
 #include <fmt/format.h>
 
-namespace vsl::test
+namespace test
 {
 
 TEST(ReflectionTest, Nameof)
@@ -24,4 +24,4 @@ TEST(ReflectionTest, NameofFmt)
     EXPECT_EQ(fmt::format("<{}>", NAMEOF_SHORT_TYPE(decltype(var))), "<int>");
 }
 
-}  // namespace vsl::test
+}  // namespace test

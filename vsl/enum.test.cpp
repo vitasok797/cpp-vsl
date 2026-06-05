@@ -10,7 +10,7 @@
 #include <string>
 #include <string_view>
 
-namespace vsl::test
+namespace test
 {
 
 enum class Color
@@ -180,4 +180,4 @@ TEST(EnumTest, EnumContainsFlags)
     EXPECT_EQ(vsl::enum_contains_flags(B | C, NONE), false);
 }
 
-}  // namespace vsl::test
+}  // namespace test

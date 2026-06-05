@@ -13,7 +13,7 @@
 #include <type_traits>
 #include <vector>
 
-namespace vsl::test
+namespace test
 {
 
 TEST(RegexTest, Create)
@@ -682,23 +682,23 @@ TEST(RegexTest, ReFlags)
 
 TEST(RegexTest, Escape)
 {
-    EXPECT_EQ(re_escape(""), "");
-    EXPECT_EQ(re_escape("  "), "  ");
-    EXPECT_EQ(re_escape("\n\t"), "\n\t");
-    EXPECT_EQ(re_escape(R"(.^$*+?|()[]{}\)"), R"(\.\^\$\*\+\?\|\(\)\[\]\{\}\\)");
-    EXPECT_EQ(re_escape(R"(!@#%&-_=~,;:/<>"'`)"), R"(!@#%&-_=~,;:/<>"'`)");
-    EXPECT_EQ(re_escape(R"(Цена: $100.00 (со скидкой 20%))"), R"(Цена: \$100\.00 \(со скидкой 20%\))");
+    EXPECT_EQ(vsl::re_escape(""), "");
+    EXPECT_EQ(vsl::re_escape("  "), "  ");
+    EXPECT_EQ(vsl::re_escape("\n\t"), "\n\t");
+    EXPECT_EQ(vsl::re_escape(R"(.^$*+?|()[]{}\)"), R"(\.\^\$\*\+\?\|\(\)\[\]\{\}\\)");
+    EXPECT_EQ(vsl::re_escape(R"(!@#%&-_=~,;:/<>"'`)"), R"(!@#%&-_=~,;:/<>"'`)");
+    EXPECT_EQ(vsl::re_escape(R"(Цена: $100.00 (со скидкой 20%))"), R"(Цена: \$100\.00 \(со скидкой 20%\))");
 }
 
 TEST(RegexTest, EscapeRepl)
 {
-    EXPECT_EQ(re_escape_repl(""), "");
-    EXPECT_EQ(re_escape_repl("  "), "  ");
-    EXPECT_EQ(re_escape_repl("\n\t"), "\n\t");
-    EXPECT_EQ(re_escape_repl("$"), "$$");
-    EXPECT_EQ(re_escape_repl("$$"), "$$$$");
-    EXPECT_EQ(re_escape_repl(R"(.^*+?|()[]{}\!@#%&-_=~,;:/<>"'`)"), R"(.^*+?|()[]{}\!@#%&-_=~,;:/<>"'`)");
-    EXPECT_EQ(re_escape_repl(R"(Цена: $100.00 (со скидкой 20%))"), R"(Цена: $$100.00 (со скидкой 20%))");
+    EXPECT_EQ(vsl::re_escape_repl(""), "");
+    EXPECT_EQ(vsl::re_escape_repl("  "), "  ");
+    EXPECT_EQ(vsl::re_escape_repl("\n\t"), "\n\t");
+    EXPECT_EQ(vsl::re_escape_repl("$"), "$$");
+    EXPECT_EQ(vsl::re_escape_repl("$$"), "$$$$");
+    EXPECT_EQ(vsl::re_escape_repl(R"(.^*+?|()[]{}\!@#%&-_=~,;:/<>"'`)"), R"(.^*+?|()[]{}\!@#%&-_=~,;:/<>"'`)");
+    EXPECT_EQ(vsl::re_escape_repl(R"(Цена: $100.00 (со скидкой 20%))"), R"(Цена: $$100.00 (со скидкой 20%))");
 }
 
-}  // namespace vsl::test
+}  // namespace test

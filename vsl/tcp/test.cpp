@@ -14,8 +14,16 @@
 #include <utility>
 #include <vector>
 
-namespace vsl::tcp::test
+namespace test::tcp
 {
+
+using vsl::tcp::TcpClient;
+using vsl::tcp::TcpClientConnectionReset;
+using vsl::tcp::TcpClientDisconnect;
+using vsl::tcp::TcpClientError;
+using vsl::tcp::TcpClientGracefulShutdown;
+using vsl::tcp::TcpListener;
+using vsl::tcp::TcpListenerError;
 
 static const auto server_endpoint = std::pair{"0.0.0.0", 8888};
 static const auto client_remote_endpoint = std::pair{"127.0.0.1", 8888};
@@ -481,4 +489,4 @@ TEST_F(TcpEndiannessTest, SendRecvDiffEndiannessInt)
     ASSERT_EQ(client_.read<uint16_t>(), value);
 }
 
-}  // namespace vsl::tcp::test
+}  // namespace test::tcp

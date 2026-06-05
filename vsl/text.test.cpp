@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace vsl::test
+namespace test
 {
 
 TEST(TextTest, Case)
@@ -57,7 +57,7 @@ TEST(TextTest, Collate)
 TEST(TextTest, FindStr)
 {
     // operator bool()
-    const FoundStr found = vsl::find_str("aaa bbb ccc", "bbb");
+    const vsl::FoundStr found = vsl::find_str("aaa bbb ccc", "bbb");
     EXPECT_TRUE(found);
 
     // icase
@@ -71,7 +71,7 @@ TEST(TextTest, FindStr)
     EXPECT_TRUE(vsl::find_str_icase("Ligature ﬃ search", "ffi"));
 
     // pos + icase
-    const FoundStr found2 = vsl::find_str_icase("Ligature ﬃ search", "ffi");
+    const vsl::FoundStr found2 = vsl::find_str_icase("Ligature ﬃ search", "ffi");
     EXPECT_EQ(found2.pos(), 9);
     EXPECT_EQ(found2.end_pos(), 12);
 }
@@ -222,21 +222,21 @@ TEST(TextTest, LineEndings)
     const auto N = std::string{"\n"};
     const auto RN = std::string{"\r\n"};
 
-    EXPECT_EQ(to_lf(""), "");
-    EXPECT_EQ(to_crlf(""), "");
+    EXPECT_EQ(vsl::to_lf(""), "");
+    EXPECT_EQ(vsl::to_crlf(""), "");
 
-    EXPECT_EQ(to_lf(RN), N);
-    EXPECT_EQ(to_crlf(N), RN);
+    EXPECT_EQ(vsl::to_lf(RN), N);
+    EXPECT_EQ(vsl::to_crlf(N), RN);
 
-    EXPECT_EQ(to_lf(N), N);
-    EXPECT_EQ(to_crlf(RN), RN);
+    EXPECT_EQ(vsl::to_lf(N), N);
+    EXPECT_EQ(vsl::to_crlf(RN), RN);
 
-    EXPECT_EQ(to_lf(N + N + RN + N), (N + N + N + N));
-    EXPECT_EQ(to_crlf(RN + RN + N + RN), (RN + RN + RN + RN));
+    EXPECT_EQ(vsl::to_lf(N + N + RN + N), (N + N + N + N));
+    EXPECT_EQ(vsl::to_crlf(RN + RN + N + RN), (RN + RN + RN + RN));
 
-    EXPECT_EQ(to_lf("abc" + RN + "def" + N + "тест" + RN + "123" + RN),
+    EXPECT_EQ(vsl::to_lf("abc" + RN + "def" + N + "тест" + RN + "123" + RN),
               ("abc" + N + "def" + N + "тест" + N + "123" + N));
-    EXPECT_EQ(to_crlf("abc" + N + "def" + N + "тест" + RN + "123" + N),
+    EXPECT_EQ(vsl::to_crlf("abc" + N + "def" + N + "тест" + RN + "123" + N),
               ("abc" + RN + "def" + RN + "тест" + RN + "123" + RN));
 }
 
@@ -247,4 +247,4 @@ TEST(TextTest, OutOf)
     EXPECT_EQ(vsl::out_of(i16{3}, u64{4}), "3/4");
 }
 
-}  // namespace vsl::test
+}  // namespace test

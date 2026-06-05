@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace vsl::tabulate::test
+namespace test
 {
 
 static const auto header = {"ID", "Name", "Type"};
@@ -172,4 +172,4 @@ TEST(TabulateTest, CreateTableVariableCellCount)
                                                                                 "+----+------+------+");
 }
 
-}  // namespace vsl::tabulate::test
+}  // namespace test

@@ -11,7 +11,7 @@
 
 using namespace testing;
 
-namespace vsl::test
+namespace test
 {
 
 static constexpr auto TEXT_LF = "col1;col2\nval1;001\n  \nval2;  002\n\nval3\nval4;004;xxx\nval5;005\n";
@@ -133,4 +133,4 @@ TEST(CsvTest, NoHeaderThrow)
                 ThrowsMessage<std::runtime_error>(HasSubstr("Line too long")));
 }
 
-}  // namespace vsl::test
+}  // namespace test

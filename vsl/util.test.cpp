@@ -6,7 +6,7 @@
 #include <array>
 #include <vector>
 
-namespace vsl::test
+namespace test
 {
 
 TEST(UtilTest, IsOneOf)
@@ -55,4 +55,4 @@ TEST(UtilTest, ThisTo)
     EXPECT_EQ(ClassWithMixin{}.get_size(), 7);
 }
 
-}  // namespace vsl::test
+}  // namespace test

@@ -10,65 +10,65 @@
 #include <stdexcept>
 #include <utility>
 
-namespace vsl::test
+namespace test
 {
 
 TEST(MathTest, AlmostEqual)
 {
-    EXPECT_TRUE(almost_equal(3.0, 4.0, 1.0));
-    EXPECT_TRUE(almost_equal(3.0, 4.0, 1.1));
-    EXPECT_FALSE(almost_equal(3.0, 4.0, 0.9));
+    EXPECT_TRUE(vsl::almost_equal(3.0, 4.0, 1.0));
+    EXPECT_TRUE(vsl::almost_equal(3.0, 4.0, 1.1));
+    EXPECT_FALSE(vsl::almost_equal(3.0, 4.0, 0.9));
 
-    EXPECT_TRUE(almost_equal(-3.0, -4.0, 1.0));
-    EXPECT_TRUE(almost_equal(-3.0, -4.0, 1.1));
-    EXPECT_FALSE(almost_equal(-3.0, -4.0, 0.9));
+    EXPECT_TRUE(vsl::almost_equal(-3.0, -4.0, 1.0));
+    EXPECT_TRUE(vsl::almost_equal(-3.0, -4.0, 1.1));
+    EXPECT_FALSE(vsl::almost_equal(-3.0, -4.0, 0.9));
 }
 
 TEST(MathTest, AlmostEqualRel)
 {
-    EXPECT_TRUE(almost_equal_rel(2.0, 2.000001));
-    EXPECT_FALSE(almost_equal_rel(2.0, 2.00001));
+    EXPECT_TRUE(vsl::almost_equal_rel(2.0, 2.000001));
+    EXPECT_FALSE(vsl::almost_equal_rel(2.0, 2.00001));
 
-    EXPECT_TRUE(almost_equal_rel(2.0, 2.001, 0.001));
-    EXPECT_FALSE(almost_equal_rel(2.0, 2.01, 0.001));
+    EXPECT_TRUE(vsl::almost_equal_rel(2.0, 2.001, 0.001));
+    EXPECT_FALSE(vsl::almost_equal_rel(2.0, 2.01, 0.001));
 
-    EXPECT_TRUE(almost_equal_rel(-2.0, -2.001, 0.001));
-    EXPECT_FALSE(almost_equal_rel(-2.0, -2.01, 0.001));
+    EXPECT_TRUE(vsl::almost_equal_rel(-2.0, -2.001, 0.001));
+    EXPECT_FALSE(vsl::almost_equal_rel(-2.0, -2.01, 0.001));
 }
 
 TEST(MathTest, Fclamp)
 {
-    EXPECT_EQ(fclamp(-1.0, {0, 2.0}), 0);
-    EXPECT_EQ(fclamp(1.0, {0, 2.0}), 1.0);
-    EXPECT_EQ(fclamp(3.0, {0, 2.0}), 2.0);
+    EXPECT_EQ(vsl::fclamp(-1.0, {0, 2.0}), 0);
+    EXPECT_EQ(vsl::fclamp(1.0, {0, 2.0}), 1.0);
+    EXPECT_EQ(vsl::fclamp(3.0, {0, 2.0}), 2.0);
 
-    EXPECT_EQ(fclamp(100.0, {0, vsl::INF}), 100.0);
-    EXPECT_EQ(fclamp(-100.0, {0, vsl::INF}), 0.0);
+    EXPECT_EQ(vsl::fclamp(100.0, {0, vsl::INF}), 100.0);
+    EXPECT_EQ(vsl::fclamp(-100.0, {0, vsl::INF}), 0.0);
 
-    EXPECT_EQ(fclamp(100.0, {-vsl::INF, 0}), 0.0);
-    EXPECT_EQ(fclamp(-100.0, {-vsl::INF, 0}), -100.0);
+    EXPECT_EQ(vsl::fclamp(100.0, {-vsl::INF, 0}), 0.0);
+    EXPECT_EQ(vsl::fclamp(-100.0, {-vsl::INF, 0}), -100.0);
 
-    EXPECT_EQ(fclamp(5.0, {1.0, 1.0}), 1.0);
+    EXPECT_EQ(vsl::fclamp(5.0, {1.0, 1.0}), 1.0);
 
-    EXPECT_THROW(fclamp(5.0, {1.0, -1.0}), std::invalid_argument);
+    EXPECT_THROW(vsl::fclamp(5.0, {1.0, -1.0}), std::invalid_argument);
 }
 
 TEST(MathTest, CeilDiv)
 {
-    EXPECT_EQ(ceil_div(0, 2), 0);
+    EXPECT_EQ(vsl::ceil_div(0, 2), 0);
 
-    EXPECT_EQ(ceil_div(4, 2), 2);
-    EXPECT_EQ(ceil_div(5, 2), 3);
-    EXPECT_EQ(ceil_div(6, 2), 3);
+    EXPECT_EQ(vsl::ceil_div(4, 2), 2);
+    EXPECT_EQ(vsl::ceil_div(5, 2), 3);
+    EXPECT_EQ(vsl::ceil_div(6, 2), 3);
 
-    EXPECT_EQ(ceil_div(int64_t{7}, 2), 4);
-    EXPECT_EQ(ceil_div(int16_t{9}, 2), 5);
+    EXPECT_EQ(vsl::ceil_div(int64_t{7}, 2), 4);
+    EXPECT_EQ(vsl::ceil_div(int16_t{9}, 2), 5);
 }
 
 TEST(MathDeathTest, CeilDivAssertions)
 {
-    EXPECT_DEBUG_DEATH(ceil_div(-1, 2), "a >= 0");
-    EXPECT_DEBUG_DEATH(ceil_div(1, 0), "b > 0");
+    EXPECT_DEBUG_DEATH(vsl::ceil_div(-1, 2), "a >= 0");
+    EXPECT_DEBUG_DEATH(vsl::ceil_div(1, 0), "b > 0");
 }
 
 template<typename T, typename Predicate, typename... Args>
@@ -77,7 +77,7 @@ auto test_generate_random(Predicate predicate, Args&&... args) -> void
     constexpr auto TEST_CYCLES = 10000;
     for (auto i = 0; i < TEST_CYCLES; ++i)
     {
-        auto value = generate_random<T>(std::forward<Args>(args)...);
+        auto value = vsl::generate_random<T>(std::forward<Args>(args)...);
         ASSERT_TRUE(predicate(value)) << "Generated value: " << value;
     }
 }
@@ -109,7 +109,7 @@ TEST(MathTest, GenerateRandomIntegral)
     ASSERT_NO_FATAL_FAILURE(test_generate_random<int64_t>(fromN100_toN10, -100, -10));
     ASSERT_NO_FATAL_FAILURE(test_generate_random<int32_t>(fromN100_toN10, -100, -10));
 
-    ASSERT_THROW(generate_random<int64_t>(1, 0), std::invalid_argument);
+    ASSERT_THROW(vsl::generate_random<int64_t>(1, 0), std::invalid_argument);
 }
 
 TEST(MathTest, GenerateRandomFloating)
@@ -130,7 +130,7 @@ TEST(MathTest, GenerateRandomFloating)
     ASSERT_NO_FATAL_FAILURE(test_generate_random<float>(fromN100_toN10, -100.0f, -10.0f));
     ASSERT_NO_FATAL_FAILURE(test_generate_random<double>(fromN100_toN10, -100.0, -10.0));
 
-    ASSERT_THROW(generate_random<double>(1.0, 0.0), std::invalid_argument);
+    ASSERT_THROW(vsl::generate_random<double>(1.0, 0.0), std::invalid_argument);
 }
 
-}  // namespace vsl::test
+}  // namespace test
