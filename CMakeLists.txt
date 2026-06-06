@@ -20,6 +20,9 @@ add_library(${CUR_TARGET} INTERFACE)
 find_package(fmt CONFIG REQUIRED)
 target_link_libraries(${CUR_TARGET} INTERFACE fmt::fmt)
 
+find_package(libenvpp CONFIG REQUIRED)
+target_link_libraries(${CUR_TARGET} INTERFACE libenvpp::libenvpp)
+
 find_package(magic_enum CONFIG REQUIRED)
 target_link_libraries(${CUR_TARGET} INTERFACE magic_enum::magic_enum)
 
@@ -81,6 +84,7 @@ if(VSL_BUILD_TESTS AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         "vsl/debug.test.cpp"
         "vsl/encoding.test.cpp"
         "vsl/enum.test.cpp"
+        "vsl/env.test.cpp"
         "vsl/json.test.cpp"
         "vsl/math.test.cpp"
         "vsl/pointer.test.cpp"

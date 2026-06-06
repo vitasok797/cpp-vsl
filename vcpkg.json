@@ -3,6 +3,7 @@
     "dependencies": [
         "fmt",
         "gtest",
+        "libenvpp",
         "magic-enum",
         "nameof",
         "nanobench",
