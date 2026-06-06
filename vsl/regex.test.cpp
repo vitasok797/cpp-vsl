@@ -38,8 +38,7 @@ TEST(RegexTest, Create)
 
 TEST(RegexTest, FullMatch)
 {
-    auto test_full_match =
-        [](auto&& str, auto&& re, vsl::ReMatch* match, vsl::ReMatchFlagType flags, bool expected_status)
+    auto test_full_match = [](auto&& str, auto&& re, vsl::ReMatch* match, vsl::ReMatchFlags flags, bool expected_status)
     {
         const auto success = [&]
         {
@@ -78,7 +77,7 @@ TEST(RegexTest, FullMatch)
     const auto pattern = "\\d+\\D+\\d+";
     const auto re = vsl::Re{pattern};
     auto match = vsl::ReMatch{};
-    const auto no_flags = vsl::re_const::match_default;
+    const auto no_flags = vsl::ReMatchFlags::DEFAULT;
 
     // arg: base
     test_full_match(s, re, &match, no_flags, true);
@@ -95,7 +94,7 @@ TEST(RegexTest, FullMatch)
 
     // arg: flags
     test_full_match("", vsl::Re{"\\d*"}, &match, no_flags, true);
-    test_full_match("", vsl::Re{"\\d*"}, &match, vsl::re_const::match_not_null, false);
+    test_full_match("", vsl::Re{"\\d*"}, &match, vsl::ReMatchFlags::MATCH_NOT_NULL, false);
 
     // no match found
     test_full_match(s, vsl::Re{"\\d+"}, &match, no_flags, false);
@@ -153,7 +152,7 @@ TEST(RegexTest, FullMatchOnlyFull)
 TEST(RegexTest, Search)
 {
     auto test_search =
-        [](auto&& str, auto&& re, vsl::ReMatch* match, vsl::ReMatchFlagType flags, vsl::czstring expected_res)
+        [](auto&& str, auto&& re, vsl::ReMatch* match, vsl::ReMatchFlags flags, vsl::czstring expected_res)
     {
         const auto success = [&]
         {
@@ -192,7 +191,7 @@ TEST(RegexTest, Search)
     const auto pattern = "\\D+";
     const auto re = vsl::Re{pattern};
     auto match = vsl::ReMatch{};
-    const auto no_flags = vsl::re_const::match_default;
+    const auto no_flags = vsl::ReMatchFlags::DEFAULT;
     const auto expected_res = "abc";
 
     // arg: base
@@ -209,8 +208,8 @@ TEST(RegexTest, Search)
     test_search(s, re, nullptr, no_flags, expected_res);
 
     // arg: flags
-    test_search(s, re, &match, vsl::re_const::match_continuous, nullptr);
-    test_search(s, vsl::Re{"\\d{3}\\D"}, &match, vsl::re_const::match_continuous, "123a");
+    test_search(s, re, &match, vsl::ReMatchFlags::MATCH_CONTINUOUS, nullptr);
+    test_search(s, vsl::Re{"\\d{3}\\D"}, &match, vsl::ReMatchFlags::MATCH_CONTINUOUS, "123a");
 
     // no match found
     test_search(s, vsl::Re{"\\D{4}"}, &match, no_flags, nullptr);
@@ -265,8 +264,7 @@ TEST(RegexTest, FindX)
     // Ensure that the regex object passed to the re_find_matches/re_find_matches_sv/re_find_submatches
     // function outlives the returned range (intenal iterator stores a reference to the regex)
 
-    auto test_find =
-        [](auto&& str, auto&& re, vsl::ReMatchFlagType flags, const std::vector<vsl::czstring>& expected_res)
+    auto test_find = [](auto&& str, auto&& re, vsl::ReMatchFlags flags, const std::vector<vsl::czstring>& expected_res)
     {
         {
             const auto res = vsl::re_find_matches(str, re, flags);
@@ -289,7 +287,7 @@ TEST(RegexTest, FindX)
     const auto s = "abc def xyz";
     const auto pattern = "[a-z].[a-z]";
     const auto re = vsl::Re{pattern};
-    const auto no_flags = vsl::re_const::match_default;
+    const auto no_flags = vsl::ReMatchFlags::DEFAULT;
     const auto expected_res = {"abc", "def", "xyz"};
 
     // arg: base
@@ -303,7 +301,7 @@ TEST(RegexTest, FindX)
     test_find(s, vsl::ReAscii{pattern}, no_flags, expected_res);
 
     // arg: flags
-    test_find(s, re, vsl::re_const::match_continuous, {"abc"});
+    test_find(s, re, vsl::ReMatchFlags::MATCH_CONTINUOUS, {"abc"});
 
     // utf-8
     const auto s_utf8 = std::string_view{"первый второй третий"};
@@ -322,7 +320,7 @@ TEST(RegexTest, FindSubmatches)
     const auto s = "1abc2def3";
     const auto pattern = "[a-z]([a-z])[a-z]";
     const auto re = vsl::Re{pattern};
-    const auto no_flags = vsl::re_const::match_default;
+    const auto no_flags = vsl::ReMatchFlags::DEFAULT;
     const auto empty_res = std::vector<std::string_view>{};
 
     {
@@ -390,7 +388,7 @@ TEST(RegexTest, Split)
     const auto pattern = ",";
     const auto re = vsl::Re{pattern};
     const auto no_opt = vsl::ReSplitOptions::NONE;
-    const auto no_flags = vsl::re_const::match_default;
+    const auto no_flags = vsl::ReMatchFlags::DEFAULT;
     const auto empty_res = std::vector<std::string_view>{};
 
     {
@@ -480,7 +478,7 @@ TEST(RegexTest, Replace)
     const auto pattern = "a|e|i|o|u";
     const auto re = vsl::Re{pattern};
     const auto repl = "[$&]";
-    const auto no_flags = vsl::re_const::match_default;
+    const auto no_flags = vsl::ReReplFlags::DEFAULT;
     const auto expected_res = "Q[u][i]ck br[o]wn f[o]x";
 
     // arg: base
@@ -498,13 +496,18 @@ TEST(RegexTest, Replace)
     EXPECT_EQ(vsl::re_replace(s, re, "[$&]", no_flags), expected_res);
 
     // arg: flags
-    EXPECT_EQ(vsl::re_replace(s, re, repl, vsl::re_const::format_first_only), "Q[u]ick brown fox");
-    EXPECT_EQ(vsl::re_replace(s, re, repl, vsl::re_const::format_no_copy), "[u][i][o][o]");
+    EXPECT_EQ(vsl::re_replace(s, re, repl, vsl::ReReplFlags::FORMAT_FIRST_ONLY), "Q[u]ick brown fox");
+    EXPECT_EQ(vsl::re_replace(s, re, repl, vsl::ReReplFlags::FORMAT_NO_COPY), "[u][i][o][o]");
+
+    auto flags =
+        vsl::ReReplFlags::MATCH_CONTINUOUS | vsl::ReReplFlags::FORMAT_FIRST_ONLY | vsl::ReReplFlags::FORMAT_NO_COPY;
+    EXPECT_EQ(vsl::re_replace(s, re, repl, flags), "");
+    EXPECT_EQ(vsl::re_replace("example", re, repl, flags), "[e]");
 }
 
 TEST(RegexTest, ReplaceIter)
 {
-    auto test_replace = [](auto&& str, auto&& re, auto&& repl, vsl::ReMatchFlagType flags, vsl::czstring expected_res)
+    auto test_replace = [](auto&& str, auto&& re, auto&& repl, vsl::ReReplFlags flags, vsl::czstring expected_res)
     {
         auto res = std::string{"res = ["};
         auto it = std::back_inserter(res);
@@ -517,7 +520,7 @@ TEST(RegexTest, ReplaceIter)
     const auto pattern = "a|e|i|o|u";
     const auto re = vsl::Re{pattern};
     const auto repl = "*";
-    const auto no_flags = vsl::re_const::match_default;
+    const auto no_flags = vsl::ReReplFlags::DEFAULT;
     const auto expected_res = "res = [Q**ck br*wn f*x]";
 
     // arg: base
@@ -534,8 +537,14 @@ TEST(RegexTest, ReplaceIter)
     test_replace(s, re, "*", no_flags, expected_res);
 
     // arg: flags
-    test_replace(s, re, repl, vsl::re_const::format_first_only, "res = [Q*ick brown fox]");
-    test_replace(s, re, repl, vsl::re_const::format_no_copy, "res = [****]");
+    test_replace(s, re, repl, vsl::ReReplFlags::FORMAT_FIRST_ONLY, "res = [Q*ick brown fox]");
+    test_replace(s, re, repl, vsl::ReReplFlags::FORMAT_NO_COPY, "res = [****]");
+    test_replace(s, re, repl, vsl::ReReplFlags::FORMAT_FIRST_ONLY | vsl::ReReplFlags::FORMAT_NO_COPY, "res = [*]");
+
+    auto flags =
+        vsl::ReReplFlags::MATCH_CONTINUOUS | vsl::ReReplFlags::FORMAT_FIRST_ONLY | vsl::ReReplFlags::FORMAT_NO_COPY;
+    test_replace(s, re, repl, flags, "res = []");
+    test_replace(std::string{"example"}, re, repl, flags, "res = [*]");
 }
 
 TEST(RegexTest, ReplaceFunc)
@@ -549,7 +558,7 @@ TEST(RegexTest, ReplaceFunc)
     const auto s = "A=1, B=2";
     const auto pattern = "\\d+";
     const auto re = vsl::Re{pattern};
-    const auto no_flags = vsl::re_const::match_default;
+    const auto no_flags = vsl::ReReplFlags::DEFAULT;
     const auto expected_res = "A=20, B=40";
 
     // arg: base
@@ -563,8 +572,13 @@ TEST(RegexTest, ReplaceFunc)
     EXPECT_EQ(vsl::re_replace(s, vsl::ReAscii{pattern}, repl_func, no_flags), expected_res);
 
     // arg: flags
-    EXPECT_EQ(vsl::re_replace(s, re, repl_func, vsl::re_const::format_first_only), "A=20, B=2");
-    EXPECT_EQ(vsl::re_replace(s, re, repl_func, vsl::re_const::format_no_copy), "2040");
+    EXPECT_EQ(vsl::re_replace(s, re, repl_func, vsl::ReReplFlags::FORMAT_FIRST_ONLY), "A=20, B=2");
+    EXPECT_EQ(vsl::re_replace(s, re, repl_func, vsl::ReReplFlags::FORMAT_NO_COPY), "2040");
+
+    auto flags =
+        vsl::ReReplFlags::MATCH_CONTINUOUS | vsl::ReReplFlags::FORMAT_FIRST_ONLY | vsl::ReReplFlags::FORMAT_NO_COPY;
+    EXPECT_EQ(vsl::re_replace(s, re, repl_func, flags), "");
+    EXPECT_EQ(vsl::re_replace("3 4 5", re, repl_func, flags), "60");
 
     EXPECT_EQ(vsl::re_replace("", re, repl_func, no_flags), "");
     EXPECT_EQ(vsl::re_replace("no match", re, repl_func, no_flags), "no match");
@@ -601,11 +615,11 @@ TEST(RegexTest, MatchFromBegin)
         EXPECT_TRUE(vsl::re_search("abc123", re));
     }
 
-    // Match from begin (using vsl::re_const::match_continuous flag)
+    // Match from begin (using vsl::ReMatchFlags::MATCH_CONTINUOUS flag)
     {
         const auto re = vsl::Re{"\\d+"};
-        EXPECT_FALSE(vsl::re_search("abc123", re, vsl::re_const::match_continuous));
-        EXPECT_TRUE(vsl::re_search("123abc", re, vsl::re_const::match_continuous));
+        EXPECT_FALSE(vsl::re_search("abc123", re, vsl::ReMatchFlags::MATCH_CONTINUOUS));
+        EXPECT_TRUE(vsl::re_search("123abc", re, vsl::ReMatchFlags::MATCH_CONTINUOUS));
     }
 
     // Match from begin (using ^)

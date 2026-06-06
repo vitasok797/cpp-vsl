@@ -30,24 +30,35 @@ namespace vsl
 // * Re::nosubs
 // * Re::optimize
 
-// re_* functions flags (https://en.cppreference.com/cpp/regex/match_flag_type):
-// * re_const::match_default
-// * re_const::match_not_bol
-// * re_const::match_not_eol
-// * re_const::match_not_bow
-// * re_const::match_not_eow
-// * re_const::match_any
-// * re_const::match_not_null
-// * re_const::match_continuous
-// * re_const::match_prev_avail
-// * re_const::format_default
-// * re_const::format_sed
-// * re_const::format_no_copy
-// * re_const::format_first_only
+// Reference: https://en.cppreference.com/cpp/regex/match_flag_type
+enum class ReMatchFlags : u32
+{
+    DEFAULT = 0,
+    MATCH_NOT_BOL = srell::regex_constants::match_flag_type::match_not_bol,
+    MATCH_NOT_EOL = srell::regex_constants::match_flag_type::match_not_eol,
+    MATCH_NOT_BOW = srell::regex_constants::match_flag_type::match_not_bow,
+    MATCH_NOT_EOW = srell::regex_constants::match_flag_type::match_not_eow,
+    MATCH_NOT_NULL = srell::regex_constants::match_flag_type::match_not_null,
+    MATCH_CONTINUOUS = srell::regex_constants::match_flag_type::match_continuous,
+    MATCH_PREV_AVAIL = srell::regex_constants::match_flag_type::match_prev_avail,
+};
+VSL_DECLARE_ENUM_FLAGS(ReMatchFlags)
 
-namespace re_const = srell::regex_constants;
-
-using ReMatchFlagType = srell::regex_constants::match_flag_type;
+// Reference: https://en.cppreference.com/cpp/regex/match_flag_type
+enum class ReReplFlags : u32
+{
+    DEFAULT = 0,
+    MATCH_NOT_BOL = srell::regex_constants::match_flag_type::match_not_bol,
+    MATCH_NOT_EOL = srell::regex_constants::match_flag_type::match_not_eol,
+    MATCH_NOT_BOW = srell::regex_constants::match_flag_type::match_not_bow,
+    MATCH_NOT_EOW = srell::regex_constants::match_flag_type::match_not_eow,
+    MATCH_NOT_NULL = srell::regex_constants::match_flag_type::match_not_null,
+    MATCH_CONTINUOUS = srell::regex_constants::match_flag_type::match_continuous,
+    MATCH_PREV_AVAIL = srell::regex_constants::match_flag_type::match_prev_avail,
+    FORMAT_NO_COPY = srell::regex_constants::match_flag_type::format_no_copy,
+    FORMAT_FIRST_ONLY = srell::regex_constants::match_flag_type::format_first_only,
+};
+VSL_DECLARE_ENUM_FLAGS(ReReplFlags)
 
 using ReError = srell::regex_error;
 
@@ -85,6 +96,13 @@ inline auto create_result_string_for(std::string_view s) -> std::string
     return result_string;
 }
 
+template<typename ReFlags>
+    requires vsl::one_of<ReFlags, ReMatchFlags, ReReplFlags>
+auto to_srell_flags(ReFlags flags) -> srell::regex_constants::match_flag_type
+{
+    return static_cast<srell::regex_constants::match_flag_type>(flags);
+}
+
 }  // namespace detail
 
 inline auto sv(const ReMatch& m) noexcept -> std::string_view
@@ -98,36 +116,35 @@ inline auto sv(const ReSubMatch& m) noexcept -> std::string_view
 }
 
 template<detail::regex_type R>
-auto re_full_match(std::string_view s, const R& re, ReMatchFlagType flags = re_const::match_default) -> bool
+auto re_full_match(std::string_view s, const R& re, ReMatchFlags flags = ReMatchFlags::DEFAULT) -> bool
 {
-    return srell::regex_match(s.begin(), s.end(), re, flags);
+    return srell::regex_match(s.begin(), s.end(), re, detail::to_srell_flags(flags));
 }
 
 template<detail::regex_type R>
-auto re_full_match(std::string_view s, const R& re, ReMatch& match, ReMatchFlagType flags = re_const::match_default)
-    -> bool
+auto re_full_match(std::string_view s, const R& re, ReMatch& match, ReMatchFlags flags = ReMatchFlags::DEFAULT) -> bool
 {
-    return srell::regex_match(s.begin(), s.end(), match, re, flags);
+    return srell::regex_match(s.begin(), s.end(), match, re, detail::to_srell_flags(flags));
 }
 
 template<detail::regex_type R>
-auto re_search(std::string_view s, const R& re, ReMatchFlagType flags = re_const::match_default) -> bool
+auto re_search(std::string_view s, const R& re, ReMatchFlags flags = ReMatchFlags::DEFAULT) -> bool
 {
-    return srell::regex_search(s.begin(), s.end(), re, flags);
+    return srell::regex_search(s.begin(), s.end(), re, detail::to_srell_flags(flags));
 }
 
 template<detail::regex_type R>
-auto re_search(std::string_view s, const R& re, ReMatch& match, ReMatchFlagType flags = re_const::match_default) -> bool
+auto re_search(std::string_view s, const R& re, ReMatch& match, ReMatchFlags flags = ReMatchFlags::DEFAULT) -> bool
 {
-    return srell::regex_search(s.begin(), s.end(), match, re, flags);
+    return srell::regex_search(s.begin(), s.end(), match, re, detail::to_srell_flags(flags));
 }
 
 // Ensure that the regex object (re) passed to the function outlives the returned range
 template<detail::regex_type R>
     requires std::is_lvalue_reference_v<R&&>
-auto re_find_matches(std::string_view s, R&& re, ReMatchFlagType flags = re_const::match_default) -> auto
+auto re_find_matches(std::string_view s, R&& re, ReMatchFlags flags = ReMatchFlags::DEFAULT) -> auto
 {
-    auto matches_begin = srell::regex_iterator(s.begin(), s.end(), re, flags);
+    auto matches_begin = srell::regex_iterator(s.begin(), s.end(), re, detail::to_srell_flags(flags));
     auto matches_end = decltype(matches_begin){};
     return std::ranges::subrange(std::move(matches_begin), std::move(matches_end));
 }
@@ -135,7 +152,7 @@ auto re_find_matches(std::string_view s, R&& re, ReMatchFlagType flags = re_cons
 // Ensure that the regex object (re) passed to the function outlives the returned range
 template<detail::regex_type R>
     requires std::is_lvalue_reference_v<R&&>
-auto re_find_matches_sv(std::string_view s, R&& re, ReMatchFlagType flags = re_const::match_default) -> auto
+auto re_find_matches_sv(std::string_view s, R&& re, ReMatchFlags flags = ReMatchFlags::DEFAULT) -> auto
 {
     return re_find_matches(s, re, flags) | std::views::transform([](const ReMatch& m) { return sv(m); });
 }
@@ -145,10 +162,10 @@ namespace detail
 
 template<regex_type R, typename Submatches>
     requires std::is_lvalue_reference_v<R&&>
-auto re_find_submatches_impl(std::string_view s, R&& re, Submatches&& submatches, ReMatchFlagType flags) -> auto
+auto re_find_submatches_impl(std::string_view s, R&& re, Submatches&& submatches, ReMatchFlags flags) -> auto
 {
-    auto matches_begin =
-        srell::regex_token_iterator(s.begin(), s.end(), re, std::forward<Submatches>(submatches), flags);
+    auto matches_begin = srell::regex_token_iterator(s.begin(), s.end(), re, std::forward<Submatches>(submatches),
+                                                     detail::to_srell_flags(flags));
     auto matches_end = decltype(matches_begin){};
     return std::ranges::subrange(std::move(matches_begin), std::move(matches_end))
            | std::views::transform([](const ReSubMatch& sm) { return sv(sm); });
@@ -159,8 +176,7 @@ auto re_find_submatches_impl(std::string_view s, R&& re, Submatches&& submatches
 // Ensure that the regex object (re) passed to the function outlives the returned range
 template<detail::regex_type R>
     requires std::is_lvalue_reference_v<R&&>
-auto re_find_submatches(std::string_view s, R&& re, int submatches, ReMatchFlagType flags = re_const::match_default)
-    -> auto
+auto re_find_submatches(std::string_view s, R&& re, int submatches, ReMatchFlags flags = ReMatchFlags::DEFAULT) -> auto
 {
     return detail::re_find_submatches_impl(s, re, submatches, flags);
 }
@@ -171,7 +187,7 @@ template<detail::regex_type R>
 auto re_find_submatches(std::string_view s,
                         R&& re,
                         const std::vector<int>& submatches,
-                        ReMatchFlagType flags = re_const::match_default) -> auto
+                        ReMatchFlags flags = ReMatchFlags::DEFAULT) -> auto
 {
     return detail::re_find_submatches_impl(s, re, submatches, flags);
 }
@@ -182,7 +198,7 @@ template<detail::regex_type R>
 auto re_find_submatches(std::string_view s,
                         R&& re,
                         std::initializer_list<int> submatches,
-                        ReMatchFlagType flags = re_const::match_default) -> auto
+                        ReMatchFlags flags = ReMatchFlags::DEFAULT) -> auto
 {
     return detail::re_find_submatches_impl(s, re, submatches, flags);
 }
@@ -208,8 +224,8 @@ inline constexpr auto trim(std::string_view s) noexcept -> std::string_view
 enum class ReSplitOptions : u32
 {
     NONE = 0,
-    TRIM = u32{1} << 0,
-    SKIP_EMPTY = u32{1} << 1,
+    TRIM = 1 << 0,
+    SKIP_EMPTY = 1 << 1,
 };
 VSL_DECLARE_ENUM_FLAGS(ReSplitOptions)
 
@@ -219,7 +235,7 @@ template<detail::regex_type R>
 auto re_split(std::string_view s,
               R&& re,
               ReSplitOptions opt = ReSplitOptions::NONE,
-              ReMatchFlagType flags = re_const::match_default) -> auto
+              ReMatchFlags flags = ReMatchFlags::DEFAULT) -> auto
 {
     const auto trim_tokens = vsl::enum_contains_flags(opt, ReSplitOptions::TRIM);
     const auto skip_empty = vsl::enum_contains_flags(opt, ReSplitOptions::SKIP_EMPTY);
@@ -230,22 +246,19 @@ auto re_split(std::string_view s,
 }
 
 template<typename OutputIt, typename BidirIt, detail::regex_type R, detail::repl_type Repl>
-auto re_replace(OutputIt out,
-                BidirIt first,
-                BidirIt last,
-                const R& re,
-                const Repl& repl,
-                ReMatchFlagType flags = re_const::match_default) -> OutputIt
+auto re_replace(
+    OutputIt out, BidirIt first, BidirIt last, const R& re, const Repl& repl, ReReplFlags flags = ReReplFlags::DEFAULT)
+    -> OutputIt
 {
-    return srell::regex_replace(out, first, last, re, repl, flags);
+    return srell::regex_replace(out, first, last, re, repl, detail::to_srell_flags(flags));
 }
 
 template<detail::regex_type R, detail::repl_type Repl>
-auto re_replace(std::string_view s, const R& re, const Repl& repl, ReMatchFlagType flags = re_const::match_default)
+auto re_replace(std::string_view s, const R& re, const Repl& repl, ReReplFlags flags = ReReplFlags::DEFAULT)
     -> std::string
 {
     auto res = detail::create_result_string_for(s);
-    srell::regex_replace(std::back_inserter(res), s.begin(), s.end(), re, repl, flags);
+    srell::regex_replace(std::back_inserter(res), s.begin(), s.end(), re, repl, detail::to_srell_flags(flags));
     return res;
 }
 
@@ -253,15 +266,15 @@ template<detail::regex_type R>
 auto re_replace(std::string_view s,
                 const R& re,
                 std::function<std::string(const ReMatch&)> repl_func,
-                ReMatchFlagType flags = re_const::match_default) -> std::string
+                ReReplFlags flags = ReReplFlags::DEFAULT) -> std::string
 {
-    const auto first_only = bool(flags & re_const::format_first_only);
-    const auto copy_unmatched = !bool(flags & re_const::format_no_copy);
+    const auto first_only = vsl::enum_contains_flags(flags, ReReplFlags::FORMAT_FIRST_ONLY);
+    const auto copy_unmatched = !vsl::enum_contains_flags(flags, ReReplFlags::FORMAT_NO_COPY);
 
     auto res = detail::create_result_string_for(s);
     auto last_pos = ReMatch::size_type{0};
 
-    const auto matches = re_find_matches(s, re, flags);
+    const auto matches = re_find_matches(s, re, static_cast<ReMatchFlags>(flags));
     for (auto&& match : matches)
     {
         if (copy_unmatched)
