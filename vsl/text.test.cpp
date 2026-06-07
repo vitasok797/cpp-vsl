@@ -203,41 +203,69 @@ TEST(TextTest, Join)
 
 TEST(TextTest, Indent)
 {
-    EXPECT_EQ(vsl::indent("AAA\nBBB\nCCC", 2), "  AAA\n  BBB\n  CCC");
-    EXPECT_EQ(vsl::indent("AAA\nBBB\nCCC\n", 2), "  AAA\n  BBB\n  CCC\n");
-    EXPECT_EQ(vsl::indent("AAA\r\nBBB\r\nCCC", 2), "  AAA\r\n  BBB\r\n  CCC");
-    EXPECT_EQ(vsl::indent("AAA\nBBB\nCCC", 0), "AAA\nBBB\nCCC");
-    EXPECT_EQ(vsl::indent("AAA\nBBB\nCCC", -1), "AAA\nBBB\nCCC");
-    EXPECT_EQ(vsl::indent("\n\nAAA\nBBB\n\n\nCCC\n\n", 1), "\n\n AAA\n BBB\n\n\n CCC\n\n");
-    EXPECT_EQ(vsl::indent("", 1), "");
-    EXPECT_EQ(vsl::indent(" ", 1), "  ");
-    EXPECT_EQ(vsl::indent(" \n ", 1), "  \n  ");
-    EXPECT_EQ(vsl::indent("AAA", 2), "  AAA");
-    EXPECT_EQ(vsl::indent("раз\nдва\nтри", 2), "  раз\n  два\n  три");
-    EXPECT_EQ(vsl::indent("раз\r\nдва\r\nтри", 2), "  раз\r\n  два\r\n  три");
+    auto test_indent = [](auto&& str, int width, vsl::czstring expected_res)
+    {
+        auto res = std::string{};
+        res.reserve(100);
+        vsl::indent(res, str, width);
+        EXPECT_EQ(res, expected_res);
+
+        EXPECT_EQ(vsl::indent(str, width), expected_res);
+    };
+
+    test_indent("AAA\nBBB\nCCC", 2, "  AAA\n  BBB\n  CCC");
+    test_indent("AAA\nBBB\nCCC\n", 2, "  AAA\n  BBB\n  CCC\n");
+    test_indent("AAA\r\nBBB\r\nCCC", 2, "  AAA\r\n  BBB\r\n  CCC");
+    test_indent("AAA\nBBB\nCCC", 0, "AAA\nBBB\nCCC");
+    test_indent("AAA\nBBB\nCCC", -1, "AAA\nBBB\nCCC");
+    test_indent("\n\nAAA\nBBB\n\n\nCCC\n\n", 1, "\n\n AAA\n BBB\n\n\n CCC\n\n");
+    test_indent("", 1, "");
+    test_indent(" ", 1, "  ");
+    test_indent(" \n ", 1, "  \n  ");
+    test_indent("AAA", 2, "  AAA");
+    test_indent("раз\nдва\nтри", 2, "  раз\n  два\n  три");
+    test_indent("раз\r\nдва\r\nтри", 2, "  раз\r\n  два\r\n  три");
 }
 
-TEST(TextTest, LineEndings)
+const auto N = std::string{vsl::LF};
+const auto RN = std::string{vsl::CRLF};
+
+TEST(TextTest, ToLf)
 {
-    const auto N = std::string{"\n"};
-    const auto RN = std::string{"\r\n"};
+    auto test_to_lf = [](auto&& str, auto&& expected_res)
+    {
+        auto res = std::string{};
+        res.reserve(100);
+        vsl::to_lf(res, str);
+        EXPECT_EQ(res, expected_res);
 
-    EXPECT_EQ(vsl::to_lf(""), "");
-    EXPECT_EQ(vsl::to_crlf(""), "");
+        EXPECT_EQ(vsl::to_lf(str), expected_res);
+    };
 
-    EXPECT_EQ(vsl::to_lf(RN), N);
-    EXPECT_EQ(vsl::to_crlf(N), RN);
+    test_to_lf("", "");
+    test_to_lf(RN, N);
+    test_to_lf(N, N);
+    test_to_lf(N + N + RN + N, (N + N + N + N));
+    test_to_lf("abc" + RN + "def" + N + "тест" + RN + "123" + RN, "abc" + N + "def" + N + "тест" + N + "123" + N);
+}
 
-    EXPECT_EQ(vsl::to_lf(N), N);
-    EXPECT_EQ(vsl::to_crlf(RN), RN);
+TEST(TextTest, ToCrlf)
+{
+    auto test_to_crlf = [](auto&& str, auto&& expected_res)
+    {
+        auto res = std::string{};
+        res.reserve(100);
+        vsl::to_crlf(res, str);
+        EXPECT_EQ(res, expected_res);
 
-    EXPECT_EQ(vsl::to_lf(N + N + RN + N), (N + N + N + N));
-    EXPECT_EQ(vsl::to_crlf(RN + RN + N + RN), (RN + RN + RN + RN));
+        EXPECT_EQ(vsl::to_crlf(str), expected_res);
+    };
 
-    EXPECT_EQ(vsl::to_lf("abc" + RN + "def" + N + "тест" + RN + "123" + RN),
-              ("abc" + N + "def" + N + "тест" + N + "123" + N));
-    EXPECT_EQ(vsl::to_crlf("abc" + N + "def" + N + "тест" + RN + "123" + N),
-              ("abc" + RN + "def" + RN + "тест" + RN + "123" + RN));
+    test_to_crlf("", "");
+    test_to_crlf(N, RN);
+    test_to_crlf(RN, RN);
+    test_to_crlf(RN + RN + N + RN, (RN + RN + RN + RN));
+    test_to_crlf("abc" + N + "def" + N + "тест" + RN + "123" + N, "abc" + RN + "def" + RN + "тест" + RN + "123" + RN);
 }
 
 TEST(TextTest, OutOf)

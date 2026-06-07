@@ -137,23 +137,48 @@ auto join_fmt(const R& items, std::string_view fmt, std::string_view separator =
     return fmt::format(fmt::runtime(full_fmt), fmt::join(items, separator));
 }
 
+namespace detail
+{
+
+inline const auto re_match_line = vsl::ReAscii{"^.+", Re::multiline};
+inline const auto re_match_crlf = vsl::ReAscii{"\r\n"};
+inline const auto re_match_lf = vsl::ReAscii{"(?<!\r)\n"};
+
+inline auto get_indent_line_repl(int width) -> std::string
+{
+    return std::string(std::max(0, width), ' ') + "$&";
+}
+
+}  // namespace detail
+
+inline auto indent(std::string& out, std::string_view str, int width) -> void
+{
+    vsl::re_replace(out, str, detail::re_match_line, detail::get_indent_line_repl(width));
+}
+
 inline auto indent(std::string_view str, int width) -> std::string
 {
-    static const auto re = vsl::ReAscii{"^.+", Re::multiline};
-    const auto repl = std::string(std::max(0, width), ' ') + "$&";
-    return vsl::re_replace(str, re, repl);
+    return vsl::re_replace(str, detail::re_match_line, detail::get_indent_line_repl(width));
+}
+
+inline auto to_lf(std::string& out, std::string_view str) -> void
+{
+    vsl::re_replace(out, str, detail::re_match_crlf, LF);
 }
 
 inline auto to_lf(std::string_view str) -> std::string
 {
-    static const auto re = vsl::ReAscii{"\r\n"};
-    return vsl::re_replace(str, re, "\n");
+    return vsl::re_replace(str, detail::re_match_crlf, LF);
+}
+
+inline auto to_crlf(std::string& out, std::string_view str) -> void
+{
+    vsl::re_replace(out, str, detail::re_match_lf, CRLF);
 }
 
 inline auto to_crlf(std::string_view str) -> std::string
 {
-    static const auto re = vsl::ReAscii{"(?<!\r)\n"};
-    return vsl::re_replace(str, re, "\r\n");
+    return vsl::re_replace(str, detail::re_match_lf, CRLF);
 }
 
 template<std::integral CountType, std::integral TotalCountType>
