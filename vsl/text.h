@@ -21,6 +21,9 @@ namespace vsl
 using FoundStr = una::found;
 using SplitOptions = vsl::ReSplitOptions;
 
+inline constexpr auto LF = "\n";
+inline constexpr auto CRLF = "\r\n";
+
 inline auto to_casefold(std::string_view str) -> std::string
 {
     return una::cases::to_casefold_utf8<char>(str);
