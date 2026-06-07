@@ -474,7 +474,7 @@ TEST(RegexTest, Split)
 
 TEST(RegexTest, Replace)
 {
-    auto test_replace = [](auto&& str, auto&& re, auto&& repl, vsl::ReReplFlags flags, vsl::czstring expected_res)
+    auto test_replace = [](auto&& str, auto&& re, auto&& repl, vsl::ReReplFlags flags, auto&& expected_res)
     {
         auto res = std::string{};
         res.reserve(100);
@@ -517,7 +517,7 @@ TEST(RegexTest, Replace)
 
 TEST(RegexTest, ReplaceIter)
 {
-    auto test_replace = [](auto&& str, auto&& re, auto&& repl, vsl::ReReplFlags flags, vsl::czstring expected_res)
+    auto test_replace = [](auto&& str, auto&& re, auto&& repl, vsl::ReReplFlags flags, auto&& expected_res)
     {
         auto res = std::string{"res = ["};
         res.reserve(100);
@@ -560,8 +560,7 @@ TEST(RegexTest, ReplaceIter)
 
 TEST(RegexTest, ReplaceFunc)
 {
-    auto test_replace_func =
-        [](auto&& str, auto&& re, auto&& repl_func, vsl::ReReplFlags flags, vsl::czstring expected_res)
+    auto test_replace_func = [](auto&& str, auto&& re, auto&& repl_func, vsl::ReReplFlags flags, auto&& expected_res)
     {
         auto res = std::string{};
         res.reserve(100);
@@ -718,7 +717,7 @@ TEST(RegexTest, ReFlags)
 
 TEST(RegexTest, Escape)
 {
-    auto test_escape = [](auto&& str, vsl::czstring expected_res)
+    auto test_escape = [](auto&& str, auto&& expected_res)
     {
         auto res = std::string{};
         res.reserve(100);
@@ -738,7 +737,7 @@ TEST(RegexTest, Escape)
 
 TEST(RegexTest, EscapeRepl)
 {
-    auto test_escape_repl = [](auto&& str, vsl::czstring expected_res)
+    auto test_escape_repl = [](auto&& str, auto&& expected_res)
     {
         auto res = std::string{};
         res.reserve(100);

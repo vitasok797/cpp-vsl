@@ -203,7 +203,7 @@ TEST(TextTest, Join)
 
 TEST(TextTest, Indent)
 {
-    auto test_indent = [](auto&& str, int width, vsl::czstring expected_res)
+    auto test_indent = [](auto&& str, int width, auto&& expected_res)
     {
         auto res = std::string{};
         res.reserve(100);
