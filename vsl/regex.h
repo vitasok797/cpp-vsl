@@ -77,22 +77,17 @@ concept regex_type = vsl::one_of<T, Re, ReAscii>;
 template<typename T>
 concept repl_type = vsl::one_of<T, std::string, const char*, char*>;
 
-inline auto create_result_string_for(std::string_view s) -> std::string
+inline auto reserve_string_for(std::string_view s) -> std::string
 {
+    constexpr auto RESERVE_PART = 5;  // +20%
+    const auto reserve_size = s.size() + (s.size() / RESERVE_PART);
+
     auto result_string = std::string{};
-
-    constexpr auto LARGE_STRING_THRESHOLD = std::string_view::size_type{64};
-
-    if (s.size() > LARGE_STRING_THRESHOLD)
+    const auto RESERVE_THRESHOLD = 2 * result_string.capacity();
+    if (reserve_size > RESERVE_THRESHOLD)
     {
-        constexpr auto RESERVE_PART = 5;  // +20%
-        result_string.reserve(s.size() + (s.size() / RESERVE_PART));
+        result_string.reserve(reserve_size);
     }
-    else
-    {
-        result_string.reserve(s.size());
-    }
-
     return result_string;
 }
 
@@ -254,12 +249,50 @@ auto re_replace(
 }
 
 template<detail::regex_type R, detail::repl_type Repl>
+auto re_replace(
+    std::string& out, std::string_view s, const R& re, const Repl& repl, ReReplFlags flags = ReReplFlags::DEFAULT)
+    -> void
+{
+    srell::regex_replace(std::back_inserter(out), s.begin(), s.end(), re, repl, detail::to_srell_flags(flags));
+}
+
+template<detail::regex_type R, detail::repl_type Repl>
 auto re_replace(std::string_view s, const R& re, const Repl& repl, ReReplFlags flags = ReReplFlags::DEFAULT)
     -> std::string
 {
-    auto res = detail::create_result_string_for(s);
-    srell::regex_replace(std::back_inserter(res), s.begin(), s.end(), re, repl, detail::to_srell_flags(flags));
+    auto res = detail::reserve_string_for(s);
+    re_replace(res, s, re, repl, flags);
     return res;
+}
+
+template<detail::regex_type R>
+auto re_replace(std::string& out,
+                std::string_view s,
+                const R& re,
+                std::function<std::string(const ReMatch&)> repl_func,
+                ReReplFlags flags = ReReplFlags::DEFAULT) -> void
+{
+    const auto first_only = vsl::enum_contains_flags(flags, ReReplFlags::FORMAT_FIRST_ONLY);
+    const auto copy_unmatched = !vsl::enum_contains_flags(flags, ReReplFlags::FORMAT_NO_COPY);
+
+    auto last_pos = ReMatch::size_type{0};
+
+    const auto matches = re_find_matches(s, re, static_cast<ReMatchFlags>(flags));
+    for (auto&& match : matches)
+    {
+        if (copy_unmatched)
+        {
+            out.append(match.prefix().first, match.prefix().second);
+        }
+        out.append(repl_func(match));
+        last_pos = match.position() + match.length();
+        if (first_only) break;
+    }
+
+    if (copy_unmatched)
+    {
+        out.append(s, last_pos, s.length() - last_pos);
+    }
 }
 
 template<detail::regex_type R>
@@ -268,35 +301,13 @@ auto re_replace(std::string_view s,
                 std::function<std::string(const ReMatch&)> repl_func,
                 ReReplFlags flags = ReReplFlags::DEFAULT) -> std::string
 {
-    const auto first_only = vsl::enum_contains_flags(flags, ReReplFlags::FORMAT_FIRST_ONLY);
-    const auto copy_unmatched = !vsl::enum_contains_flags(flags, ReReplFlags::FORMAT_NO_COPY);
-
-    auto res = detail::create_result_string_for(s);
-    auto last_pos = ReMatch::size_type{0};
-
-    const auto matches = re_find_matches(s, re, static_cast<ReMatchFlags>(flags));
-    for (auto&& match : matches)
-    {
-        if (copy_unmatched)
-        {
-            res.append(match.prefix().first, match.prefix().second);
-        }
-        res.append(repl_func(match));
-        last_pos = match.position() + match.length();
-        if (first_only) break;
-    }
-
-    if (copy_unmatched)
-    {
-        res.append(s, last_pos, s.length() - last_pos);
-    }
-
+    auto res = detail::reserve_string_for(s);
+    re_replace(res, s, re, repl_func, flags);
     return res;
 }
 
-inline auto re_escape(std::string_view s) -> std::string
+inline auto re_escape(std::string& out, std::string_view s) -> void
 {
-    auto res = detail::create_result_string_for(s);
     for (char c : s)
     {
         switch (c)
@@ -315,27 +326,38 @@ inline auto re_escape(std::string_view s) -> std::string
         case '{':
         case '}':
         case '\\':
-            res += '\\';
+            out += '\\';
             break;
         }
-        res += c;
+        out += c;
     }
+}
+
+inline auto re_escape(std::string_view s) -> std::string
+{
+    auto res = detail::reserve_string_for(s);
+    re_escape(res, s);
     return res;
 }
 
-inline auto re_escape_repl(std::string_view s) -> std::string
+inline auto re_escape_repl(std::string& out, std::string_view s) -> void
 {
-    auto res = detail::create_result_string_for(s);
     for (char c : s)
     {
         switch (c)
         {
         case '$':
-            res += '$';
+            out += '$';
             break;
         }
-        res += c;
+        out += c;
     }
+}
+
+inline auto re_escape_repl(std::string_view s) -> std::string
+{
+    auto res = detail::reserve_string_for(s);
+    re_escape_repl(res, s);
     return res;
 }
 

@@ -474,6 +474,16 @@ TEST(RegexTest, Split)
 
 TEST(RegexTest, Replace)
 {
+    auto test_replace = [](auto&& str, auto&& re, auto&& repl, vsl::ReReplFlags flags, vsl::czstring expected_res)
+    {
+        auto res = std::string{};
+        res.reserve(100);
+        vsl::re_replace(res, str, re, repl, flags);
+        EXPECT_EQ(res, expected_res);
+
+        EXPECT_EQ(vsl::re_replace(str, re, repl, flags), expected_res);
+    };
+
     const auto s = "Quick brown fox";
     const auto pattern = "a|e|i|o|u";
     const auto re = vsl::Re{pattern};
@@ -482,27 +492,27 @@ TEST(RegexTest, Replace)
     const auto expected_res = "Q[u][i]ck br[o]wn f[o]x";
 
     // arg: base
-    EXPECT_EQ(vsl::re_replace(s, re, repl, no_flags), expected_res);
+    test_replace(s, re, repl, no_flags, expected_res);
 
     // arg: s
-    EXPECT_EQ(vsl::re_replace(std::string{s}, re, repl, no_flags), expected_res);
-    EXPECT_EQ(vsl::re_replace(std::string_view{s}, re, repl, no_flags), expected_res);
+    test_replace(std::string{s}, re, repl, no_flags, expected_res);
+    test_replace(std::string_view{s}, re, repl, no_flags, expected_res);
 
     // arg: re
-    EXPECT_EQ(vsl::re_replace(s, vsl::ReAscii{pattern}, repl, no_flags), expected_res);
+    test_replace(s, vsl::ReAscii{pattern}, repl, no_flags, expected_res);
 
     // arg: repl
-    EXPECT_EQ(vsl::re_replace(s, re, std::string{repl}, no_flags), expected_res);
-    EXPECT_EQ(vsl::re_replace(s, re, "[$&]", no_flags), expected_res);
+    test_replace(s, re, std::string{repl}, no_flags, expected_res);
+    test_replace(s, re, "[$&]", no_flags, expected_res);
 
     // arg: flags
-    EXPECT_EQ(vsl::re_replace(s, re, repl, vsl::ReReplFlags::FORMAT_FIRST_ONLY), "Q[u]ick brown fox");
-    EXPECT_EQ(vsl::re_replace(s, re, repl, vsl::ReReplFlags::FORMAT_NO_COPY), "[u][i][o][o]");
+    test_replace(s, re, repl, vsl::ReReplFlags::FORMAT_FIRST_ONLY, "Q[u]ick brown fox");
+    test_replace(s, re, repl, vsl::ReReplFlags::FORMAT_NO_COPY, "[u][i][o][o]");
 
     auto flags =
         vsl::ReReplFlags::MATCH_CONTINUOUS | vsl::ReReplFlags::FORMAT_FIRST_ONLY | vsl::ReReplFlags::FORMAT_NO_COPY;
-    EXPECT_EQ(vsl::re_replace(s, re, repl, flags), "");
-    EXPECT_EQ(vsl::re_replace("example", re, repl, flags), "[e]");
+    test_replace(s, re, repl, flags, "");
+    test_replace("example", re, repl, flags, "[e]");
 }
 
 TEST(RegexTest, ReplaceIter)
@@ -510,6 +520,7 @@ TEST(RegexTest, ReplaceIter)
     auto test_replace = [](auto&& str, auto&& re, auto&& repl, vsl::ReReplFlags flags, vsl::czstring expected_res)
     {
         auto res = std::string{"res = ["};
+        res.reserve(100);
         auto it = std::back_inserter(res);
         it = vsl::re_replace(it, str.begin(), str.end(), re, repl, flags);
         ++it = ']';
@@ -549,6 +560,17 @@ TEST(RegexTest, ReplaceIter)
 
 TEST(RegexTest, ReplaceFunc)
 {
+    auto test_replace_func =
+        [](auto&& str, auto&& re, auto&& repl_func, vsl::ReReplFlags flags, vsl::czstring expected_res)
+    {
+        auto res = std::string{};
+        res.reserve(100);
+        vsl::re_replace(res, str, re, repl_func, flags);
+        EXPECT_EQ(res, expected_res);
+
+        EXPECT_EQ(vsl::re_replace(str, re, repl_func, flags), expected_res);
+    };
+
     auto repl_func = [](const vsl::ReMatch& match)
     {
         auto value = std::stoi(match.str());
@@ -562,28 +584,28 @@ TEST(RegexTest, ReplaceFunc)
     const auto expected_res = "A=20, B=40";
 
     // arg: base
-    EXPECT_EQ(vsl::re_replace(s, re, repl_func, no_flags), expected_res);
+    test_replace_func(s, re, repl_func, no_flags, expected_res);
 
     // arg: s
-    EXPECT_EQ(vsl::re_replace(std::string{s}, re, repl_func, no_flags), expected_res);
-    EXPECT_EQ(vsl::re_replace(std::string_view{s}, re, repl_func, no_flags), expected_res);
+    test_replace_func(std::string{s}, re, repl_func, no_flags, expected_res);
+    test_replace_func(std::string_view{s}, re, repl_func, no_flags, expected_res);
 
     // arg: re
-    EXPECT_EQ(vsl::re_replace(s, vsl::ReAscii{pattern}, repl_func, no_flags), expected_res);
+    test_replace_func(s, vsl::ReAscii{pattern}, repl_func, no_flags, expected_res);
 
     // arg: flags
-    EXPECT_EQ(vsl::re_replace(s, re, repl_func, vsl::ReReplFlags::FORMAT_FIRST_ONLY), "A=20, B=2");
-    EXPECT_EQ(vsl::re_replace(s, re, repl_func, vsl::ReReplFlags::FORMAT_NO_COPY), "2040");
+    test_replace_func(s, re, repl_func, vsl::ReReplFlags::FORMAT_FIRST_ONLY, "A=20, B=2");
+    test_replace_func(s, re, repl_func, vsl::ReReplFlags::FORMAT_NO_COPY, "2040");
 
     auto flags =
         vsl::ReReplFlags::MATCH_CONTINUOUS | vsl::ReReplFlags::FORMAT_FIRST_ONLY | vsl::ReReplFlags::FORMAT_NO_COPY;
-    EXPECT_EQ(vsl::re_replace(s, re, repl_func, flags), "");
-    EXPECT_EQ(vsl::re_replace("3 4 5", re, repl_func, flags), "60");
+    test_replace_func(s, re, repl_func, flags, "");
+    test_replace_func("3 4 5", re, repl_func, flags, "60");
 
-    EXPECT_EQ(vsl::re_replace("", re, repl_func, no_flags), "");
-    EXPECT_EQ(vsl::re_replace("no match", re, repl_func, no_flags), "no match");
-    EXPECT_EQ(vsl::re_replace("109", re, repl_func, no_flags), "2180");
-    EXPECT_EQ(vsl::re_replace("1x3", re, repl_func, no_flags), "20x60");
+    test_replace_func("", re, repl_func, no_flags, "");
+    test_replace_func("no match", re, repl_func, no_flags, "no match");
+    test_replace_func("109", re, repl_func, no_flags, "2180");
+    test_replace_func("1x3", re, repl_func, no_flags, "20x60");
 }
 
 TEST(RegexTest, MatchToStringView)
@@ -696,23 +718,43 @@ TEST(RegexTest, ReFlags)
 
 TEST(RegexTest, Escape)
 {
-    EXPECT_EQ(vsl::re_escape(""), "");
-    EXPECT_EQ(vsl::re_escape("  "), "  ");
-    EXPECT_EQ(vsl::re_escape("\n\t"), "\n\t");
-    EXPECT_EQ(vsl::re_escape(R"(.^$*+?|()[]{}\)"), R"(\.\^\$\*\+\?\|\(\)\[\]\{\}\\)");
-    EXPECT_EQ(vsl::re_escape(R"(!@#%&-_=~,;:/<>"'`)"), R"(!@#%&-_=~,;:/<>"'`)");
-    EXPECT_EQ(vsl::re_escape(R"(Цена: $100.00 (со скидкой 20%))"), R"(Цена: \$100\.00 \(со скидкой 20%\))");
+    auto test_escape = [](auto&& str, vsl::czstring expected_res)
+    {
+        auto res = std::string{};
+        res.reserve(100);
+        vsl::re_escape(res, str);
+        EXPECT_EQ(res, expected_res);
+
+        EXPECT_EQ(vsl::re_escape(str), expected_res);
+    };
+
+    test_escape("", "");
+    test_escape("  ", "  ");
+    test_escape("\n\t", "\n\t");
+    test_escape(R"(.^$*+?|()[]{}\)", R"(\.\^\$\*\+\?\|\(\)\[\]\{\}\\)");
+    test_escape(R"(!@#%&-_=~,;:/<>"'`)", R"(!@#%&-_=~,;:/<>"'`)");
+    test_escape(R"(Цена: $100.00 (со скидкой 20%))", R"(Цена: \$100\.00 \(со скидкой 20%\))");
 }
 
 TEST(RegexTest, EscapeRepl)
 {
-    EXPECT_EQ(vsl::re_escape_repl(""), "");
-    EXPECT_EQ(vsl::re_escape_repl("  "), "  ");
-    EXPECT_EQ(vsl::re_escape_repl("\n\t"), "\n\t");
-    EXPECT_EQ(vsl::re_escape_repl("$"), "$$");
-    EXPECT_EQ(vsl::re_escape_repl("$$"), "$$$$");
-    EXPECT_EQ(vsl::re_escape_repl(R"(.^*+?|()[]{}\!@#%&-_=~,;:/<>"'`)"), R"(.^*+?|()[]{}\!@#%&-_=~,;:/<>"'`)");
-    EXPECT_EQ(vsl::re_escape_repl(R"(Цена: $100.00 (со скидкой 20%))"), R"(Цена: $$100.00 (со скидкой 20%))");
+    auto test_escape_repl = [](auto&& str, vsl::czstring expected_res)
+    {
+        auto res = std::string{};
+        res.reserve(100);
+        vsl::re_escape_repl(res, str);
+        EXPECT_EQ(res, expected_res);
+
+        EXPECT_EQ(vsl::re_escape_repl(str), expected_res);
+    };
+
+    test_escape_repl("", "");
+    test_escape_repl("  ", "  ");
+    test_escape_repl("\n\t", "\n\t");
+    test_escape_repl("$", "$$");
+    test_escape_repl("$$", "$$$$");
+    test_escape_repl(R"(.^*+?|()[]{}\!@#%&-_=~,;:/<>"'`)", R"(.^*+?|()[]{}\!@#%&-_=~,;:/<>"'`)");
+    test_escape_repl(R"(Цена: $100.00 (со скидкой 20%))", R"(Цена: $$100.00 (со скидкой 20%))");
 }
 
 }  // namespace test
