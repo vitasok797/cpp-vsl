@@ -38,17 +38,17 @@ TEST(RegexTest, Create)
 
 TEST(RegexTest, FullMatch)
 {
-    auto test_full_match = [](auto&& str, auto&& re, vsl::ReMatch* match, vsl::ReMatchFlags flags, bool expected_status)
+    auto test_full_match = [](auto&& s, auto&& re, vsl::ReMatch* match, vsl::ReMatchFlags flags, bool expected_status)
     {
         const auto success = [&]
         {
             if (match)
             {
-                return vsl::re_full_match(str, re, *match, flags);
+                return vsl::re_full_match(s, re, *match, flags);
             }
             else
             {
-                return vsl::re_full_match(str, re, flags);
+                return vsl::re_full_match(s, re, flags);
             }
         }();
 
@@ -57,7 +57,7 @@ TEST(RegexTest, FullMatch)
             EXPECT_TRUE(success);
             if (match)
             {
-                EXPECT_EQ(match->str(), str);
+                EXPECT_EQ(match->str(), s);
                 EXPECT_FALSE(match->empty());
                 EXPECT_TRUE(match->size() > 0);
             }
@@ -100,7 +100,7 @@ TEST(RegexTest, FullMatch)
     test_full_match(s, vsl::Re{"\\d+"}, &match, no_flags, false);
 }
 
-TEST(RegexTest, FullMatchAndSubmatches)
+TEST(RegexTest, FullMatchUseSubmatches)
 {
     const auto str = "123abc456";
     const auto re = vsl::Re{"\\d+(\\D+)\\d+|(\\D+)"};
@@ -151,18 +151,17 @@ TEST(RegexTest, FullMatchOnlyFull)
 
 TEST(RegexTest, Search)
 {
-    auto test_search =
-        [](auto&& str, auto&& re, vsl::ReMatch* match, vsl::ReMatchFlags flags, vsl::cstring expected_res)
+    auto test_search = [](auto&& s, auto&& re, vsl::ReMatch* match, vsl::ReMatchFlags flags, vsl::cstring expected_res)
     {
         const auto success = [&]
         {
             if (match)
             {
-                return vsl::re_search(str, re, *match, flags);
+                return vsl::re_search(s, re, *match, flags);
             }
             else
             {
-                return vsl::re_search(str, re, flags);
+                return vsl::re_search(s, re, flags);
             }
         }();
 
@@ -215,7 +214,7 @@ TEST(RegexTest, Search)
     test_search(s, vsl::Re{"\\D{4}"}, &match, no_flags, nullptr);
 }
 
-TEST(RegexTest, SearchAndSubmatches)
+TEST(RegexTest, SearchUseSubmatches)
 {
     const auto re = vsl::Re{"\\D(\\D+)"};
 
@@ -259,26 +258,26 @@ TEST(RegexTest, SearchAndSubmatches)
     EXPECT_EQ(match.suffix().str(), "456");
 }
 
-TEST(RegexTest, FindX)
+TEST(RegexTest, Find)
 {
     // Ensure that the regex object passed to the re_find_matches/re_find_matches_sv/re_find_submatches
     // function outlives the returned range (intenal iterator stores a reference to the regex)
 
-    auto test_find = [](auto&& str, auto&& re, vsl::ReMatchFlags flags, const std::vector<vsl::cstring>& expected_res)
+    auto test_find = [](auto&& s, auto&& re, vsl::ReMatchFlags flags, const std::vector<vsl::cstring>& expected_res)
     {
         {
-            const auto res = vsl::re_find_matches(str, re, flags);
+            const auto res = vsl::re_find_matches(s, re, flags);
             static_assert(vsl::range_of<decltype(res), vsl::ReMatch>);
             const auto res_str = res | std::views::transform([](auto&& m) { return m.str(); });
             EXPECT_THAT(std::vector(res_str.begin(), res_str.end()), testing::ElementsAreArray(expected_res));
         }
         {
-            const auto res = vsl::re_find_matches_sv(str, re, flags);
+            const auto res = vsl::re_find_matches_sv(s, re, flags);
             static_assert(vsl::range_of<decltype(res), std::string_view>);
             EXPECT_THAT(std::vector(res.begin(), res.end()), testing::ElementsAreArray(expected_res));
         }
         {
-            const auto res = vsl::re_find_submatches(str, re, 0, flags);
+            const auto res = vsl::re_find_submatches(s, re, 0, flags);
             static_assert(vsl::range_of<decltype(res), std::string_view>);
             EXPECT_THAT(std::vector(res.begin(), res.end()), testing::ElementsAreArray(expected_res));
         }
@@ -474,14 +473,14 @@ TEST(RegexTest, Split)
 
 TEST(RegexTest, Replace)
 {
-    auto test_replace = [](auto&& str, auto&& re, auto&& repl, vsl::ReReplFlags flags, auto&& expected_res)
+    auto test_replace = [](auto&& s, auto&& re, auto&& repl, vsl::ReReplFlags flags, auto&& expected_res)
     {
         auto res = std::string{};
         res.reserve(100);
-        vsl::re_replace(res, str, re, repl, flags);
+        vsl::re_replace(res, s, re, repl, flags);
         EXPECT_EQ(res, expected_res);
 
-        EXPECT_EQ(vsl::re_replace(str, re, repl, flags), expected_res);
+        EXPECT_EQ(vsl::re_replace(s, re, repl, flags), expected_res);
     };
 
     const auto s = "Quick brown fox";
@@ -517,12 +516,12 @@ TEST(RegexTest, Replace)
 
 TEST(RegexTest, ReplaceIter)
 {
-    auto test_replace = [](auto&& str, auto&& re, auto&& repl, vsl::ReReplFlags flags, auto&& expected_res)
+    auto test_replace = [](auto&& s, auto&& re, auto&& repl, vsl::ReReplFlags flags, auto&& expected_res)
     {
         auto res = std::string{"res = ["};
         res.reserve(100);
         auto it = std::back_inserter(res);
-        it = vsl::re_replace(it, str.begin(), str.end(), re, repl, flags);
+        it = vsl::re_replace(it, s.begin(), s.end(), re, repl, flags);
         ++it = ']';
         EXPECT_EQ(res, expected_res);
     };
@@ -560,14 +559,14 @@ TEST(RegexTest, ReplaceIter)
 
 TEST(RegexTest, ReplaceFunc)
 {
-    auto test_replace_func = [](auto&& str, auto&& re, auto&& repl_func, vsl::ReReplFlags flags, auto&& expected_res)
+    auto test_replace_func = [](auto&& s, auto&& re, auto&& repl_func, vsl::ReReplFlags flags, auto&& expected_res)
     {
         auto res = std::string{};
         res.reserve(100);
-        vsl::re_replace(res, str, re, repl_func, flags);
+        vsl::re_replace(res, s, re, repl_func, flags);
         EXPECT_EQ(res, expected_res);
 
-        EXPECT_EQ(vsl::re_replace(str, re, repl_func, flags), expected_res);
+        EXPECT_EQ(vsl::re_replace(s, re, repl_func, flags), expected_res);
     };
 
     auto repl_func = [](const vsl::ReMatch& match)
@@ -717,14 +716,14 @@ TEST(RegexTest, ReFlags)
 
 TEST(RegexTest, Escape)
 {
-    auto test_escape = [](auto&& str, auto&& expected_res)
+    auto test_escape = [](auto&& s, auto&& expected_res)
     {
         auto res = std::string{};
         res.reserve(100);
-        vsl::re_escape(res, str);
+        vsl::re_escape(res, s);
         EXPECT_EQ(res, expected_res);
 
-        EXPECT_EQ(vsl::re_escape(str), expected_res);
+        EXPECT_EQ(vsl::re_escape(s), expected_res);
     };
 
     test_escape("", "");
@@ -737,14 +736,14 @@ TEST(RegexTest, Escape)
 
 TEST(RegexTest, EscapeRepl)
 {
-    auto test_escape_repl = [](auto&& str, auto&& expected_res)
+    auto test_escape_repl = [](auto&& s, auto&& expected_res)
     {
         auto res = std::string{};
         res.reserve(100);
-        vsl::re_escape_repl(res, str);
+        vsl::re_escape_repl(res, s);
         EXPECT_EQ(res, expected_res);
 
-        EXPECT_EQ(vsl::re_escape_repl(str), expected_res);
+        EXPECT_EQ(vsl::re_escape_repl(s), expected_res);
     };
 
     test_escape_repl("", "");
