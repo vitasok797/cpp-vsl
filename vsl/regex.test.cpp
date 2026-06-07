@@ -152,7 +152,7 @@ TEST(RegexTest, FullMatchOnlyFull)
 TEST(RegexTest, Search)
 {
     auto test_search =
-        [](auto&& str, auto&& re, vsl::ReMatch* match, vsl::ReMatchFlags flags, vsl::czstring expected_res)
+        [](auto&& str, auto&& re, vsl::ReMatch* match, vsl::ReMatchFlags flags, vsl::cstring expected_res)
     {
         const auto success = [&]
         {
@@ -264,7 +264,7 @@ TEST(RegexTest, FindX)
     // Ensure that the regex object passed to the re_find_matches/re_find_matches_sv/re_find_submatches
     // function outlives the returned range (intenal iterator stores a reference to the regex)
 
-    auto test_find = [](auto&& str, auto&& re, vsl::ReMatchFlags flags, const std::vector<vsl::czstring>& expected_res)
+    auto test_find = [](auto&& str, auto&& re, vsl::ReMatchFlags flags, const std::vector<vsl::cstring>& expected_res)
     {
         {
             const auto res = vsl::re_find_matches(str, re, flags);

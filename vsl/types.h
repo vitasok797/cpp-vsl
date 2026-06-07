@@ -47,8 +47,7 @@ inline constexpr auto DOUBLE_MAX = std::numeric_limits<double>::max();
 inline constexpr auto DOUBLE_MAX_NEG = std::numeric_limits<double>::lowest();
 inline constexpr auto INF = std::numeric_limits<double>::infinity();
 
-using zstring = char*;
-using czstring = const char*;
+using cstring = const char*;
 
 using Index = std::ptrdiff_t;
 using SignedSize = std::ptrdiff_t;
