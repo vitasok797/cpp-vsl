@@ -150,8 +150,7 @@ namespace detail
 {
 
 inline const auto re_match_line = vsl::ReAscii{"^.+", Re::multiline};
-inline const auto re_match_crlf = vsl::ReAscii{"\r\n"};
-inline const auto re_match_lf = vsl::ReAscii{"(?<!\r)\n"};
+inline const auto re_match_newline = vsl::ReAscii{"\\r?\\n"};
 
 inline auto get_indent_line_repl(int width) -> std::string
 {
@@ -172,22 +171,22 @@ inline auto indent(std::string_view str, int width) -> std::string
 
 inline auto to_lf(std::string& out, std::string_view str) -> void
 {
-    vsl::re_replace(out, str, detail::re_match_crlf, LF);
+    vsl::re_replace(out, str, detail::re_match_newline, LF);
 }
 
 inline auto to_lf(std::string_view str) -> std::string
 {
-    return vsl::re_replace(str, detail::re_match_crlf, LF);
+    return vsl::re_replace(str, detail::re_match_newline, LF);
 }
 
 inline auto to_crlf(std::string& out, std::string_view str) -> void
 {
-    vsl::re_replace(out, str, detail::re_match_lf, CRLF);
+    vsl::re_replace(out, str, detail::re_match_newline, CRLF);
 }
 
 inline auto to_crlf(std::string_view str) -> std::string
 {
-    return vsl::re_replace(str, detail::re_match_lf, CRLF);
+    return vsl::re_replace(str, detail::re_match_newline, CRLF);
 }
 
 template<std::integral CountType, std::integral TotalCountType>
