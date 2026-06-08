@@ -140,10 +140,12 @@ auto join(const R& items, std::string_view separator = ", ") -> std::string
 }
 
 template<std::ranges::input_range R>
-auto join_fmt(const R& items, std::string_view fmt, std::string_view separator = ", ") -> std::string
+auto join_f(const R& items, std::string_view fmt_spec, std::string_view separator = ", ") -> std::string
 {
-    const auto full_fmt = fmt::format("{{{}}}", fmt);
-    return fmt::format(fmt::runtime(full_fmt), fmt::join(items, separator));
+    if (fmt_spec.starts_with('{')) fmt_spec.remove_prefix(1);
+    if (fmt_spec.ends_with('}')) fmt_spec.remove_suffix(1);
+    const auto format_string = fmt::format("{{{}}}", fmt_spec);
+    return fmt::format(fmt::runtime(format_string), fmt::join(items, separator));
 }
 
 namespace detail

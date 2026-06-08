@@ -191,14 +191,18 @@ TEST(TextTest, Join)
     EXPECT_EQ(vsl::join(ints), "1, 2, 3");
     EXPECT_EQ(vsl::join(ints, "+"), "1+2+3");
 
-    EXPECT_EQ(vsl::join_fmt(ints, ":02"), "01, 02, 03");
-    EXPECT_EQ(vsl::join_fmt(ints, ":02", "+"), "01+02+03");
+    EXPECT_EQ(vsl::join_f(ints, ":02"), "01, 02, 03");
+    EXPECT_EQ(vsl::join_f(ints, "{:02}"), "01, 02, 03");
+    EXPECT_EQ(vsl::join_f(ints, ":02", "+"), "01+02+03");
+    EXPECT_EQ(vsl::join_f(ints, "{:02}", "+"), "01+02+03");
 
     EXPECT_EQ(vsl::join(strings), "abc, def, тест");
     EXPECT_EQ(vsl::join(strings, "_"), "abc_def_тест");
 
-    EXPECT_EQ(vsl::join_fmt(strings, ":?"), R"("abc", "def", "тест")");
-    EXPECT_EQ(vsl::join_fmt(strings, ":?", "_"), R"("abc"_"def"_"тест")");
+    EXPECT_EQ(vsl::join_f(strings, ":?"), R"("abc", "def", "тест")");
+    EXPECT_EQ(vsl::join_f(strings, "{:?}"), R"("abc", "def", "тест")");
+    EXPECT_EQ(vsl::join_f(strings, ":?", "_"), R"("abc"_"def"_"тест")");
+    EXPECT_EQ(vsl::join_f(strings, "{:?}", "_"), R"("abc"_"def"_"тест")");
 }
 
 TEST(TextTest, Indent)
