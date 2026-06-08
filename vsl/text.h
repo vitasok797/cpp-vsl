@@ -8,6 +8,7 @@
 #include <fmt/ranges.h>
 #include <uni_algo/case.h>
 
+#include <algorithm>
 #include <array>
 #include <concepts>
 #include <ranges>
