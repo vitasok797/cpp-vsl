@@ -23,6 +23,14 @@
 namespace vsl
 {
 
+using ReError = srell::regex_error;
+
+using Re = srell::u8cregex;
+using ReAscii = srell::regex;
+
+using ReMatch = srell::match_results<std::string_view::const_iterator>;
+using ReSubMatch = srell::sub_match<std::string_view::const_iterator>;
+
 // Re ctor flags (https://en.cppreference.com/cpp/regex/syntax_option_type):
 // * Re::multiline
 // * Re::dotall (SRELL's extension)
@@ -60,13 +68,13 @@ enum class ReReplFlags : u32
 };
 VSL_DECLARE_ENUM_FLAGS(ReReplFlags)
 
-using ReError = srell::regex_error;
-
-using Re = srell::u8cregex;
-using ReAscii = srell::regex;
-
-using ReMatch = srell::match_results<std::string_view::const_iterator>;
-using ReSubMatch = srell::sub_match<std::string_view::const_iterator>;
+enum class ReSplitOptions : u32
+{
+    NONE = 0,
+    TRIM = 1 << 0,
+    SKIP_EMPTY = 1 << 1,
+};
+VSL_DECLARE_ENUM_FLAGS(ReSplitOptions)
 
 namespace detail
 {
@@ -215,14 +223,6 @@ inline constexpr auto trim(std::string_view s) noexcept -> std::string_view
 }
 
 }  // namespace detail
-
-enum class ReSplitOptions : u32
-{
-    NONE = 0,
-    TRIM = 1 << 0,
-    SKIP_EMPTY = 1 << 1,
-};
-VSL_DECLARE_ENUM_FLAGS(ReSplitOptions)
 
 // Ensure that the regex object (re) passed to the function outlives the returned range
 template<detail::regex_type R>

@@ -1,6 +1,7 @@
 #ifndef VSL_TEXT_H
 #define VSL_TEXT_H
 
+#include <vsl/enum.h>
 #include <vsl/regex.h>
 
 #include <fmt/format.h>
@@ -19,7 +20,14 @@ namespace vsl
 {
 
 using FoundStr = una::found;
-using SplitOptions = vsl::ReSplitOptions;
+
+enum class SplitOptions : u32
+{
+    NONE = static_cast<u32>(ReSplitOptions::NONE),
+    TRIM = static_cast<u32>(ReSplitOptions::TRIM),
+    SKIP_EMPTY = static_cast<u32>(ReSplitOptions::SKIP_EMPTY),
+};
+VSL_DECLARE_ENUM_FLAGS(SplitOptions)
 
 inline constexpr auto LF = "\n";
 inline constexpr auto CRLF = "\r\n";
@@ -120,7 +128,7 @@ inline auto split(std::string_view str, std::string_view separator, SplitOptions
 {
     const auto pattern = vsl::re_escape(separator);
     const auto re = vsl::Re{pattern};
-    auto tokens = vsl::re_split(str, re, opt);
+    auto tokens = vsl::re_split(str, re, static_cast<vsl::ReSplitOptions>(opt));
     return std::vector(tokens.begin(), tokens.end());
 }
 
