@@ -3,6 +3,7 @@
 
 #include <vsl/concepts.h>
 #include <vsl/enum.h>
+#include <vsl/text_trim.h>
 #include <vsl/types.h>
 
 #include <srell/srell.hpp>
@@ -206,24 +207,6 @@ auto re_find_submatches(std::string_view s,
     return detail::re_find_submatches_impl(s, re, submatches, flags);
 }
 
-namespace detail
-{
-
-inline constexpr auto WHITESPACES = " \n\r\t\f\v";
-
-inline constexpr auto trim(std::string_view s) noexcept -> std::string_view
-{
-    const auto first = s.find_first_not_of(WHITESPACES);
-    if (first == std::string_view::npos) return {};
-
-    const auto last = s.find_last_not_of(WHITESPACES);
-    const auto count = last - first + 1;
-
-    return s.substr(first, count);
-}
-
-}  // namespace detail
-
 // Ensure that the regex object (re) passed to the function outlives the returned range
 template<detail::regex_type R>
     requires std::is_lvalue_reference_v<R&&>
@@ -236,7 +219,7 @@ auto re_split(std::string_view s,
     const auto skip_empty = vsl::enum_contains_flags(opt, ReSplitOptions::SKIP_EMPTY);
     return re_find_submatches(s, re, -1, flags)
            | std::views::transform([trim_tokens](std::string_view sv) noexcept
-                                   { return trim_tokens ? detail::trim(sv) : sv; })
+                                   { return trim_tokens ? vsl::trim(sv) : sv; })
            | std::views::filter([skip_empty](std::string_view sv) noexcept { return !(skip_empty && sv.empty()); });
 }
 

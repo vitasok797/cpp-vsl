@@ -90,12 +90,25 @@ TEST(TextTest, Trim)
     EXPECT_EQ(vsl::trim_right("abc"), "abc");
     EXPECT_EQ(vsl::trim("abc"), "abc");
 
-    EXPECT_EQ(vsl::trim_left(" \t\n Тест"), "Тест");
-    EXPECT_EQ(vsl::trim_right("Тест \t\n "), "Тест");
-    EXPECT_EQ(vsl::trim(" \t\n Тест \t\n "), "Тест");
+    EXPECT_EQ(vsl::trim_left(" \n\r\t\f\v Тест \n\r\t\f\v "), "Тест \n\r\t\f\v ");
+    EXPECT_EQ(vsl::trim_right(" \n\r\t\f\v Тест \n\r\t\f\v "), " \n\r\t\f\v Тест");
+    EXPECT_EQ(vsl::trim(" \n\r\t\f\v Тест \n\r\t\f\v "), "Тест");
+
+    EXPECT_EQ(vsl::trim_left("  \xC2\xA0"), "");
+    EXPECT_EQ(vsl::trim_right("\xC2\xA0  "), "");
+    EXPECT_EQ(vsl::trim("\xC2\xA0"), "");
+    EXPECT_EQ(vsl::trim("\xC2\xA0Тест\xC2\xA0"), "Тест");
+    EXPECT_EQ(vsl::trim(" \t\n \xC2\xA0 \n Тест \xC2\xA0 \t\n "), "Тест");
+    EXPECT_EQ(vsl::trim("  \xC2 \xA0 Тест \xC2 \xA0  "), "\xC2 \xA0 Тест \xC2 \xA0");
+    EXPECT_EQ(vsl::trim("  \xC2\xBD Тест \xD0\xA0  "), "\xC2\xBD Тест \xD0\xA0");
 
     EXPECT_EQ(vsl::trim_left("  abc  "), "abc  ");
     EXPECT_EQ(vsl::trim_right("  abc  "), "  abc");
+
+    const auto symbols = "$_";
+    EXPECT_EQ(vsl::trim_left("$$__$$  Тест  $$__$$", symbols), "  Тест  $$__$$");
+    EXPECT_EQ(vsl::trim_right("$$__$$  Тест  $$__$$", symbols), "$$__$$  Тест  ");
+    EXPECT_EQ(vsl::trim("$$__$$  Тест  $$__$$", symbols), "  Тест  ");
 }
 
 TEST(TextTest, Split)

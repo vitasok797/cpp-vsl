@@ -3,13 +3,13 @@
 
 #include <vsl/enum.h>
 #include <vsl/regex.h>
+#include <vsl/text_trim.h>
 
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 #include <uni_algo/case.h>
 
 #include <algorithm>
-#include <array>
 #include <concepts>
 #include <ranges>
 #include <string>
@@ -81,47 +81,6 @@ inline auto find_str(std::string_view str1, std::string_view str2) -> FoundStr
 inline auto find_str_icase(std::string_view str1, std::string_view str2) -> FoundStr
 {
     return una::caseless::find_utf8<char>(str1, str2);
-}
-
-namespace detail
-{
-
-inline constexpr auto make_whitespace_lut() -> auto
-{
-    auto lut = std::array<bool, 256>{};
-    lut[static_cast<unsigned char>(' ')] = true;
-    lut[static_cast<unsigned char>('\t')] = true;
-    lut[static_cast<unsigned char>('\n')] = true;
-    lut[static_cast<unsigned char>('\r')] = true;
-    lut[static_cast<unsigned char>('\v')] = true;
-    lut[static_cast<unsigned char>('\f')] = true;
-    return lut;
-}
-
-inline constexpr auto whitespace_lut = make_whitespace_lut();
-
-inline constexpr auto is_whitespace(char c) noexcept -> bool
-{
-    return whitespace_lut[static_cast<unsigned char>(c)];
-}
-
-}  // namespace detail
-
-inline constexpr auto trim_left(std::string_view str) noexcept -> std::string_view
-{
-    const auto start = std::find_if_not(str.begin(), str.end(), detail::is_whitespace);
-    return std::string_view(start, str.end());
-}
-
-inline constexpr auto trim_right(std::string_view str) noexcept -> std::string_view
-{
-    const auto end = std::find_if_not(str.rbegin(), str.rend(), detail::is_whitespace).base();
-    return std::string_view(str.begin(), end);
-}
-
-inline constexpr auto trim(std::string_view str) noexcept -> std::string_view
-{
-    return trim_right(trim_left(str));
 }
 
 inline auto split(std::string_view str, std::string_view separator, SplitOptions opt = SplitOptions::NONE)
