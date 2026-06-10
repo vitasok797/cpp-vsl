@@ -146,7 +146,8 @@ auto re_search(std::string_view s, const R& re, ReMatch& match, ReMatchFlags fla
 // Ensure that the regex object (re) passed to the function outlives the returned range
 template<detail::regex_type R>
     requires std::is_lvalue_reference_v<R&&>
-auto re_find_matches(std::string_view s, R&& re, ReMatchFlags flags = ReMatchFlags::DEFAULT) -> auto
+auto re_find_matches(std::string_view s, R&& re, ReMatchFlags flags = ReMatchFlags::DEFAULT)
+    -> vsl::range_view_of<ReMatch> auto
 {
     auto matches_begin = srell::regex_iterator(s.begin(), s.end(), re, detail::to_srell_flags(flags));
     auto matches_end = decltype(matches_begin){};
@@ -156,7 +157,8 @@ auto re_find_matches(std::string_view s, R&& re, ReMatchFlags flags = ReMatchFla
 // Ensure that the regex object (re) passed to the function outlives the returned range
 template<detail::regex_type R>
     requires std::is_lvalue_reference_v<R&&>
-auto re_find_matches_sv(std::string_view s, R&& re, ReMatchFlags flags = ReMatchFlags::DEFAULT) -> auto
+auto re_find_matches_sv(std::string_view s, R&& re, ReMatchFlags flags = ReMatchFlags::DEFAULT)
+    -> vsl::range_view_of<std::string_view> auto
 {
     return re_find_matches(s, re, flags) | std::views::transform([](const ReMatch& m) { return sv(m); });
 }
@@ -166,7 +168,8 @@ namespace detail
 
 template<regex_type R, typename Submatches>
     requires std::is_lvalue_reference_v<R&&>
-auto re_find_submatches_impl(std::string_view s, R&& re, Submatches&& submatches, ReMatchFlags flags) -> auto
+auto re_find_submatches_impl(std::string_view s, R&& re, Submatches&& submatches, ReMatchFlags flags)
+    -> vsl::range_view_of<std::string_view> auto
 {
     auto matches_begin = srell::regex_token_iterator(s.begin(), s.end(), re, std::forward<Submatches>(submatches),
                                                      detail::to_srell_flags(flags));
@@ -180,7 +183,8 @@ auto re_find_submatches_impl(std::string_view s, R&& re, Submatches&& submatches
 // Ensure that the regex object (re) passed to the function outlives the returned range
 template<detail::regex_type R>
     requires std::is_lvalue_reference_v<R&&>
-auto re_find_submatches(std::string_view s, R&& re, int submatches, ReMatchFlags flags = ReMatchFlags::DEFAULT) -> auto
+auto re_find_submatches(std::string_view s, R&& re, int submatches, ReMatchFlags flags = ReMatchFlags::DEFAULT)
+    -> vsl::range_view_of<std::string_view> auto
 {
     return detail::re_find_submatches_impl(s, re, submatches, flags);
 }
@@ -191,7 +195,7 @@ template<detail::regex_type R>
 auto re_find_submatches(std::string_view s,
                         R&& re,
                         const std::vector<int>& submatches,
-                        ReMatchFlags flags = ReMatchFlags::DEFAULT) -> auto
+                        ReMatchFlags flags = ReMatchFlags::DEFAULT) -> vsl::range_view_of<std::string_view> auto
 {
     return detail::re_find_submatches_impl(s, re, submatches, flags);
 }
@@ -202,7 +206,7 @@ template<detail::regex_type R>
 auto re_find_submatches(std::string_view s,
                         R&& re,
                         std::initializer_list<int> submatches,
-                        ReMatchFlags flags = ReMatchFlags::DEFAULT) -> auto
+                        ReMatchFlags flags = ReMatchFlags::DEFAULT) -> vsl::range_view_of<std::string_view> auto
 {
     return detail::re_find_submatches_impl(s, re, submatches, flags);
 }
@@ -213,7 +217,7 @@ template<detail::regex_type R>
 auto re_split(std::string_view s,
               R&& re,
               ReSplitOptions opt = ReSplitOptions::NONE,
-              ReMatchFlags flags = ReMatchFlags::DEFAULT) -> auto
+              ReMatchFlags flags = ReMatchFlags::DEFAULT) -> vsl::range_view_of<std::string_view> auto
 {
     const auto trim_tokens = vsl::enum_contains_flags(opt, ReSplitOptions::TRIM);
     const auto skip_empty = vsl::enum_contains_flags(opt, ReSplitOptions::SKIP_EMPTY);
