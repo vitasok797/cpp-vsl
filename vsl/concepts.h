@@ -35,7 +35,16 @@ template<typename R, typename T>
 concept range_of_convertible_to = std::convertible_to<std::ranges::range_value_t<R>, T>;
 
 template<typename R>
-concept range_of_strings = string_like<std::ranges::range_value_t<R>>;
+concept range_of_string_like = string_like<std::ranges::range_value_t<R>>;
+
+template<typename R, typename T>
+concept range_view_of = range_of<R, T> && std::ranges::view<R>;
+
+template<typename R, typename T>
+concept range_view_of_convertible_to = range_of_convertible_to<R, T> && std::ranges::view<R>;
+
+template<typename R>
+concept range_view_of_string_like = range_of_string_like<R> && std::ranges::view<R>;
 
 }  // namespace vsl
 
