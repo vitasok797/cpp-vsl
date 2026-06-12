@@ -1,9 +1,11 @@
 #ifndef VSL_TEXT_H
 #define VSL_TEXT_H
 
+#include <vsl/concepts.h>
 #include <vsl/enum.h>
 #include <vsl/regex.h>
 #include <vsl/text_trim.h>
+#include <vsl/types.h>
 
 #include <fmt/format.h>
 #include <fmt/ranges.h>
@@ -83,13 +85,50 @@ inline auto find_str_icase(std::string_view str1, std::string_view str2) -> Foun
     return una::caseless::find_utf8<char>(str1, str2);
 }
 
-inline auto split(std::string_view str, std::string_view separator, SplitOptions opt = SplitOptions::NONE)
-    -> std::vector<std::string_view>
+namespace detail
+{
+
+template<typename OutputStr>
+    requires vsl::one_of_type<OutputStr, std::string, std::string_view>
+auto split_impl(std::string_view str, std::string_view separator, SplitOptions opt, size_t capacity_reserve)
+    -> std::vector<OutputStr>
 {
     const auto pattern = vsl::re_escape(separator);
     const auto re = vsl::Re{pattern};
     auto tokens = vsl::re_split(str, re, static_cast<vsl::ReSplitOptions>(opt));
-    return std::vector(tokens.begin(), tokens.end());
+
+    auto res = std::vector<OutputStr>{};
+    res.reserve(capacity_reserve);
+
+    if constexpr (vsl::same_type_as<OutputStr, std::string>)
+    {
+        auto string_tokens = tokens | std::views::transform([](std::string_view sv) { return std::string(sv); });
+        res.assign(string_tokens.begin(), string_tokens.end());
+    }
+    else
+    {
+        res.assign(tokens.begin(), tokens.end());
+    }
+
+    return res;
+}
+
+}  // namespace detail
+
+inline auto split(std::string_view str,
+                  std::string_view separator,
+                  SplitOptions opt = SplitOptions::NONE,
+                  size_t capacity_reserve = 0) -> std::vector<std::string>
+{
+    return detail::split_impl<std::string>(str, separator, opt, capacity_reserve);
+}
+
+inline auto split_sv(std::string_view str,
+                     std::string_view separator,
+                     SplitOptions opt = SplitOptions::NONE,
+                     size_t capacity_reserve = 0) -> std::vector<std::string_view>
+{
+    return detail::split_impl<std::string_view>(str, separator, opt, capacity_reserve);
 }
 
 template<std::ranges::input_range R>
