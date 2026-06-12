@@ -190,7 +190,7 @@ inline auto to_crlf(std::string_view str) -> std::string
 }
 
 template<std::integral CountType, std::integral TotalCountType>
-auto out_of(CountType count, TotalCountType total_count) -> std::string
+auto out_of(CountType count, TotalCountType total_count, std::string_view separator = "/") -> std::string
 {
     if (std::cmp_equal(count, total_count))
     {
@@ -198,7 +198,7 @@ auto out_of(CountType count, TotalCountType total_count) -> std::string
     }
     else
     {
-        return fmt::format("{}/{}", count, total_count);
+        return fmt::format("{}{}{}", count, separator, total_count);
     }
 }
 

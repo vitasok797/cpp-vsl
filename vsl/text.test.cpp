@@ -314,6 +314,9 @@ TEST(TextTest, OutOf)
     EXPECT_EQ(vsl::out_of(3, 3), "3");
     EXPECT_EQ(vsl::out_of(3, 4), "3/4");
     EXPECT_EQ(vsl::out_of(i16{3}, u64{4}), "3/4");
+
+    EXPECT_EQ(vsl::out_of(10, 20, " из "), "10 из 20");
+    EXPECT_EQ(vsl::out_of(20, 20, " из "), "20");
 }
 
 }  // namespace test
