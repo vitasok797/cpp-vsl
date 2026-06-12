@@ -108,19 +108,19 @@ class TcpClient final
     auto write(T value) -> void;
 
     template<vsl::numeric ItemType, typename SizeType = TcpClient::size64_t>
-        requires vsl::one_of<SizeType, TcpClient::size64_t, TcpClient::size32_t>
+        requires vsl::one_of_type<SizeType, TcpClient::size64_t, TcpClient::size32_t>
     auto read_vector() -> std::vector<ItemType>;
 
     template<vsl::numeric ItemType, typename SizeType = TcpClient::size64_t>
-        requires vsl::one_of<SizeType, TcpClient::size64_t, TcpClient::size32_t>
+        requires vsl::one_of_type<SizeType, TcpClient::size64_t, TcpClient::size32_t>
     auto write_vector(const std::vector<ItemType>& vec) -> void;
 
     template<typename SizeType = TcpClient::size64_t>
-        requires vsl::one_of<SizeType, TcpClient::size64_t, TcpClient::size32_t>
+        requires vsl::one_of_type<SizeType, TcpClient::size64_t, TcpClient::size32_t>
     auto read_string() -> std::string;
 
     template<typename SizeType = TcpClient::size64_t>
-        requires vsl::one_of<SizeType, TcpClient::size64_t, TcpClient::size32_t>
+        requires vsl::one_of_type<SizeType, TcpClient::size64_t, TcpClient::size32_t>
     auto write_string(std::string_view str) -> void;
 
     template<typename T, typename Size>
@@ -160,7 +160,7 @@ class TcpClient final
     auto check_connection() -> void;
 
     template<typename T>
-        requires vsl::one_of<T, Poco::BinaryReader, Poco::BinaryWriter>
+        requires vsl::one_of_type<T, Poco::BinaryReader, Poco::BinaryWriter>
     auto check_stream_status(T& stream) const -> void;
 
     Poco::Net::StreamSocket socket_;

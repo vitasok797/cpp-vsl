@@ -164,7 +164,7 @@ auto TcpClient::write(T value) -> void
 }
 
 template<vsl::numeric ItemType, typename SizeType>
-    requires vsl::one_of<SizeType, TcpClient::size64_t, TcpClient::size32_t>
+    requires vsl::one_of_type<SizeType, TcpClient::size64_t, TcpClient::size32_t>
 auto TcpClient::read_vector() -> std::vector<ItemType>
 {
     auto size = read<typename SizeType::type>();
@@ -177,7 +177,7 @@ auto TcpClient::read_vector() -> std::vector<ItemType>
 }
 
 template<vsl::numeric ItemType, typename SizeType>
-    requires vsl::one_of<SizeType, TcpClient::size64_t, TcpClient::size32_t>
+    requires vsl::one_of_type<SizeType, TcpClient::size64_t, TcpClient::size32_t>
 auto TcpClient::write_vector(const std::vector<ItemType>& vec) -> void
 {
     auto size = vsl::numeric_cast<typename SizeType::type>(vec.size());
@@ -186,7 +186,7 @@ auto TcpClient::write_vector(const std::vector<ItemType>& vec) -> void
 }
 
 template<typename SizeType>
-    requires vsl::one_of<SizeType, TcpClient::size64_t, TcpClient::size32_t>
+    requires vsl::one_of_type<SizeType, TcpClient::size64_t, TcpClient::size32_t>
 auto TcpClient::read_string() -> std::string
 {
     auto size = read<typename SizeType::type>();
@@ -199,7 +199,7 @@ auto TcpClient::read_string() -> std::string
 }
 
 template<typename SizeType>
-    requires vsl::one_of<SizeType, TcpClient::size64_t, TcpClient::size32_t>
+    requires vsl::one_of_type<SizeType, TcpClient::size64_t, TcpClient::size32_t>
 auto TcpClient::write_string(std::string_view str) -> void
 {
     auto size = vsl::numeric_cast<typename SizeType::type>(str.size());
@@ -279,7 +279,7 @@ inline auto TcpClient::check_connection() -> void
 }
 
 template<typename T>
-    requires vsl::one_of<T, Poco::BinaryReader, Poco::BinaryWriter>
+    requires vsl::one_of_type<T, Poco::BinaryReader, Poco::BinaryWriter>
 auto TcpClient::check_stream_status(T& stream) const -> void
 {
     if constexpr (requires { stream.eof(); })

@@ -23,10 +23,10 @@ template<typename T, typename U>
 concept same_type_as = std::same_as<std::decay_t<T>, std::decay_t<U>>;
 
 template<typename T, typename... Types>
-concept one_of = (std::same_as<std::decay_t<T>, Types> || ...);
+concept one_of_type = (std::same_as<std::decay_t<T>, Types> || ...);
 
 template<typename T>
-concept string_like = one_of<T, std::string, std::string_view, const char*, char*>;
+concept string_like = one_of_type<T, std::string, std::string_view, const char*, char*>;
 
 template<typename R, typename T>
 concept range_of = std::same_as<std::ranges::range_value_t<R>, std::decay_t<T>>;

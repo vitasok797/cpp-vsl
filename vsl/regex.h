@@ -81,10 +81,10 @@ namespace detail
 {
 
 template<typename T>
-concept regex_type = vsl::one_of<T, Re, ReAscii>;
+concept regex_type = vsl::one_of_type<T, Re, ReAscii>;
 
 template<typename T>
-concept repl_type = vsl::one_of<T, std::string, const char*, char*>;
+concept repl_type = vsl::one_of_type<T, std::string, const char*, char*>;
 
 inline auto reserve_string_for(std::string_view s) -> std::string
 {
@@ -101,7 +101,7 @@ inline auto reserve_string_for(std::string_view s) -> std::string
 }
 
 template<typename ReFlags>
-    requires vsl::one_of<ReFlags, ReMatchFlags, ReReplFlags>
+    requires vsl::one_of_type<ReFlags, ReMatchFlags, ReReplFlags>
 auto to_srell_flags(ReFlags flags) -> srell::regex_constants::match_flag_type
 {
     return static_cast<srell::regex_constants::match_flag_type>(flags);

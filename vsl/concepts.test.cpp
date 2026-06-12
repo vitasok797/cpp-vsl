@@ -116,12 +116,12 @@ TEST(ConceptsTest, CompileCheck)
     static_assert(!vsl::same_type_as<char*, const char*>);
 
     // -----------------------------------------------------------------------------------------------
-    // one_of
+    // one_of_type
     // -----------------------------------------------------------------------------------------------
 
-    static_assert(vsl::one_of<int, double, int, char>);
-    static_assert(vsl::one_of<const int&, double, int, char>);
-    static_assert(vsl::one_of<const char*, int, const char*, double>);
+    static_assert(vsl::one_of_type<int, double, int, char>);
+    static_assert(vsl::one_of_type<const int&, double, int, char>);
+    static_assert(vsl::one_of_type<const char*, int, const char*, double>);
 
     // -----------------------------------------------------------------------------------------------
     // string_like
