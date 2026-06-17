@@ -94,6 +94,7 @@ if(VSL_BUILD_TESTS AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         "vsl/tcp/test.cpp"
         "vsl/text.test.cpp"
         "vsl/types.test.cpp"
+        "vsl/unicode.test.cpp"
         "vsl/util.test.cpp"
         )
 

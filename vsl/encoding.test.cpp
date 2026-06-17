@@ -12,26 +12,6 @@ namespace test
 static constexpr auto ASCII_SYMBOLS =
     R"( !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~)";
 
-TEST(EncodingTest, IsValidUtf8)
-{
-    EXPECT_TRUE(vsl::is_valid_utf8(""));
-    EXPECT_TRUE(vsl::is_valid_utf8(" \n "));
-    EXPECT_TRUE(vsl::is_valid_utf8(ASCII_SYMBOLS));
-    EXPECT_TRUE(vsl::is_valid_utf8("тест"));
-    EXPECT_TRUE(vsl::is_valid_utf8("Straße"));
-    EXPECT_FALSE(vsl::is_valid_utf8("\xC2"));
-}
-
-TEST(EncodingTest, IsValidUtf16)
-{
-    EXPECT_TRUE(vsl::is_valid_utf16(u""));
-    EXPECT_TRUE(vsl::is_valid_utf16(u" \n "));
-    EXPECT_TRUE(vsl::is_valid_utf16(u"test"));
-    EXPECT_TRUE(vsl::is_valid_utf16(u"тест"));
-    EXPECT_TRUE(vsl::is_valid_utf16(u"Straße"));
-    EXPECT_FALSE(vsl::is_valid_utf16(u"\xD800"));
-}
-
 TEST(EncodingTest, IsAscii)
 {
     EXPECT_TRUE(vsl::is_ascii(""));
@@ -44,26 +24,6 @@ TEST(EncodingTest, IsAscii)
     EXPECT_TRUE(vsl::is_ascii("\x79"));
     EXPECT_FALSE(vsl::is_ascii("\x80"));
     EXPECT_FALSE(vsl::is_ascii("\xFF"));
-}
-
-TEST(EncodingTest, ToUtf16)
-{
-    EXPECT_EQ(vsl::to_utf16(""), u"");
-    EXPECT_EQ(vsl::to_utf16("test"), u"test");
-    EXPECT_EQ(vsl::to_utf16("тест"), u"тест");
-    EXPECT_EQ(vsl::to_utf16("test"), u"\x74\x65\x73\x74");
-    EXPECT_EQ(vsl::to_utf16("тест"), u"\x442\x435\x441\x442");
-    EXPECT_EQ(vsl::to_utf16("te\xC2st"), u"te�st");
-}
-
-TEST(EncodingTest, FromUtf16)
-{
-    EXPECT_EQ(vsl::from_utf16(u""), "");
-    EXPECT_EQ(vsl::from_utf16(u"test"), "test");
-    EXPECT_EQ(vsl::from_utf16(u"тест"), "тест");
-    EXPECT_EQ(vsl::from_utf16(u"\x74\x65\x73\x74"), "test");
-    EXPECT_EQ(vsl::from_utf16(u"\x442\x435\x441\x442"), "тест");
-    EXPECT_EQ(vsl::from_utf16(u"te\xD800st"), "te�st");
 }
 
 TEST(EncodingTest, ToCp1251)

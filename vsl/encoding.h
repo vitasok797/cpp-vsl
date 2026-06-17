@@ -4,7 +4,6 @@
 #include <vsl/encoding_charsets.h>
 #include <vsl/types.h>
 
-#include <uni_algo/conv.h>
 #include <uni_algo/ranges_conv.h>
 
 #include <string>
@@ -20,16 +19,6 @@ inline constexpr auto LEAST_NONASCII_SYMBOL = u32{0x80};
 
 }  // namespace detail
 
-inline auto is_valid_utf8(std::string_view str) -> bool
-{
-    return una::is_valid_utf8<char>(str);
-}
-
-inline auto is_valid_utf16(std::u16string_view str) -> bool
-{
-    return una::is_valid_utf16<char16_t>(str);
-}
-
 inline auto is_ascii(std::string_view str) -> bool
 {
     for (char c : str)
@@ -37,16 +26,6 @@ inline auto is_ascii(std::string_view str) -> bool
         if (static_cast<unsigned char>(c) >= 128) return false;
     }
     return true;
-}
-
-inline auto to_utf16(std::string_view str) -> std::u16string
-{
-    return una::utf8to16<char, char16_t>(str);
-}
-
-inline auto from_utf16(std::u16string_view str) -> std::string
-{
-    return una::utf16to8<char16_t, char>(str);
 }
 
 template<typename Charset>
