@@ -3,8 +3,6 @@
 
 #include <vsl/concepts.h>
 #include <vsl/enum.h>
-#include <vsl/regex.h>
-#include <vsl/text_trim.h>
 #include <vsl/types.h>
 
 #include <fmt/format.h>
@@ -13,9 +11,11 @@
 
 #include <algorithm>
 #include <concepts>
+#include <iterator>
 #include <ranges>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -26,60 +26,162 @@ using FoundStr = una::found;
 
 enum class SplitOptions : u32
 {
-    NONE = static_cast<u32>(ReSplitOptions::NONE),
-    TRIM = static_cast<u32>(ReSplitOptions::TRIM),
-    SKIP_EMPTY = static_cast<u32>(ReSplitOptions::SKIP_EMPTY),
+    NONE = 0,
+    TRIM = 1 << 0,
+    SKIP_EMPTY = 1 << 1,
 };
 VSL_DECLARE_ENUM_FLAGS(SplitOptions)
 
-inline constexpr auto LF = "\n";
-inline constexpr auto CRLF = "\r\n";
+inline constexpr auto LF = std::string_view{"\n"};
+inline constexpr auto CRLF = std::string_view{"\r\n"};
 
+template<typename = void>
+[[nodiscard]]
+inline auto to_upper(std::string_view str) -> std::string
+{
+    return una::cases::to_uppercase_utf8<char>(str);
+}
+
+[[nodiscard]]
+inline auto to_upper_ascii(std::string_view str) -> std::string
+{
+    std::string res(str);
+    for (char& c : res)
+    {
+        if (c >= 'a' && c <= 'z')
+        {
+            c -= 32;
+        }
+    }
+    return res;
+}
+
+template<typename = void>
+[[nodiscard]]
+inline auto to_lower(std::string_view str) -> std::string
+{
+    return una::cases::to_lowercase_utf8<char>(str);
+}
+
+[[nodiscard]]
+inline auto to_lower_ascii(std::string_view str) -> std::string
+{
+    std::string res(str);
+    for (char& c : res)
+    {
+        if (c >= 'A' && c <= 'Z')
+        {
+            c += 32;
+        }
+    }
+    return res;
+}
+
+template<typename = void>
+[[nodiscard]]
 inline auto to_casefold(std::string_view str) -> std::string
 {
     return una::cases::to_casefold_utf8<char>(str);
 }
 
-inline auto to_lowercase(std::string_view str) -> std::string
-{
-    return una::cases::to_lowercase_utf8<char>(str);
-}
-
-inline auto to_uppercase(std::string_view str) -> std::string
-{
-    return una::cases::to_uppercase_utf8<char>(str);
-}
-
+template<typename = void>
+[[nodiscard]]
 inline auto to_titlecase(std::string_view str) -> std::string
 {
     return una::cases::to_titlecase_utf8<char>(str);
 }
 
-inline auto compare_str(std::string_view str1, std::string_view str2) -> bool
+template<typename = void>
+[[nodiscard]]
+inline auto is_equal(std::string_view str1, std::string_view str2) -> bool
 {
     return (una::casesens::compare_utf8<char>(str1, str2) == 0);
 }
 
-inline auto compare_str_icase(std::string_view str1, std::string_view str2) -> bool
+template<typename = void>
+[[nodiscard]]
+inline auto is_equal_icase(std::string_view str1, std::string_view str2) -> bool
 {
     return (una::caseless::compare_utf8<char>(str1, str2) == 0);
 }
 
-inline auto collate(std::string_view str1, std::string_view str2) -> int
+inline constexpr auto IS_EQUAL_ASCII_ICASE_CHUNK_SIZE = 512;
+
+[[nodiscard]]
+inline constexpr auto is_equal_ascii_icase(std::string_view str1, std::string_view str2) noexcept -> bool
+{
+    if (str1.size() != str2.size()) return false;
+
+    const auto end1 = str1.end();
+    auto it1 = str1.begin();
+    auto it2 = str2.begin();
+
+    while (it1 != end1)
+    {
+        const auto chunk_end1 =
+            it1 + std::min(static_cast<ptrdiff_t>(IS_EQUAL_ASCII_ICASE_CHUNK_SIZE), std::distance(it1, end1));
+
+        std::tie(it1, it2) = std::mismatch(it1, chunk_end1, it2);
+
+        while (it1 != chunk_end1)
+        {
+            const auto c1 = static_cast<unsigned char>(*it1);
+            const auto c2 = static_cast<unsigned char>(*it2);
+            if (c1 != c2)
+            {
+                const auto lc1 = c1 | 32;
+                const auto lc2 = c2 | 32;
+                if (lc1 != lc2 || lc1 < 'a' || lc1 > 'z')
+                {
+                    return false;
+                }
+            }
+
+            ++it1;
+            ++it2;
+        }
+    }
+
+    return true;
+}
+
+template<typename = void>
+[[nodiscard]]
+inline auto compare_str(std::string_view str1, std::string_view str2) -> int
+{
+    return una::casesens::compare_utf8<char>(str1, str2);
+}
+
+template<typename = void>
+[[nodiscard]]
+inline auto compare_str_icase(std::string_view str1, std::string_view str2) -> int
+{
+    return una::caseless::compare_utf8<char>(str1, str2);
+}
+
+template<typename = void>
+[[nodiscard]]
+inline auto collate_str(std::string_view str1, std::string_view str2) -> int
 {
     return una::casesens::collate_utf8<char>(str1, str2);
 }
 
-inline auto collate_icase(std::string_view str1, std::string_view str2) -> int
+template<typename = void>
+[[nodiscard]]
+inline auto collate_str_icase(std::string_view str1, std::string_view str2) -> int
 {
     return una::caseless::collate_utf8<char>(str1, str2);
 }
 
+template<typename = void>
+[[nodiscard]]
 inline auto find_str(std::string_view str1, std::string_view str2) -> FoundStr
 {
     return una::casesens::find_utf8<char>(str1, str2);
 }
 
+template<typename = void>
+[[nodiscard]]
 inline auto find_str_icase(std::string_view str1, std::string_view str2) -> FoundStr
 {
     return una::caseless::find_utf8<char>(str1, str2);
@@ -88,118 +190,235 @@ inline auto find_str_icase(std::string_view str1, std::string_view str2) -> Foun
 namespace detail
 {
 
-template<typename OutputStr>
-    requires vsl::one_of_type<OutputStr, std::string, std::string_view>
-auto split_impl(std::string_view str, std::string_view separator, SplitOptions opt, size_t capacity_reserve)
-    -> std::vector<OutputStr>
+inline constexpr auto ASCII_WHITESPACES = std::string_view{" \n\r\t\f\v"};
+inline constexpr auto NBSP = std::string_view{"\xC2\xA0"};
+
+}  // namespace detail
+
+[[nodiscard]]
+inline constexpr auto trim_ascii_start(std::string_view str,
+                                       std::string_view symbols = detail::ASCII_WHITESPACES) noexcept
+    -> std::string_view
 {
-    const auto pattern = vsl::re_escape(separator);
-    const auto re = vsl::Re{pattern};
-    auto tokens = vsl::re_split(str, re, static_cast<vsl::ReSplitOptions>(opt));
+    const auto first = str.find_first_not_of(symbols);
+    if (first == std::string_view::npos) return {};
+    str.remove_prefix(first);
+    return str;
+}
 
-    auto res = std::vector<OutputStr>{};
-    res.reserve(capacity_reserve);
+[[nodiscard]]
+inline constexpr auto trim_ascii_end(std::string_view str,
+                                     std::string_view symbols = detail::ASCII_WHITESPACES) noexcept -> std::string_view
+{
+    const auto last = str.find_last_not_of(symbols);
+    if (last == std::string_view::npos) return {};
+    str.remove_suffix(str.size() - last - 1);
+    return str;
+}
 
-    if constexpr (vsl::same_type_as<OutputStr, std::string>)
+[[nodiscard]]
+inline constexpr auto trim_ascii(std::string_view str, std::string_view symbols = detail::ASCII_WHITESPACES) noexcept
+    -> std::string_view
+{
+    return trim_ascii_end(trim_ascii_start(str, symbols), symbols);
+}
+
+[[nodiscard]]
+inline constexpr auto trim_start(std::string_view str) noexcept -> std::string_view
+{
+    while (true)
     {
-        auto string_tokens = tokens | std::views::transform([](std::string_view sv) { return std::string(sv); });
-        res.assign(string_tokens.begin(), string_tokens.end());
+        str = trim_ascii_start(str);
+        if (!str.starts_with(detail::NBSP)) return str;
+        str.remove_prefix(detail::NBSP.size());
     }
-    else
+}
+
+[[nodiscard]]
+inline constexpr auto trim_end(std::string_view str) noexcept -> std::string_view
+{
+    while (true)
     {
-        res.assign(tokens.begin(), tokens.end());
+        str = trim_ascii_end(str);
+        if (!str.ends_with(detail::NBSP)) return str;
+        str.remove_suffix(detail::NBSP.size());
     }
+}
+
+[[nodiscard]]
+inline constexpr auto trim(std::string_view str) noexcept -> std::string_view
+{
+    return trim_end(trim_start(str));
+}
+
+template<typename OutputStrType = std::string>
+    requires vsl::one_of_type<OutputStrType, std::string, std::string_view>
+inline auto split(std::vector<OutputStrType>& out,
+                  std::string_view str,
+                  std::string_view separator,
+                  SplitOptions opt = SplitOptions::NONE) -> void
+{
+    const auto trim_tokens = vsl::enum_contains_flags(opt, SplitOptions::TRIM);
+    const auto skip_empty = vsl::enum_contains_flags(opt, SplitOptions::SKIP_EMPTY);
+
+    if (separator.empty())
+    {
+        if (trim_tokens)
+        {
+            str = vsl::trim(str);
+        }
+        if (!str.empty() || !skip_empty)
+        {
+            out.emplace_back(str);
+        }
+        return;
+    }
+
+    auto pos = size_t{0};
+    while (true)
+    {
+        const auto sep_pos = str.find(separator, pos);
+        auto token = (sep_pos == std::string_view::npos) ? str.substr(pos) : str.substr(pos, sep_pos - pos);
+
+        if (trim_tokens)
+        {
+            token = vsl::trim(token);
+        }
+
+        const auto keep_token = !(token.empty() && skip_empty);
+        if (keep_token)
+        {
+            out.emplace_back(token);
+        }
+
+        if (sep_pos == std::string_view::npos) break;
+        pos = sep_pos + separator.size();
+    }
+}
+
+template<typename OutputStrType = std::string>
+    requires vsl::one_of_type<OutputStrType, std::string, std::string_view>
+[[nodiscard]]
+inline auto split(std::string_view str, std::string_view separator, SplitOptions opt = SplitOptions::NONE)
+    -> std::vector<OutputStrType>
+{
+    auto res = std::vector<OutputStrType>{};
+    split(res, str, separator, opt);
+    return res;
+}
+
+template<std::ranges::input_range R>
+[[nodiscard]]
+inline auto join(const R& items, std::string_view separator = ", ", std::string_view fmt_spec = "{}") -> std::string
+{
+    return fmt::format(fmt::runtime(fmt_spec), fmt::join(items, separator));
+}
+
+inline auto indent(std::string& out, std::string_view str, int width) -> void
+{
+    if (width <= 0)
+    {
+        out.append(str);
+        return;
+    }
+
+    auto pos = size_t{0};
+    while (true)
+    {
+        const auto eol_start = str.find_first_of("\r\n", pos);
+        const auto text = (eol_start == std::string_view::npos) ? str.substr(pos) : str.substr(pos, eol_start - pos);
+        if (!text.empty())
+        {
+            out.append(static_cast<size_t>(width), ' ');
+            out.append(text);
+        }
+        pos = eol_start;
+        if (pos == std::string_view::npos) break;
+
+        const auto next_start = str.find_first_not_of("\r\n", pos);
+        const auto eol_text =
+            (next_start == std::string_view::npos) ? str.substr(pos) : str.substr(pos, next_start - pos);
+        out.append(eol_text);
+        pos = next_start;
+        if (pos == std::string_view::npos) break;
+    }
+}
+
+[[nodiscard]]
+inline auto indent(std::string_view str, int width) -> std::string
+{
+    auto res = std::string{};
+    res.reserve(str.size() + str.size() / 2);  // +50%
+    indent(res, str, width);
+    return res;
+}
+
+[[nodiscard]]
+inline auto to_lf(std::string_view str) -> std::string
+{
+    auto res = std::string{};
+    res.reserve(str.size());
+
+    auto start = size_t{0};
+    for (size_t i = 0; i < str.size(); ++i)
+    {
+        if (str[i] == '\r')
+        {
+            res.append(str, start, i - start);
+            res.push_back('\n');
+            if (i + 1 < str.size() && str[i + 1] == '\n')
+            {
+                ++i;
+            }
+            start = i + 1;
+        }
+    }
+    res.append(str, start);
 
     return res;
 }
 
-}  // namespace detail
-
-inline auto split(std::string_view str,
-                  std::string_view separator,
-                  SplitOptions opt = SplitOptions::NONE,
-                  size_t capacity_reserve = 0) -> std::vector<std::string>
-{
-    return detail::split_impl<std::string>(str, separator, opt, capacity_reserve);
-}
-
-inline auto split_sv(std::string_view str,
-                     std::string_view separator,
-                     SplitOptions opt = SplitOptions::NONE,
-                     size_t capacity_reserve = 0) -> std::vector<std::string_view>
-{
-    return detail::split_impl<std::string_view>(str, separator, opt, capacity_reserve);
-}
-
-template<std::ranges::input_range R>
-auto join(const R& items, std::string_view separator = ", ") -> std::string
-{
-    return fmt::format("{}", fmt::join(items, separator));
-}
-
-template<std::ranges::input_range R>
-auto join_f(const R& items, std::string_view fmt_spec, std::string_view separator = ", ") -> std::string
-{
-    if (fmt_spec.starts_with('{')) fmt_spec.remove_prefix(1);
-    if (fmt_spec.ends_with('}')) fmt_spec.remove_suffix(1);
-    const auto format_string = fmt::format("{{{}}}", fmt_spec);
-    return fmt::format(fmt::runtime(format_string), fmt::join(items, separator));
-}
-
-namespace detail
-{
-
-inline const auto re_match_line = vsl::ReAscii{"^.+", Re::multiline};
-inline const auto re_match_newline = vsl::ReAscii{"\\r?\\n"};
-
-inline auto get_indent_line_repl(int width) -> std::string
-{
-    return std::string(std::max(0, width), ' ') + "$&";
-}
-
-}  // namespace detail
-
-inline auto indent(std::string& out, std::string_view str, int width) -> void
-{
-    vsl::re_replace(out, str, detail::re_match_line, detail::get_indent_line_repl(width));
-}
-
-inline auto indent(std::string_view str, int width) -> std::string
-{
-    return vsl::re_replace(str, detail::re_match_line, detail::get_indent_line_repl(width));
-}
-
-inline auto to_lf(std::string& out, std::string_view str) -> void
-{
-    vsl::re_replace(out, str, detail::re_match_newline, LF);
-}
-
-inline auto to_lf(std::string_view str) -> std::string
-{
-    return vsl::re_replace(str, detail::re_match_newline, LF);
-}
-
 inline auto to_crlf(std::string& out, std::string_view str) -> void
 {
-    vsl::re_replace(out, str, detail::re_match_newline, CRLF);
+    auto start = size_t{0};
+    for (size_t i = 0; i < str.size(); ++i)
+    {
+        if (str[i] == '\r' || str[i] == '\n')
+        {
+            out.append(str, start, i - start);
+            out.append("\r\n");
+            if (str[i] == '\r' && i + 1 < str.size() && str[i + 1] == '\n')
+            {
+                ++i;
+            }
+            start = i + 1;
+        }
+    }
+    out.append(str, start);
 }
 
+[[nodiscard]]
 inline auto to_crlf(std::string_view str) -> std::string
 {
-    return vsl::re_replace(str, detail::re_match_newline, CRLF);
+    auto res = std::string{};
+    res.reserve(str.size() + str.size() / 5);  // +20%
+    to_crlf(res, str);
+    return res;
 }
 
 template<std::integral CountType, std::integral TotalCountType>
-auto out_of(CountType count, TotalCountType total_count, std::string_view separator = "/") -> std::string
+[[nodiscard]]
+inline auto format_count_of_total(CountType count, TotalCountType total_count, std::string_view separator = "/")
+    -> std::string
 {
-    if (std::cmp_equal(count, total_count))
+    auto res = std::string{};
+    if (!std::cmp_equal(count, total_count))
     {
-        return fmt::format("{}", count);
+        res += std::to_string(count);
+        res.append(separator);
     }
-    else
-    {
-        return fmt::format("{}{}{}", count, separator, total_count);
-    }
+    res += std::to_string(total_count);
+    return res;
 }
 
 }  // namespace vsl

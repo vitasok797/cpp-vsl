@@ -3,7 +3,7 @@
 
 #include <vsl/concepts.h>
 #include <vsl/enum.h>
-#include <vsl/text_trim.h>
+#include <vsl/text.h>
 #include <vsl/types.h>
 
 #include <srell/srell.hpp>
