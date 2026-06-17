@@ -19,6 +19,7 @@ inline constexpr auto LEAST_NONASCII_SYMBOL = u32{0x80};
 
 }  // namespace detail
 
+[[nodiscard]]
 inline auto is_ascii(std::string_view str) -> bool
 {
     for (char c : str)
@@ -29,7 +30,8 @@ inline auto is_ascii(std::string_view str) -> bool
 }
 
 template<typename Charset>
-auto to_charset(std::string_view str, char repl_char = '?') -> std::string
+[[nodiscard]]
+inline auto to_charset(std::string_view str, char repl_char = '?') -> std::string
 {
     auto res = std::string{};
     res.reserve(str.size());
@@ -54,7 +56,8 @@ auto to_charset(std::string_view str, char repl_char = '?') -> std::string
 }
 
 template<typename Charset>
-auto from_charset(std::string_view str) -> std::string
+[[nodiscard]]
+inline auto from_charset(std::string_view str) -> std::string
 {
     auto res = std::string{};
     res.reserve(str.size() * 3);
