@@ -384,90 +384,100 @@ TEST(RegexTest, Split)
     // Ensure that the regex object passed to the re_split
     // function outlives the returned range (intenal iterator stores a reference to the regex)
 
-    const auto pattern = ",";
-    const auto re = vsl::Re{pattern};
+    auto test_split = [](auto&& s, auto&& re, auto&& opt, auto&& expected_res)
+    {
+        auto res = vsl::re_split(s, re, opt);
+        static_assert(vsl::range_view_of<decltype(res), std::string_view>);
+        EXPECT_THAT(std::vector(res.begin(), res.end()), testing::ElementsAreArray(expected_res));
+    };
+
+    const auto re = vsl::Re{";"};
     const auto no_opt = vsl::ReSplitOptions::NONE;
-    const auto no_flags = vsl::ReMatchFlags::DEFAULT;
     const auto empty_res = std::vector<std::string_view>{};
 
     {
         const auto s = "";
+        const auto expected_res = empty_res;  // NOTE: the result is different for re_split/split
+        test_split(s, re, no_opt, expected_res);
+    }
+    {
+        const auto s = "";
+        const auto opt = vsl::ReSplitOptions::SKIP_EMPTY;
         const auto expected_res = empty_res;
-        auto res = vsl::re_split(s, re, no_opt, no_flags);
-        EXPECT_THAT(std::vector(res.begin(), res.end()), testing::ElementsAreArray(expected_res));
+        test_split(s, re, opt, expected_res);
     }
     {
-        const auto s = "1,2,3";
-        const auto expected_res = {"1", "2", "3"};
-        auto res = vsl::re_split(s, re, no_opt, no_flags);
-        EXPECT_THAT(std::vector(res.begin(), res.end()), testing::ElementsAreArray(expected_res));
-    }
-    {
-        const auto s = " 1, 2, 3 \n";
-        const auto expected_res = {" 1", " 2", " 3 \n"};
-        auto res = vsl::re_split(s, re, no_opt, no_flags);
-        EXPECT_THAT(std::vector(res.begin(), res.end()), testing::ElementsAreArray(expected_res));
-    }
-    {
-        const auto s = " 1, 2, 3 \n";
-        const auto opt = vsl::ReSplitOptions::TRIM;
-        const auto expected_res = {"1", "2", "3"};
-        auto res = vsl::re_split(s, re, opt, no_flags);
-        EXPECT_THAT(std::vector(res.begin(), res.end()), testing::ElementsAreArray(expected_res));
-    }
-    {
-        const auto s = "1,,3";
-        const auto expected_res = {"1", "", "3"};
-        auto res = vsl::re_split(s, re, no_opt, no_flags);
-        EXPECT_THAT(std::vector(res.begin(), res.end()), testing::ElementsAreArray(expected_res));
-    }
-    {
-        const auto s = "1,,3";
-        const auto opt = vsl::ReSplitOptions::SKIP_EMPTY;
-        const auto expected_res = {"1", "3"};
-        auto res = vsl::re_split(s, re, opt, no_flags);
-        EXPECT_THAT(std::vector(res.begin(), res.end()), testing::ElementsAreArray(expected_res));
-    }
-    {
-        const auto s = "1, ,3";
-        const auto opt = vsl::ReSplitOptions::SKIP_EMPTY;
-        const auto expected_res = {"1", " ", "3"};
-        auto res = vsl::re_split(s, re, opt, no_flags);
-        EXPECT_THAT(std::vector(res.begin(), res.end()), testing::ElementsAreArray(expected_res));
-    }
-    {
-        const auto s = "1, ,3";
-        const auto opt = vsl::ReSplitOptions::TRIM | vsl::ReSplitOptions::SKIP_EMPTY;
-        const auto expected_res = {"1", "3"};
-        auto res = vsl::re_split(s, re, opt, no_flags);
-        EXPECT_THAT(std::vector(res.begin(), res.end()), testing::ElementsAreArray(expected_res));
+        const auto s = ";";
+        const auto expected_res = {""};  // NOTE: the result is different for re_split/split
+        test_split(s, re, no_opt, expected_res);
     }
     {
         const auto s = "1";
         const auto expected_res = {"1"};
-        auto res = vsl::re_split(s, re, no_opt, no_flags);
-        EXPECT_THAT(std::vector(res.begin(), res.end()), testing::ElementsAreArray(expected_res));
+        test_split(s, re, no_opt, expected_res);
     }
     {
         const auto s = " 1 ";
         const auto opt = vsl::ReSplitOptions::TRIM;
         const auto expected_res = {"1"};
-        auto res = vsl::re_split(s, re, opt, no_flags);
-        EXPECT_THAT(std::vector(res.begin(), res.end()), testing::ElementsAreArray(expected_res));
+        test_split(s, re, opt, expected_res);
     }
     {
         const auto s = "  ";
-        const auto opt = vsl::ReSplitOptions::SKIP_EMPTY;
-        const auto expected_res = {"  "};
-        auto res = vsl::re_split(s, re, opt, no_flags);
-        EXPECT_THAT(std::vector(res.begin(), res.end()), testing::ElementsAreArray(expected_res));
+        const auto opt = vsl::ReSplitOptions::TRIM;
+        const auto expected_res = {""};
+        test_split(s, re, opt, expected_res);
     }
     {
         const auto s = "  ";
         const auto opt = vsl::ReSplitOptions::TRIM | vsl::ReSplitOptions::SKIP_EMPTY;
         const auto expected_res = empty_res;
-        auto res = vsl::re_split(s, re, opt, no_flags);
-        EXPECT_THAT(std::vector(res.begin(), res.end()), testing::ElementsAreArray(expected_res));
+        test_split(s, re, opt, expected_res);
+    }
+    {
+        const auto s = "ЭфываЮфываЯ";
+        const auto utf8_re = vsl::Re{"фыва"};
+        const auto expected_res = {"Э", "Ю", "Я"};
+        test_split(s, utf8_re, no_opt, expected_res);
+    }
+    {
+        const auto s = "1;2;3";
+        const auto expected_res = {"1", "2", "3"};
+        test_split(s, re, no_opt, expected_res);
+    }
+    {
+        const auto s = " 1; 2; 3 \n";
+        const auto expected_res = {" 1", " 2", " 3 \n"};
+        test_split(s, re, no_opt, expected_res);
+    }
+    {
+        const auto s = " 1; 2; 3 \n";
+        const auto opt = vsl::ReSplitOptions::TRIM;
+        const auto expected_res = {"1", "2", "3"};
+        test_split(s, re, opt, expected_res);
+    }
+    {
+        const auto s = ";1;;3;";
+        const auto expected_res = {"", "1", "", "3"};  // NOTE: the result is different for re_split/split
+        test_split(s, re, no_opt, expected_res);
+    }
+    {
+        const auto s = ";1;;3;";
+        const auto opt = vsl::ReSplitOptions::SKIP_EMPTY;
+        const auto expected_res = {"1", "3"};
+        test_split(s, re, opt, expected_res);
+    }
+    {
+        const auto s = " ;1; ;3; ";
+        const auto opt = vsl::ReSplitOptions::SKIP_EMPTY;
+        const auto expected_res = {" ", "1", " ", "3", " "};
+        test_split(s, re, opt, expected_res);
+    }
+    {
+        const auto s = " ;1; ;3; ";
+        const auto opt = vsl::ReSplitOptions::TRIM | vsl::ReSplitOptions::SKIP_EMPTY;
+        const auto expected_res = {"1", "3"};
+        test_split(s, re, opt, expected_res);
     }
 }
 
