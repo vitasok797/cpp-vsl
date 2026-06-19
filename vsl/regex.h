@@ -151,7 +151,10 @@ inline auto re_search(std::string_view s, const R& re, ReMatch& match, ReMatchFl
     return srell::regex_search(s.begin(), s.end(), match, re, detail::to_srell_flags(flags));
 }
 
+// ---------------------------------------------------------------------------------------
+// WARNING!
 // Ensure that the regex object (re) passed to the function outlives the returned range
+// ---------------------------------------------------------------------------------------
 template<detail::regex_type R>
     requires std::is_lvalue_reference_v<R&&>
 [[nodiscard]]
@@ -165,7 +168,10 @@ inline auto re_find_matches(std::string_view s, R&& re, ReMatchFlags flags = ReM
     return std::ranges::subrange(std::move(matches_begin), std::move(matches_end));
 }
 
+// ---------------------------------------------------------------------------------------
+// WARNING!
 // Ensure that the regex object (re) passed to the function outlives the returned range
+// ---------------------------------------------------------------------------------------
 template<detail::regex_type R>
     requires std::is_lvalue_reference_v<R&&>
 [[nodiscard]]
@@ -193,7 +199,10 @@ inline auto re_find_submatches_impl(std::string_view s, R&& re, Submatches&& sub
 
 }  // namespace detail
 
+// ---------------------------------------------------------------------------------------
+// WARNING!
 // Ensure that the regex object (re) passed to the function outlives the returned range
+// ---------------------------------------------------------------------------------------
 template<detail::regex_type R>
     requires std::is_lvalue_reference_v<R&&>
 [[nodiscard]]
@@ -203,7 +212,10 @@ inline auto re_find_submatches(std::string_view s, R&& re, int submatches, ReMat
     return detail::re_find_submatches_impl(s, re, submatches, flags);
 }
 
+// ---------------------------------------------------------------------------------------
+// WARNING!
 // Ensure that the regex object (re) passed to the function outlives the returned range
+// ---------------------------------------------------------------------------------------
 template<detail::regex_type R>
     requires std::is_lvalue_reference_v<R&&>
 [[nodiscard]]
@@ -215,7 +227,10 @@ inline auto re_find_submatches(std::string_view s,
     return detail::re_find_submatches_impl(s, re, submatches, flags);
 }
 
+// ---------------------------------------------------------------------------------------
+// WARNING!
 // Ensure that the regex object (re) passed to the function outlives the returned range
+// ---------------------------------------------------------------------------------------
 template<detail::regex_type R>
     requires std::is_lvalue_reference_v<R&&>
 [[nodiscard]]
@@ -227,7 +242,10 @@ inline auto re_find_submatches(std::string_view s,
     return detail::re_find_submatches_impl(s, re, submatches, flags);
 }
 
+// ---------------------------------------------------------------------------------------
+// WARNING!
 // Ensure that the regex object (re) passed to the function outlives the returned range
+// ---------------------------------------------------------------------------------------
 template<detail::regex_type R>
     requires std::is_lvalue_reference_v<R&&>
 [[nodiscard]]
