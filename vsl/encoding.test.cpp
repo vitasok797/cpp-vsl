@@ -3,7 +3,6 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include <type_traits>
 #include <utility>
 
 namespace test
@@ -26,109 +25,131 @@ TEST(EncodingTest, IsAscii)
     EXPECT_FALSE(vsl::is_ascii("\xFF"));
 }
 
+template<typename... Args>
+auto to(Args&&... args)
+{
+    auto res1 = std::string{};
+    res1.reserve(100);
+    vsl::to_encoding(res1, std::forward<Args>(args)...);
+
+    const auto res2 = vsl::to_encoding(std::forward<Args>(args)...);
+    EXPECT_EQ(res1, res2);
+
+    return res1;
+}
+
+template<typename... Args>
+auto from(Args&&... args)
+{
+    auto res1 = std::string{};
+    res1.reserve(100);
+    vsl::from_encoding(res1, std::forward<Args>(args)...);
+
+    const auto res2 = vsl::from_encoding(std::forward<Args>(args)...);
+    EXPECT_EQ(res1, res2);
+
+    return res1;
+}
+
 TEST(EncodingTest, ToCp1251)
 {
-    auto to_cp1251 = []<typename... Args>(Args&&... args)
-    { return vsl::to_charset<vsl::charsets::cp1251>(std::forward<Args>(args)...); };
+    const auto& encoding = vsl::encodings::cp1251;
 
-    EXPECT_EQ(to_cp1251(""), "");
-    EXPECT_EQ(to_cp1251("  \t\r\n  "), "  \t\r\n  ");
+    EXPECT_EQ(to("", encoding), "");
+    EXPECT_EQ(to("  \t\r\n  ", encoding), "  \t\r\n  ");
 
-    EXPECT_EQ(to_cp1251(ASCII_SYMBOLS), ASCII_SYMBOLS);
-    EXPECT_EQ(to_cp1251("Тест + ascii"), "\xD2\xE5\xF1\xF2 + ascii");
-    EXPECT_EQ(to_cp1251("Ёё"), "\xA8\xB8");
+    EXPECT_EQ(to(ASCII_SYMBOLS, encoding), ASCII_SYMBOLS);
+    EXPECT_EQ(to("Тест + ascii", encoding), "\xD2\xE5\xF1\xF2 + ascii");
+    EXPECT_EQ(to("Ёё", encoding), "\xA8\xB8");
 
-    EXPECT_EQ(to_cp1251("Тест 🚧"), "\xD2\xE5\xF1\xF2 ?");
-    EXPECT_EQ(to_cp1251("Тест 🚧", 'x'), "\xD2\xE5\xF1\xF2 x");
+    EXPECT_EQ(to("Тест 🚧", encoding), "\xD2\xE5\xF1\xF2 ?");
+    EXPECT_EQ(to("Тест 🚧", encoding, 'x'), "\xD2\xE5\xF1\xF2 x");
 }
 
 TEST(EncodingTest, ToCp866)
 {
-    auto to_cp866 = []<typename... Args>(Args&&... args)
-    { return vsl::to_charset<vsl::charsets::cp866>(std::forward<Args>(args)...); };
+    const auto& encoding = vsl::encodings::cp866;
 
-    EXPECT_EQ(to_cp866(""), "");
-    EXPECT_EQ(to_cp866("  \t\r\n  "), "  \t\r\n  ");
+    EXPECT_EQ(to("", encoding), "");
+    EXPECT_EQ(to("  \t\r\n  ", encoding), "  \t\r\n  ");
 
-    EXPECT_EQ(to_cp866(ASCII_SYMBOLS), ASCII_SYMBOLS);
-    EXPECT_EQ(to_cp866("Тест + ascii"), "\x92\xA5\xE1\xE2 + ascii");
-    EXPECT_EQ(to_cp866("Ёё"), "\xF0\xF1");
+    EXPECT_EQ(to(ASCII_SYMBOLS, encoding), ASCII_SYMBOLS);
+    EXPECT_EQ(to("Тест + ascii", encoding), "\x92\xA5\xE1\xE2 + ascii");
+    EXPECT_EQ(to("Ёё", encoding), "\xF0\xF1");
 
-    EXPECT_EQ(to_cp866("Тест 🚧"), "\x92\xA5\xE1\xE2 ?");
-    EXPECT_EQ(to_cp866("Тест 🚧", 'x'), "\x92\xA5\xE1\xE2 x");
+    EXPECT_EQ(to("Тест 🚧", encoding), "\x92\xA5\xE1\xE2 ?");
+    EXPECT_EQ(to("Тест 🚧", encoding, 'x'), "\x92\xA5\xE1\xE2 x");
 }
 
 TEST(EncodingTest, ToTranslit)
 {
-    auto to_translit = []<typename... Args>(Args&&... args)
-    { return vsl::to_charset<vsl::charsets::translit_ru>(std::forward<Args>(args)...); };
+    const auto& encoding = vsl::encodings::translit_ru;
 
-    EXPECT_EQ(to_translit(""), "");
-    EXPECT_EQ(to_translit("  \t\r\n  "), "  \t\r\n  ");
+    EXPECT_EQ(to("", encoding), "");
+    EXPECT_EQ(to("  \t\r\n  ", encoding), "  \t\r\n  ");
 
-    EXPECT_EQ(to_translit(ASCII_SYMBOLS), ASCII_SYMBOLS);
-    EXPECT_EQ(to_translit("Тест + ascii"), "Test + ascii");
-    EXPECT_EQ(to_translit("Ёё"), "Yoyo");
+    EXPECT_EQ(to(ASCII_SYMBOLS, encoding), ASCII_SYMBOLS);
+    EXPECT_EQ(to("Тест + ascii", encoding), "Test + ascii");
+    EXPECT_EQ(to("Ёё", encoding), "Yoyo");
 
-    EXPECT_EQ(to_translit("Тест 🚧"), "Test ?");
-    EXPECT_EQ(to_translit("Тест 🚧", 'x'), "Test x");
+    EXPECT_EQ(to("Тест 🚧", encoding), "Test ?");
+    EXPECT_EQ(to("Тест 🚧", encoding, 'x'), "Test x");
 
-    EXPECT_EQ(to_translit("Щука, Эхо, Съезд, Юра, Ягода"), "Shhuka, E`xo, S``ezd, Yura, Yagoda");
+    EXPECT_EQ(to("Щука, Эхо, Съезд, Юра, Ягода", encoding), "Shhuka, E`xo, S``ezd, Yura, Yagoda");
 
-    EXPECT_EQ(to_translit("Привет\xC2мир"), "Privet?mir");
-    EXPECT_EQ(to_translit("\x79\x80\xD0\xA9"), "\x79?Shh");
+    EXPECT_EQ(to("Привет\xC2мир", encoding), "Privet?mir");
+    EXPECT_EQ(to("\x79\x80\xD0\xA9", encoding), "\x79?Shh");
 }
 
 TEST(EncodingTest, FromCp1251)
 {
-    auto from_cp1251 = [](std::string_view str) { return vsl::from_charset<vsl::charsets::cp1251>(str); };
+    const auto& encoding = vsl::encodings::cp1251;
 
-    EXPECT_EQ(from_cp1251(""), "");
-    EXPECT_EQ(from_cp1251("  \t\r\n  "), "  \t\r\n  ");
+    EXPECT_EQ(from("", encoding), "");
+    EXPECT_EQ(from("  \t\r\n  ", encoding), "  \t\r\n  ");
 
-    EXPECT_EQ(from_cp1251(ASCII_SYMBOLS), ASCII_SYMBOLS);
-    EXPECT_EQ(from_cp1251("\xD2\xE5\xF1\xF2 + ascii"), "Тест + ascii");
+    EXPECT_EQ(from(ASCII_SYMBOLS, encoding), ASCII_SYMBOLS);
+    EXPECT_EQ(from("\xD2\xE5\xF1\xF2 + ascii", encoding), "Тест + ascii");
 
-    EXPECT_EQ(from_cp1251("\x00"), "\x00");
-    EXPECT_EQ(from_cp1251("\x79"), "\x79");
-    EXPECT_EQ(from_cp1251("\x80"), "\xD0\x82");
-    EXPECT_EQ(from_cp1251("\x98"), "\xEF\xBF\xBD");
-    EXPECT_EQ(from_cp1251("\xA8"), "Ё");
-    EXPECT_EQ(from_cp1251("\xB8"), "ё");
-    EXPECT_EQ(from_cp1251("\xFF"), "я");
+    EXPECT_EQ(from("\x00", encoding), "\x00");
+    EXPECT_EQ(from("\x79", encoding), "\x79");
+    EXPECT_EQ(from("\x80", encoding), "\xD0\x82");
+    EXPECT_EQ(from("\x98", encoding), "\xEF\xBF\xBD");
+    EXPECT_EQ(from("\xA8", encoding), "Ё");
+    EXPECT_EQ(from("\xB8", encoding), "ё");
+    EXPECT_EQ(from("\xFF", encoding), "я");
 }
 
 TEST(EncodingTest, FromCp866)
 {
-    auto from_cp866 = [](std::string_view str) { return vsl::from_charset<vsl::charsets::cp866>(str); };
+    const auto& encoding = vsl::encodings::cp866;
 
-    EXPECT_EQ(from_cp866(""), "");
-    EXPECT_EQ(from_cp866("  \t\r\n  "), "  \t\r\n  ");
+    EXPECT_EQ(from("", encoding), "");
+    EXPECT_EQ(from("  \t\r\n  ", encoding), "  \t\r\n  ");
 
-    EXPECT_EQ(from_cp866(ASCII_SYMBOLS), ASCII_SYMBOLS);
-    EXPECT_EQ(from_cp866("\x92\xA5\xE1\xE2 + ascii"), "Тест + ascii");
+    EXPECT_EQ(from(ASCII_SYMBOLS, encoding), ASCII_SYMBOLS);
+    EXPECT_EQ(from("\x92\xA5\xE1\xE2 + ascii", encoding), "Тест + ascii");
 
-    EXPECT_EQ(from_cp866("\x00"), "\x00");
-    EXPECT_EQ(from_cp866("\x79"), "\x79");
-    EXPECT_EQ(from_cp866("\x80"), "А");
-    EXPECT_EQ(from_cp866("\xF0"), "Ё");
-    EXPECT_EQ(from_cp866("\xF1"), "ё");
-    EXPECT_EQ(from_cp866("\xFF"), "\xC2\xA0");
+    EXPECT_EQ(from("\x00", encoding), "\x00");
+    EXPECT_EQ(from("\x79", encoding), "\x79");
+    EXPECT_EQ(from("\x80", encoding), "А");
+    EXPECT_EQ(from("\xF0", encoding), "Ё");
+    EXPECT_EQ(from("\xF1", encoding), "ё");
+    EXPECT_EQ(from("\xFF", encoding), "\xC2\xA0");
 }
 
-TEST(EncodingTest, ToCharsetAndBack)
+TEST(EncodingTest, ToEncodingAndBack)
 {
-    auto test_to_charset_and_back = [](auto&& charset)
+    auto test_to_encoding_and_back = [](const auto& encoding)
     {
-        using Charset = std::decay_t<decltype(charset)>;
-        EXPECT_EQ(vsl::from_charset<Charset>(vsl::to_charset<Charset>("")), "");
-        EXPECT_EQ(vsl::from_charset<Charset>(vsl::to_charset<Charset>(ASCII_SYMBOLS)), ASCII_SYMBOLS);
-        EXPECT_EQ(vsl::from_charset<Charset>(vsl::to_charset<Charset>("Тест")), "Тест");
-        EXPECT_NE(vsl::from_charset<Charset>(vsl::to_charset<Charset>("Тест ⚠️")), "Тест ⚠️");
+        EXPECT_EQ(vsl::from_encoding(vsl::to_encoding("", encoding), encoding), "");
+        EXPECT_EQ(vsl::from_encoding(vsl::to_encoding(ASCII_SYMBOLS, encoding), encoding), ASCII_SYMBOLS);
+        EXPECT_EQ(vsl::from_encoding(vsl::to_encoding("Тест", encoding), encoding), "Тест");
+        EXPECT_NE(vsl::from_encoding(vsl::to_encoding("Тест ⚠️", encoding), encoding), "Тест ⚠️");
     };
 
-    test_to_charset_and_back(vsl::charsets::cp1251{});
-    test_to_charset_and_back(vsl::charsets::cp866{});
+    test_to_encoding_and_back(vsl::encodings::cp1251);
+    test_to_encoding_and_back(vsl::encodings::cp866);
 }
 
 }  // namespace test
