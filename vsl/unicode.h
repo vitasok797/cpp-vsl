@@ -23,12 +23,14 @@ using una::norm::is_nfd_utf8;
 using una::norm::is_nfkc_utf8;
 using una::norm::is_nfkd_utf8;
 
+template<typename = void>
 [[nodiscard]]
 inline auto utf16to8(std::u16string_view str) -> std::string
 {
     return una::utf16to8<char16_t, char>(str);
 }
 
+template<typename = void>
 [[nodiscard]]
 inline auto utf8to16(std::string_view str) -> std::u16string
 {
