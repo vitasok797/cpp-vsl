@@ -412,6 +412,17 @@ TEST(RegexTest, Split)
         test_split(s, re, no_opt, expected_res);
     }
     {
+        const auto s = ";;";
+        const auto expected_res = {"", ""};  // NOTE: the result is different for re_split/split
+        test_split(s, re, no_opt, expected_res);
+    }
+    {
+        const auto s = ";;";
+        const auto opt = vsl::ReSplitOptions::SKIP_EMPTY;
+        const auto expected_res = empty_res;
+        test_split(s, re, opt, expected_res);
+    }
+    {
         const auto s = "1";
         const auto expected_res = {"1"};
         test_split(s, re, no_opt, expected_res);
@@ -478,6 +489,18 @@ TEST(RegexTest, Split)
         const auto opt = vsl::ReSplitOptions::TRIM | vsl::ReSplitOptions::SKIP_EMPTY;
         const auto expected_res = {"1", "3"};
         test_split(s, re, opt, expected_res);
+    }
+    {
+        const auto s = "a";
+        const auto custom_re = vsl::Re{"abc"};
+        const auto expected_res = {"a"};
+        test_split(s, custom_re, no_opt, expected_res);
+    }
+    {
+        const auto s = "aaa";
+        const auto custom_re = vsl::Re{"aa"};
+        const auto expected_res = {"", "a"};
+        test_split(s, custom_re, no_opt, expected_res);
     }
 }
 
