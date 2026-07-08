@@ -7,13 +7,16 @@ using namespace ankerl::nanobench;
 
 auto main() -> int
 {
-    Bench()
-        //.epochs(100)
-        //.minEpochIterations(50)
-        .run("TEST",
-             [&]
-             {
-                 /* Your code here */
-                 // ankerl::nanobench::doNotOptimizeAway(res);
-             });
+    auto bench = Bench()
+        //.epochs(50)
+        //.minEpochIterations(1000)
+        //.relative(true)
+        ;
+
+    bench.run("NAME",
+              [&]
+              {
+                  /* Your code here */
+                  // ankerl::nanobench::doNotOptimizeAway(res);
+              });
 }
