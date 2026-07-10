@@ -3,6 +3,7 @@
 
 #include <vsl/types.h>
 
+#include <algorithm>
 #include <string>
 #include <string_view>
 
@@ -26,6 +27,19 @@ struct StringHash
     auto operator()(const std::string& str) const -> std::size_t
     {
         return std::hash<std::string>{}(str);
+    }
+};
+
+struct StringAsciiIcaseCompare
+{
+    using is_transparent = void;
+
+    constexpr bool operator()(std::string_view a, std::string_view b) const noexcept
+    {
+        auto to_lower = [](unsigned char c) constexpr noexcept -> unsigned char
+        { return (c >= 'A' && c <= 'Z') ? static_cast<unsigned char>(c + ('a' - 'A')) : c; };
+
+        return std::ranges::lexicographical_compare(a, b, std::ranges::less{}, to_lower, to_lower);
     }
 };
 
