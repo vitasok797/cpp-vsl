@@ -19,8 +19,8 @@ TEST(EncodingTest, IsAscii)
     EXPECT_FALSE(vsl::is_ascii("тест"));
     EXPECT_FALSE(vsl::is_ascii("Straße"));
 
-    EXPECT_TRUE(vsl::is_ascii("\x00"));
-    EXPECT_TRUE(vsl::is_ascii("\x79"));
+    EXPECT_TRUE(vsl::is_ascii("\x01"));
+    EXPECT_TRUE(vsl::is_ascii("\x7F"));
     EXPECT_FALSE(vsl::is_ascii("\x80"));
     EXPECT_FALSE(vsl::is_ascii("\xFF"));
 }
@@ -98,7 +98,7 @@ TEST(EncodingTest, ToTranslit)
     EXPECT_EQ(to("Щука, Эхо, Съезд, Юра, Ягода", encoding), "Shhuka, E`xo, S``ezd, Yura, Yagoda");
 
     EXPECT_EQ(to("Привет\xC2мир", encoding), "Privet?mir");
-    EXPECT_EQ(to("\x79\x80\xD0\xA9", encoding), "\x79?Shh");
+    EXPECT_EQ(to("\x7F\x80\xD0\xA9", encoding), "\x7F?Shh");
 }
 
 TEST(EncodingTest, FromCp1251)
@@ -111,8 +111,8 @@ TEST(EncodingTest, FromCp1251)
     EXPECT_EQ(from(ASCII_SYMBOLS, encoding), ASCII_SYMBOLS);
     EXPECT_EQ(from("\xD2\xE5\xF1\xF2 + ascii", encoding), "Тест + ascii");
 
-    EXPECT_EQ(from("\x00", encoding), "\x00");
-    EXPECT_EQ(from("\x79", encoding), "\x79");
+    EXPECT_EQ(from("\x01", encoding), "\x01");
+    EXPECT_EQ(from("\x7F", encoding), "\x7F");
     EXPECT_EQ(from("\x80", encoding), "\xD0\x82");
     EXPECT_EQ(from("\x98", encoding), "\xEF\xBF\xBD");
     EXPECT_EQ(from("\xA8", encoding), "Ё");
@@ -130,8 +130,8 @@ TEST(EncodingTest, FromCp866)
     EXPECT_EQ(from(ASCII_SYMBOLS, encoding), ASCII_SYMBOLS);
     EXPECT_EQ(from("\x92\xA5\xE1\xE2 + ascii", encoding), "Тест + ascii");
 
-    EXPECT_EQ(from("\x00", encoding), "\x00");
-    EXPECT_EQ(from("\x79", encoding), "\x79");
+    EXPECT_EQ(from("\x01", encoding), "\x01");
+    EXPECT_EQ(from("\x7F", encoding), "\x7F");
     EXPECT_EQ(from("\x80", encoding), "А");
     EXPECT_EQ(from("\xF0", encoding), "Ё");
     EXPECT_EQ(from("\xF1", encoding), "ё");
