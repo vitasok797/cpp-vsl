@@ -39,7 +39,7 @@ template<typename A, typename B>
     requires std::signed_integral<A> && std::signed_integral<B>
 auto ceil_div(A a, B b) noexcept -> std::common_type_t<A, B>
 {
-    // TODO: use EXPECTS from vsl/assert.h
+    // TODO: Use EXPECTS from vsl/assert.h
     assert(a >= 0);
     assert(b > 0);
 

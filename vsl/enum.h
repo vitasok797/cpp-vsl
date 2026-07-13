@@ -39,7 +39,7 @@
 namespace vsl
 {
 
-// TODO: add functions
+// TODO: Add functions:
 // * enum_flags_*
 // * containers::bitset
 

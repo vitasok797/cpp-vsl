@@ -155,7 +155,7 @@ TEST(TcpConnectTest, ReConnect)
 
         ASSERT_TRUE(client.is_active());
 
-        client.close();  // required to reconnect
+        client.close();  // Required to reconnect
         server.close();
     };
 
@@ -398,7 +398,7 @@ TEST_F(TcpTest, DisconnectOnRead)
 
 TEST_F(TcpTest, DISABLED_ConnectionResetOnFlush)
 {
-    // crashed on linux
+    // Crashed on linux
     client_.shutdown();
     client_.write(0);
     ASSERT_THROW(client_.flush(), TcpClientConnectionReset);
@@ -454,7 +454,7 @@ TEST_F(TcpTest, Buffer)
     };
 
     ASSERT_NO_FATAL_FAILURE(test());
-    ASSERT_NO_FATAL_FAILURE(test());  // repeat after buffer clean
+    ASSERT_NO_FATAL_FAILURE(test());  // Repeat after buffer clean
 }
 
 TEST_F(TcpTest, WriteEmptyBuffer)

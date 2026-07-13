@@ -241,9 +241,9 @@ TEST(LookupTableTest, ComparatorStringIcase)
         {ASCII_SYMBOLS_UPPER, 3},
     };
 
-    EXPECT_TRUE(table.contains("apple"));  // lower case
-    EXPECT_EQ(*table.find("aPPLe"), 1);    // mixed case
-    EXPECT_EQ(table.at("BANANA"), 2);      // upper case
+    EXPECT_TRUE(table.contains("apple"));  // Lower case
+    EXPECT_EQ(*table.find("aPPLe"), 1);    // Mixed case
+    EXPECT_EQ(table.at("BANANA"), 2);      // Upper case
 
     EXPECT_TRUE(table.contains(ASCII_SYMBOLS_LOWER));
 

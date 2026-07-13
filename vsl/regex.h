@@ -161,7 +161,7 @@ template<detail::regex_type R>
 inline auto re_find_matches(std::string_view s, R&& re, ReMatchFlags flags = ReMatchFlags::DEFAULT)
     -> vsl::range_view_of<ReMatch> auto
 {
-    // TODO: use srell::regex_iterator2
+    // TODO: Use srell::regex_iterator2
 
     auto matches_begin = srell::regex_iterator(s.begin(), s.end(), re, detail::to_srell_flags(flags));
     auto matches_end = decltype(matches_begin){};

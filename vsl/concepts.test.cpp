@@ -77,8 +77,8 @@ TEST(ConceptsTest, CompileCheck)
 
     // regular_func
     static_assert(vsl::callable_r<int, decltype(regular_func), int, double>);
-    static_assert(vsl::callable_r<double, decltype(regular_func), int, double>);  // return value conversion
-    static_assert(vsl::callable_r<void, decltype(regular_func), int, double>);    // return value conversion
+    static_assert(vsl::callable_r<double, decltype(regular_func), int, double>);  // Return value conversion
+    static_assert(vsl::callable_r<void, decltype(regular_func), int, double>);    // Return value conversion
     static_assert(!vsl::callable_r<int*, decltype(regular_func), int, double>);
 
     // -----------------------------------------------------------------------------------------------

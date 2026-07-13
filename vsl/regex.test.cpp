@@ -79,24 +79,24 @@ TEST(RegexTest, FullMatch)
     auto match = vsl::ReMatch{};
     const auto no_flags = vsl::ReMatchFlags::DEFAULT;
 
-    // arg: base
+    // Arg: base
     test_full_match(s, re, &match, no_flags, true);
 
-    // arg: s
+    // Arg: s
     test_full_match(std::string{s}, re, &match, no_flags, true);
     test_full_match(std::string_view{s}, re, &match, no_flags, true);
 
-    // arg: re
+    // Arg: re
     test_full_match(s, vsl::ReAscii{pattern}, &match, no_flags, true);
 
-    // arg: match
+    // Arg: match
     test_full_match(s, re, nullptr, no_flags, true);
 
-    // arg: flags
+    // Arg: flags
     test_full_match("", vsl::Re{"\\d*"}, &match, no_flags, true);
     test_full_match("", vsl::Re{"\\d*"}, &match, vsl::ReMatchFlags::MATCH_NOT_NULL, false);
 
-    // no match found
+    // No match found
     test_full_match(s, vsl::Re{"\\d+"}, &match, no_flags, false);
 }
 
@@ -193,24 +193,24 @@ TEST(RegexTest, Search)
     const auto no_flags = vsl::ReMatchFlags::DEFAULT;
     const auto expected_res = "abc";
 
-    // arg: base
+    // Arg: base
     test_search(s, re, &match, no_flags, expected_res);
 
-    // arg: s
+    // Arg: s
     test_search(std::string{s}, re, &match, no_flags, expected_res);
     test_search(std::string_view{s}, re, &match, no_flags, expected_res);
 
-    // arg: re
+    // Arg: re
     test_search(s, vsl::ReAscii{pattern}, &match, no_flags, expected_res);
 
-    // arg: match
+    // Arg: match
     test_search(s, re, nullptr, no_flags, expected_res);
 
-    // arg: flags
+    // Arg: flags
     test_search(s, re, &match, vsl::ReMatchFlags::MATCH_CONTINUOUS, nullptr);
     test_search(s, vsl::Re{"\\d{3}\\D"}, &match, vsl::ReMatchFlags::MATCH_CONTINUOUS, "123a");
 
-    // no match found
+    // No match found
     test_search(s, vsl::Re{"\\D{4}"}, &match, no_flags, nullptr);
 }
 
@@ -289,20 +289,20 @@ TEST(RegexTest, Find)
     const auto no_flags = vsl::ReMatchFlags::DEFAULT;
     const auto expected_res = {"abc", "def", "xyz"};
 
-    // arg: base
+    // Arg: base
     test_find(s, re, no_flags, expected_res);
 
-    // arg: s
+    // Arg: s
     test_find(std::string{s}, re, no_flags, expected_res);
     test_find(std::string_view{s}, re, no_flags, expected_res);
 
-    // arg: re
+    // Arg: re
     test_find(s, vsl::ReAscii{pattern}, no_flags, expected_res);
 
-    // arg: flags
+    // Arg: flags
     test_find(s, re, vsl::ReMatchFlags::MATCH_CONTINUOUS, {"abc"});
 
-    // utf-8
+    // Utf-8
     const auto s_utf8 = std::string_view{"первый второй третий"};
     const auto pattern_utf8 = "(?:пе.вый|тр.тий)";
     const auto re_utf8 = vsl::Re{pattern_utf8};
@@ -397,7 +397,7 @@ TEST(RegexTest, Split)
 
     {
         const auto s = "";
-        const auto expected_res = empty_res;  // NOTE: the result is different for re_split/split
+        const auto expected_res = empty_res;  // NOTE: The result is different for re_split/split
         test_split(s, re, no_opt, expected_res);
     }
     {
@@ -408,12 +408,12 @@ TEST(RegexTest, Split)
     }
     {
         const auto s = ";";
-        const auto expected_res = {""};  // NOTE: the result is different for re_split/split
+        const auto expected_res = {""};  // NOTE: The result is different for re_split/split
         test_split(s, re, no_opt, expected_res);
     }
     {
         const auto s = ";;";
-        const auto expected_res = {"", ""};  // NOTE: the result is different for re_split/split
+        const auto expected_res = {"", ""};  // NOTE: The result is different for re_split/split
         test_split(s, re, no_opt, expected_res);
     }
     {
@@ -469,7 +469,7 @@ TEST(RegexTest, Split)
     }
     {
         const auto s = ";1;;3;";
-        const auto expected_res = {"", "1", "", "3"};  // NOTE: the result is different for re_split/split
+        const auto expected_res = {"", "1", "", "3"};  // NOTE: The result is different for re_split/split
         test_split(s, re, no_opt, expected_res);
     }
     {
@@ -523,21 +523,21 @@ TEST(RegexTest, Replace)
     const auto no_flags = vsl::ReReplFlags::DEFAULT;
     const auto expected_res = "Q[u][i]ck br[o]wn f[o]x";
 
-    // arg: base
+    // Arg: base
     test_replace(s, re, repl, no_flags, expected_res);
 
-    // arg: s
+    // Arg: s
     test_replace(std::string{s}, re, repl, no_flags, expected_res);
     test_replace(std::string_view{s}, re, repl, no_flags, expected_res);
 
-    // arg: re
+    // Arg: re
     test_replace(s, vsl::ReAscii{pattern}, repl, no_flags, expected_res);
 
-    // arg: repl
+    // Arg: repl
     test_replace(s, re, std::string{repl}, no_flags, expected_res);
     test_replace(s, re, "[$&]", no_flags, expected_res);
 
-    // arg: flags
+    // Arg: flags
     test_replace(s, re, repl, vsl::ReReplFlags::FORMAT_FIRST_ONLY, "Q[u]ick brown fox");
     test_replace(s, re, repl, vsl::ReReplFlags::FORMAT_NO_COPY, "[u][i][o][o]");
 
@@ -566,20 +566,20 @@ TEST(RegexTest, ReplaceIter)
     const auto no_flags = vsl::ReReplFlags::DEFAULT;
     const auto expected_res = "res = [Q**ck br*wn f*x]";
 
-    // arg: base
+    // Arg: base
     test_replace(s, re, repl, no_flags, expected_res);
 
-    // arg: s
+    // Arg: s
     test_replace(std::string_view{s}, re, repl, no_flags, expected_res);
 
-    // arg: re
+    // Arg: re
     test_replace(s, vsl::ReAscii{pattern}, repl, no_flags, expected_res);
 
-    // arg: repl
+    // Arg: repl
     test_replace(s, re, std::string{repl}, no_flags, expected_res);
     test_replace(s, re, "*", no_flags, expected_res);
 
-    // arg: flags
+    // Arg: flags
     test_replace(s, re, repl, vsl::ReReplFlags::FORMAT_FIRST_ONLY, "res = [Q*ick brown fox]");
     test_replace(s, re, repl, vsl::ReReplFlags::FORMAT_NO_COPY, "res = [****]");
     test_replace(s, re, repl, vsl::ReReplFlags::FORMAT_FIRST_ONLY | vsl::ReReplFlags::FORMAT_NO_COPY, "res = [*]");
@@ -614,17 +614,17 @@ TEST(RegexTest, ReplaceFunc)
     const auto no_flags = vsl::ReReplFlags::DEFAULT;
     const auto expected_res = "A=20, B=40";
 
-    // arg: base
+    // Arg: base
     test_replace_func(s, re, repl_func, no_flags, expected_res);
 
-    // arg: s
+    // Arg: s
     test_replace_func(std::string{s}, re, repl_func, no_flags, expected_res);
     test_replace_func(std::string_view{s}, re, repl_func, no_flags, expected_res);
 
-    // arg: re
+    // Arg: re
     test_replace_func(s, vsl::ReAscii{pattern}, repl_func, no_flags, expected_res);
 
-    // arg: flags
+    // Arg: flags
     test_replace_func(s, re, repl_func, vsl::ReReplFlags::FORMAT_FIRST_ONLY, "A=20, B=2");
     test_replace_func(s, re, repl_func, vsl::ReReplFlags::FORMAT_NO_COPY, "2040");
 

@@ -19,7 +19,7 @@ using CsvReader = csv::CSVReader;
 using CsvRow = csv::CSVRow;
 using CsvField = csv::CSVField;
 
-// TODO: add from vincentlaucsb-csv-parser
+// TODO: Add from vincentlaucsb-csv-parser:
 // * DelimWriter
 // * CSVWriter
 // * CSVFileInfo

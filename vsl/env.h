@@ -15,7 +15,7 @@
 namespace vsl
 {
 
-// TODO: add functions
+// TODO: Add functions:
 // * prefix
 // * register_option
 // * ...

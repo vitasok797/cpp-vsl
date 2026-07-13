@@ -21,7 +21,7 @@ TEST(UnicodeTest, IsValidUtf16)
     EXPECT_TRUE(vsl::is_valid_utf16(u"Straße"));
     EXPECT_FALSE(vsl::is_valid_utf16(u"\xD800"));
 
-    // input string types
+    // Input string types
     EXPECT_TRUE(vsl::is_valid_utf16(u"тест"));
     EXPECT_TRUE(vsl::is_valid_utf16(std::u16string{u"тест"}));
     EXPECT_TRUE(vsl::is_valid_utf16(std::u16string_view{u"тест"}));
@@ -36,7 +36,7 @@ TEST(UnicodeTest, IsValidUtf8)
     EXPECT_TRUE(vsl::is_valid_utf8("Straße"));
     EXPECT_FALSE(vsl::is_valid_utf8("\xC2"));
 
-    // input string types
+    // Input string types
     EXPECT_TRUE(vsl::is_valid_utf8("тест"));
     EXPECT_TRUE(vsl::is_valid_utf8(std::string{"тест"}));
     EXPECT_TRUE(vsl::is_valid_utf8(std::string_view{"тест"}));
@@ -66,7 +66,7 @@ TEST(UnicodeTest, Normalization)
     EXPECT_FALSE(vsl::is_nfkd_utf8("Ŵ"));
     EXPECT_FALSE(vsl::is_nfkd_utf8("ﬃ"));
 
-    // input string types
+    // Input string types
     EXPECT_EQ(vsl::to_nfc_utf8("W\u0302"), "Ŵ");
     EXPECT_EQ(vsl::to_nfc_utf8(std::string{"W\u0302"}), "Ŵ");
     EXPECT_EQ(vsl::to_nfc_utf8(std::string_view{"W\u0302"}), "Ŵ");

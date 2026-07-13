@@ -39,7 +39,7 @@ inline auto assert_fail(        //
 
     std::cerr << std::endl;
 
-    // TODO: use exception ?
+    // TODO: Use exception ?
     std::terminate();
 }
 

@@ -183,7 +183,7 @@ TEST(TextTest, IsEqualAsciiIcase)
 
 TEST(TextTest, CompareStr)
 {
-    // TODO: add vsl::compare_str tests
+    // TODO: Add vsl::compare_str tests
 }
 
 TEST(TextTest, Collate)
@@ -315,7 +315,7 @@ TEST(TextTest, Split)
 
     {
         const auto s = "";
-        const auto expected_res = {""};  // NOTE: the result is different for re_split/split
+        const auto expected_res = {""};  // NOTE: The result is different for re_split/split
         test_split(s, sep, no_opt, expected_res);
     }
     {
@@ -326,12 +326,12 @@ TEST(TextTest, Split)
     }
     {
         const auto s = ";";
-        const auto expected_res = {"", ""};  // NOTE: the result is different for re_split/split
+        const auto expected_res = {"", ""};  // NOTE: The result is different for re_split/split
         test_split(s, sep, no_opt, expected_res);
     }
     {
         const auto s = ";;";
-        const auto expected_res = {"", "", ""};  // NOTE: the result is different for re_split/split
+        const auto expected_res = {"", "", ""};  // NOTE: The result is different for re_split/split
         test_split(s, sep, no_opt, expected_res);
     }
     {
@@ -387,7 +387,7 @@ TEST(TextTest, Split)
     }
     {
         const auto s = ";1;;3;";
-        const auto expected_res = {"", "1", "", "3", ""};  // NOTE: the result is different for re_split/split
+        const auto expected_res = {"", "1", "", "3", ""};  // NOTE: The result is different for re_split/split
         test_split(s, sep, no_opt, expected_res);
     }
     {
