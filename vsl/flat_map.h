@@ -17,6 +17,7 @@
 namespace vsl
 {
 
+// C++23: Use std::flat_map
 template<typename Key, typename Value, typename Compare = std::ranges::less>
 class FlatMap
 {
