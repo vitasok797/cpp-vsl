@@ -1,5 +1,5 @@
-#ifndef VSL_LOOKUP_TABLE_H
-#define VSL_LOOKUP_TABLE_H
+#ifndef VSL_FLAT_MAP_H
+#define VSL_FLAT_MAP_H
 
 #include <vsl/concepts.h>
 #include <vsl/container.h>
@@ -18,10 +18,10 @@ namespace vsl
 {
 
 template<typename Key, typename Value, typename Compare = std::ranges::less>
-class LookupTable
+class FlatMap
 {
   public:
-    explicit LookupTable(std::initializer_list<std::pair<Key, Value>> init, Compare comp = Compare{})
+    explicit FlatMap(std::initializer_list<std::pair<Key, Value>> init, Compare comp = Compare{})
         : comp_(std::move(comp))
     {
         const auto key_proj = &std::pair<Key, Value>::first;
@@ -103,8 +103,8 @@ class LookupTable
 };
 
 template<vsl::string_like Key, typename Value>
-using LookupTableAsciiIcase = LookupTable<Key, Value, vsl::StringAsciiIcaseCompare>;
+using FlatMapAsciiIcase = FlatMap<Key, Value, vsl::StringAsciiIcaseCompare>;
 
 }  // namespace vsl
 
-#endif  // VSL_LOOKUP_TABLE_H
+#endif  // VSL_FLAT_MAP_H

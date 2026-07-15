@@ -1,4 +1,4 @@
-#include "lookup_table.h"
+#include "flat_map.h"
 
 #include <vsl/container.h>
 
@@ -18,9 +18,9 @@ namespace test
 static const auto KeyNotFoundErrorMatcher = ThrowsMessage<std::out_of_range>(HasSubstr("key not found"));
 static const auto DuplicateKeyErrorMatcher = ThrowsMessage<std::invalid_argument>(HasSubstr("duplicate key"));
 
-TEST(LookupTableTest, EmptyTable)
+TEST(FlatMapTest, EmptyTable)
 {
-    const auto table = vsl::LookupTable<int, int>{};
+    const auto table = vsl::FlatMap<int, int>{};
 
     EXPECT_TRUE(table.empty());
     EXPECT_EQ(table.size(), 0);
@@ -32,9 +32,9 @@ TEST(LookupTableTest, EmptyTable)
     EXPECT_THAT([&] { [[maybe_unused]] auto val = table.at(42); }, KeyNotFoundErrorMatcher);
 }
 
-TEST(LookupTableTest, SingleElement)
+TEST(FlatMapTest, SingleElement)
 {
-    const auto table = vsl::LookupTable<char, int>{
+    const auto table = vsl::FlatMap<char, int>{
         {'b', 0}
     };
 
@@ -55,9 +55,9 @@ TEST(LookupTableTest, SingleElement)
     EXPECT_THAT([&] { [[maybe_unused]] auto val = table.at('c'); }, KeyNotFoundErrorMatcher);
 }
 
-TEST(LookupTableTest, MultipleUnsortedElements)
+TEST(FlatMapTest, MultipleUnsortedElements)
 {
-    const auto table = vsl::LookupTable<std::string, int>{
+    const auto table = vsl::FlatMap<std::string, int>{
         {  "dog", 1},
         {  "cat", 2},
         {"mouse", 3},
@@ -77,11 +77,11 @@ TEST(LookupTableTest, MultipleUnsortedElements)
     EXPECT_THAT([&] { [[maybe_unused]] auto val = table.at("unknown"); }, KeyNotFoundErrorMatcher);
 }
 
-TEST(LookupTableTest, DuplicateKeyError)
+TEST(FlatMapTest, DuplicateKeyError)
 {
     auto create_table_1 = []
     {
-        const auto table = vsl::LookupTable<int, int>{
+        const auto table = vsl::FlatMap<int, int>{
             {1, 100},
             {2, 200},
             {3, 300},
@@ -92,7 +92,7 @@ TEST(LookupTableTest, DuplicateKeyError)
 
     auto create_table_2 = []
     {
-        const auto table = vsl::LookupTable<int, int>{
+        const auto table = vsl::FlatMap<int, int>{
             {1, 100},
             {1, 200}, // Duplicate key
             {3, 300},
@@ -103,7 +103,7 @@ TEST(LookupTableTest, DuplicateKeyError)
 
     auto create_table_3 = []
     {
-        const auto table = vsl::LookupTable<int, int>{
+        const auto table = vsl::FlatMap<int, int>{
             {1, 100},
             {2, 200},
             {3, 300},
@@ -117,9 +117,9 @@ TEST(LookupTableTest, DuplicateKeyError)
     EXPECT_THAT(create_table_3, DuplicateKeyErrorMatcher);
 }
 
-TEST(LookupTableTest, StringHeterogeneousLookup)
+TEST(FlatMapTest, StringHeterogeneousLookup)
 {
-    const auto table = vsl::LookupTable<std::string, int>{
+    const auto table = vsl::FlatMap<std::string, int>{
         {"aaa", 1},
         {"bbb", 2},
         {"ccc", 3},
@@ -135,9 +135,9 @@ TEST(LookupTableTest, StringHeterogeneousLookup)
     EXPECT_THAT([&] { [[maybe_unused]] auto val = table.at(std::string_view{"unknown"}); }, KeyNotFoundErrorMatcher);
 }
 
-TEST(LookupTableTest, KeySearch)
+TEST(FlatMapTest, KeySearch)
 {
-    const auto table = vsl::LookupTable<int, int>{
+    const auto table = vsl::FlatMap<int, int>{
         {1, 11},
         {2, 22},
         {4, 44},
@@ -161,9 +161,9 @@ enum class TestEnum
     OPT3,
 };
 
-TEST(LookupTableTest, Enum)
+TEST(FlatMapTest, Enum)
 {
-    const auto table = vsl::LookupTable<TestEnum, int>{
+    const auto table = vsl::FlatMap<TestEnum, int>{
         {TestEnum::OPT1, 101},
         {TestEnum::OPT2, 102},
         {TestEnum::OPT3, 103},
@@ -174,9 +174,9 @@ TEST(LookupTableTest, Enum)
     EXPECT_EQ(table.at(TestEnum::OPT3), 103);
 }
 
-TEST(LookupTableTest, ComparatorGreater)
+TEST(FlatMapTest, ComparatorGreater)
 {
-    const auto table = vsl::LookupTable<int, int, std::ranges::greater>{
+    const auto table = vsl::FlatMap<int, int, std::ranges::greater>{
         {1, 100},
         {5, 500},
         {2, 200},
@@ -204,11 +204,11 @@ TEST(LookupTableTest, ComparatorGreater)
     EXPECT_THAT([&] { [[maybe_unused]] auto val = table.at(99); }, KeyNotFoundErrorMatcher);
 }
 
-TEST(LookupTableTest, ComparatorLambda)
+TEST(FlatMapTest, ComparatorLambda)
 {
     auto comp = [](int a, int b) { return a > b; };
 
-    const auto table = vsl::LookupTable<int, int, decltype(comp)>{
+    const auto table = vsl::FlatMap<int, int, decltype(comp)>{
         {
          {5, 50},
          {2, 20},
@@ -228,14 +228,14 @@ TEST(LookupTableTest, ComparatorLambda)
     EXPECT_FALSE(table.contains(6));
 }
 
-TEST(LookupTableTest, ComparatorStringIcase)
+TEST(FlatMapTest, ComparatorStringIcase)
 {
     static constexpr auto ASCII_SYMBOLS_UPPER =
         R"( !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`{|}~)";
     static constexpr auto ASCII_SYMBOLS_LOWER =
         R"( !"#$%&'()*+,-./0123456789:;<=>?@abcdefghijklmnopqrstuvwxyz[\]^_`{|}~)";
 
-    const auto table = vsl::LookupTableAsciiIcase<std::string, int>{
+    const auto table = vsl::FlatMapAsciiIcase<std::string, int>{
         {            "Apple", 1},
         {           "Banana", 2},
         {ASCII_SYMBOLS_UPPER, 3},
@@ -250,11 +250,11 @@ TEST(LookupTableTest, ComparatorStringIcase)
     EXPECT_FALSE(table.contains("unknown"));
 }
 
-TEST(LookupTableTest, ComparatorStringIcaseDuplicateError)
+TEST(FlatMapTest, ComparatorStringIcaseDuplicateError)
 {
     auto create_table = []
     {
-        const auto table = vsl::LookupTable<std::string, int, vsl::StringAsciiIcaseCompare>{
+        const auto table = vsl::FlatMap<std::string, int, vsl::StringAsciiIcaseCompare>{
             {"Hello", 1},
             {"HELLO", 2}, // Duplicate key
         };
