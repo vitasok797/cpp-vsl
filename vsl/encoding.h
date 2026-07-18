@@ -8,7 +8,9 @@
 #include <uni_algo/ranges_conv.h>
 
 #include <algorithm>
-#include <concepts>
+#include <array>
+#include <cassert>
+#include <ranges>
 #include <string>
 #include <string_view>
 
@@ -18,71 +20,76 @@ namespace vsl
 namespace detail
 {
 
-using vsl::encodings::detail::Codepoint;
-using vsl::encodings::detail::ToEncodingMapItem;
+inline constexpr unsigned char FIRST_NON_ASCII_CHAR = 0x80;
 
-template<typename ToEncodingMap>
-consteval auto is_to_encoding_map_sorted(const ToEncodingMap& map) -> bool
+inline constexpr auto is_ascii_char(char c) noexcept -> bool
 {
-    return std::ranges::is_sorted(map, std::less<>{}, &ToEncodingMapItem::first);
+    return static_cast<unsigned char>(c) < FIRST_NON_ASCII_CHAR;
 }
 
-template<typename Encoding>
-concept encodable = requires(const Encoding& encoding, std::string& s, std::string_view sv) {
-    Encoding::to_encoding_map;
-    requires Encoding::to_encoding_map.size() <= 128;
-    requires is_to_encoding_map_sorted(Encoding::to_encoding_map);
-    { encoding.to_encoding_reserve(s, sv) } -> std::same_as<void>;
-};
+inline auto extract_leading_ascii(std::string& out, std::string_view str) -> std::string_view
+{
+    const auto first_non_ascii = std::ranges::find_if_not(str, is_ascii_char);
+    const auto count = vsl::as_unsigned(std::distance(str.begin(), first_non_ascii));
+    if (count > 0)
+    {
+        out.append(str.data(), count);
+        str.remove_prefix(count);
+    }
+    return str;
+}
 
-template<typename Encoding>
-concept decodable = requires(const Encoding& encoding, std::string& s, std::string_view sv) {
-    Encoding::from_encoding_map;
-    requires Encoding::from_encoding_map.size() == 128;
-    { encoding.from_encoding_reserve(s, sv) } -> std::same_as<void>;
-};
+template<size_t N>
+inline auto append_replacement(std::string& out, std::array<unsigned char, N> repl) -> void
+{
+    assert(repl[0] != '\0');
+    out += static_cast<char>(repl[0]);
 
-inline constexpr auto MIN_NON_ASCII_CODEPOINT = Codepoint{0x80};
+    if constexpr (N > 1)
+    {
+        for (size_t i = 1; i < N; ++i)
+        {
+            if (repl[i] == '\0') return;
+            out += static_cast<char>(repl[i]);
+        }
+    }
+}
 
 }  // namespace detail
 
 [[nodiscard]]
 inline constexpr auto is_ascii(std::string_view str) noexcept -> bool
 {
-    auto is_ascii_char = [](unsigned char c) noexcept { return c < detail::MIN_NON_ASCII_CODEPOINT; };
-    return std::ranges::all_of(str, is_ascii_char);
+    return std::ranges::all_of(str, detail::is_ascii_char);
 }
 
-template<detail::encodable Encoding>
-inline auto to_encoding(std::string& out, std::string_view str, const Encoding& encoding, char repl_char = '?') -> void
+template<encodings::detail::encoding_to Encoding>
+inline auto to_encoding(std::string& out, std::string_view str, const Encoding&, char repl_char = '?') -> void
 {
-    if (is_ascii(str))
-    {
-        out.append(str);
-        return;
-    }
+    str = detail::extract_leading_ascii(out, str);
+    if (str.empty()) return;
 
-    for (detail::Codepoint cp : una::ranges::utf8_view(str))
+    for (const u32 cp : una::ranges::utf8_view(str))
     {
-        if (cp < detail::MIN_NON_ASCII_CODEPOINT)
+        if (cp < detail::FIRST_NON_ASCII_CHAR)
         {
-            out.push_back(static_cast<char>(cp));
+            out += static_cast<char>(cp);
             continue;
         }
 
-        auto map_record_it =
-            std::ranges::lower_bound(encoding.to_encoding_map, cp, {}, &detail::ToEncodingMapItem::first);
-        if (map_record_it != encoding.to_encoding_map.end() && map_record_it->first == cp)
+        using MapPairType = decltype(Encoding::to_encoding_map)::value_type;
+        const auto found_it = std::ranges::lower_bound(Encoding::to_encoding_map, cp, {}, &MapPairType::first);
+        if (found_it != Encoding::to_encoding_map.end() && found_it->first == cp)
         {
-            out.append(map_record_it->second);
+            detail::append_replacement(out, found_it->second);
             continue;
         }
 
-        out.push_back(repl_char);
+        out += repl_char;
     }
 }
 
-template<detail::encodable Encoding>
+template<encodings::detail::encoding_to Encoding>
 [[nodiscard]]
 inline auto to_encoding(std::string_view str, const Encoding& encoding, char repl_char = '?') -> std::string
 {
@@ -94,24 +101,27 @@ inline auto to_encoding(std::string_view str, const Encoding& encoding, char rep
     return res;
 }
 
-template<detail::decodable Encoding>
-inline auto from_encoding(std::string& out, std::string_view str, const Encoding& encoding) -> void
+template<encodings::detail::encoding_from Encoding>
+inline auto from_encoding(std::string& out, std::string_view str, const Encoding&) -> void
 {
-    for (char c : str)
+    str = detail::extract_leading_ascii(out, str);
+    if (str.empty()) return;
+
+    for (const char c : str)
     {
-        const auto byte = static_cast<u8>(c);
-        if (byte < detail::MIN_NON_ASCII_CODEPOINT)
+        if (detail::is_ascii_char(c))
         {
-            out.push_back(c);
+            out += c;
         }
         else
         {
-            out.append(encoding.from_encoding_map[byte - detail::MIN_NON_ASCII_CODEPOINT]);
+            const auto repl_index = static_cast<unsigned char>(c) - detail::FIRST_NON_ASCII_CHAR;
+            detail::append_replacement(out, Encoding::from_encoding_map[repl_index]);
         }
     }
 }
 
-template<detail::decodable Encoding>
+template<encodings::detail::encoding_from Encoding>
 [[nodiscard]]
 inline auto from_encoding(std::string_view str, const Encoding& encoding) -> std::string
 {

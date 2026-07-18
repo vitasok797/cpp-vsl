@@ -59,11 +59,15 @@ TEST(EncodingTest, ToCp1251)
     EXPECT_EQ(to("  \t\r\n  ", encoding), "  \t\r\n  ");
 
     EXPECT_EQ(to(ASCII_SYMBOLS, encoding), ASCII_SYMBOLS);
-    EXPECT_EQ(to("Тест + ascii", encoding), "\xD2\xE5\xF1\xF2 + ascii");
+    EXPECT_EQ(to("Тест ascii", encoding), "\xD2\xE5\xF1\xF2 ascii");
+    EXPECT_EQ(to("ascii Тест", encoding), "ascii \xD2\xE5\xF1\xF2");
     EXPECT_EQ(to("Ёё", encoding), "\xA8\xB8");
 
     EXPECT_EQ(to("Тест 🚧", encoding), "\xD2\xE5\xF1\xF2 ?");
     EXPECT_EQ(to("Тест 🚧", encoding, 'x'), "\xD2\xE5\xF1\xF2 x");
+
+    EXPECT_EQ(to("Привет\xC2мир", encoding), "\xCF\xF0\xE8\xE2\xE5\xF2?\xEC\xE8\xF0");
+    EXPECT_EQ(to("Привет\xD0", encoding), "\xCF\xF0\xE8\xE2\xE5\xF2?");
 }
 
 TEST(EncodingTest, ToCp866)
@@ -74,11 +78,15 @@ TEST(EncodingTest, ToCp866)
     EXPECT_EQ(to("  \t\r\n  ", encoding), "  \t\r\n  ");
 
     EXPECT_EQ(to(ASCII_SYMBOLS, encoding), ASCII_SYMBOLS);
-    EXPECT_EQ(to("Тест + ascii", encoding), "\x92\xA5\xE1\xE2 + ascii");
+    EXPECT_EQ(to("Тест ascii", encoding), "\x92\xA5\xE1\xE2 ascii");
+    EXPECT_EQ(to("ascii Тест", encoding), "ascii \x92\xA5\xE1\xE2");
     EXPECT_EQ(to("Ёё", encoding), "\xF0\xF1");
 
     EXPECT_EQ(to("Тест 🚧", encoding), "\x92\xA5\xE1\xE2 ?");
     EXPECT_EQ(to("Тест 🚧", encoding, 'x'), "\x92\xA5\xE1\xE2 x");
+
+    EXPECT_EQ(to("Привет\xC2мир", encoding), "\x8F\xE0\xA8\xA2\xA5\xE2?\xAC\xA8\xE0");
+    EXPECT_EQ(to("Привет\xD0", encoding), "\x8F\xE0\xA8\xA2\xA5\xE2?");
 }
 
 TEST(EncodingTest, ToTranslit)
@@ -89,7 +97,8 @@ TEST(EncodingTest, ToTranslit)
     EXPECT_EQ(to("  \t\r\n  ", encoding), "  \t\r\n  ");
 
     EXPECT_EQ(to(ASCII_SYMBOLS, encoding), ASCII_SYMBOLS);
-    EXPECT_EQ(to("Тест + ascii", encoding), "Test + ascii");
+    EXPECT_EQ(to("Тест ascii", encoding), "Test ascii");
+    EXPECT_EQ(to("ascii Тест", encoding), "ascii Test");
     EXPECT_EQ(to("Ёё", encoding), "Yoyo");
 
     EXPECT_EQ(to("Тест 🚧", encoding), "Test ?");
@@ -98,7 +107,8 @@ TEST(EncodingTest, ToTranslit)
     EXPECT_EQ(to("Щука, Эхо, Съезд, Юра, Ягода", encoding), "Shhuka, E`xo, S``ezd, Yura, Yagoda");
 
     EXPECT_EQ(to("Привет\xC2мир", encoding), "Privet?mir");
-    EXPECT_EQ(to("\x7F\x80\xD0\xA9", encoding), "\x7F?Shh");
+    EXPECT_EQ(to("Привет\xD0", encoding), "Privet?");
+    EXPECT_EQ(to("\x7F\x80Щ", encoding), "\x7F?Shh");
 }
 
 TEST(EncodingTest, FromCp1251)
@@ -109,7 +119,8 @@ TEST(EncodingTest, FromCp1251)
     EXPECT_EQ(from("  \t\r\n  ", encoding), "  \t\r\n  ");
 
     EXPECT_EQ(from(ASCII_SYMBOLS, encoding), ASCII_SYMBOLS);
-    EXPECT_EQ(from("\xD2\xE5\xF1\xF2 + ascii", encoding), "Тест + ascii");
+    EXPECT_EQ(from("\xD2\xE5\xF1\xF2 ascii", encoding), "Тест ascii");
+    EXPECT_EQ(from("ascii \xD2\xE5\xF1\xF2", encoding), "ascii Тест");
 
     EXPECT_EQ(from("\x01", encoding), "\x01");
     EXPECT_EQ(from("\x7F", encoding), "\x7F");
@@ -128,7 +139,8 @@ TEST(EncodingTest, FromCp866)
     EXPECT_EQ(from("  \t\r\n  ", encoding), "  \t\r\n  ");
 
     EXPECT_EQ(from(ASCII_SYMBOLS, encoding), ASCII_SYMBOLS);
-    EXPECT_EQ(from("\x92\xA5\xE1\xE2 + ascii", encoding), "Тест + ascii");
+    EXPECT_EQ(from("\x92\xA5\xE1\xE2 ascii", encoding), "Тест ascii");
+    EXPECT_EQ(from("ascii \x92\xA5\xE1\xE2", encoding), "ascii Тест");
 
     EXPECT_EQ(from("\x01", encoding), "\x01");
     EXPECT_EQ(from("\x7F", encoding), "\x7F");
