@@ -56,7 +56,7 @@ template<typename E>
     requires std::is_enum_v<E>
 constexpr auto enum_count() noexcept -> SignedSize
 {
-    return narrow_cast<SignedSize>(magic_enum::enum_count<E>());
+    return vsl::narrow_cast<SignedSize>(magic_enum::enum_count<E>());
 }
 
 template<typename E>
@@ -66,7 +66,7 @@ constexpr auto enum_index(E value) noexcept -> std::optional<Index>
     const auto index = magic_enum::enum_index(value);
     if (index.has_value())
     {
-        return narrow_cast<Index>(index.value());
+        return vsl::narrow_cast<Index>(index.value());
     }
     else
     {
@@ -78,7 +78,7 @@ template<auto V>
     requires std::is_enum_v<std::decay_t<decltype(V)>>
 constexpr auto enum_index() noexcept -> Index
 {
-    return narrow_cast<Index>(magic_enum::enum_index<V>());
+    return vsl::narrow_cast<Index>(magic_enum::enum_index<V>());
 }
 
 template<typename E>
