@@ -45,7 +45,7 @@ inline auto to_upper(std::string_view str) -> std::string
 [[nodiscard]]
 inline auto to_upper_ascii(std::string_view str) -> std::string
 {
-    std::string res(str);
+    auto res = std::string{str};
     for (char& c : res)
     {
         if (c >= 'a' && c <= 'z')
@@ -66,7 +66,7 @@ inline auto to_lower(std::string_view str) -> std::string
 [[nodiscard]]
 inline auto to_lower_ascii(std::string_view str) -> std::string
 {
-    std::string res(str);
+    auto res = std::string{str};
     for (char& c : res)
     {
         if (c >= 'A' && c <= 'Z')
