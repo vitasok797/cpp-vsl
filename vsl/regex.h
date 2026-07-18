@@ -333,7 +333,7 @@ inline auto re_replace(std::string_view s,
 
 inline auto re_escape(std::string& out, std::string_view s) -> void
 {
-    for (char c : s)
+    for (const char c : s)
     {
         switch (c)
         {
@@ -368,7 +368,7 @@ inline auto re_escape(std::string_view s) -> std::string
 
 inline auto re_escape_repl(std::string& out, std::string_view s) -> void
 {
-    for (char c : s)
+    for (const char c : s)
     {
         switch (c)
         {
