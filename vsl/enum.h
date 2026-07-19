@@ -75,7 +75,7 @@ constexpr auto enum_index(E value) noexcept -> std::optional<Index>
 }
 
 template<auto V>
-    requires std::is_enum_v<std::decay_t<decltype(V)>>
+    requires std::is_enum_v<std::remove_cvref_t<decltype(V)>>
 constexpr auto enum_index() noexcept -> Index
 {
     return vsl::narrow_cast<Index>(magic_enum::enum_index<V>());
