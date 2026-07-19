@@ -10,14 +10,8 @@
 namespace vsl
 {
 
-template<typename Fn, typename... Args>
-concept callable = std::is_invocable_v<Fn, Args...>;
-
-template<typename Ret, typename Fn, typename... Args>
-concept callable_r = std::is_invocable_r_v<Ret, Fn, Args...>;
-
 template<typename T>
-concept numeric = std::integral<std::decay_t<T>> || std::floating_point<std::decay_t<T>>;
+concept numeric = std::integral<std::remove_cvref_t<T>> || std::floating_point<std::remove_cvref_t<T>>;
 
 template<typename T, typename U>
 concept same_type_as = std::same_as<std::decay_t<T>, std::decay_t<U>>;
@@ -29,7 +23,7 @@ template<typename T>
 concept string_like = one_of_type<T, std::string, std::string_view, const char*, char*>;
 
 template<typename R, typename T>
-concept range_of = std::same_as<std::ranges::range_value_t<R>, std::decay_t<T>>;
+concept range_of = std::same_as<std::ranges::range_value_t<R>, std::remove_cvref_t<T>>;
 
 template<typename R, typename T>
 concept range_of_convertible_to = std::convertible_to<std::ranges::range_value_t<R>, T>;
@@ -45,6 +39,13 @@ concept range_view_of_convertible_to = range_of_convertible_to<R, T> && std::ran
 
 template<typename R>
 concept range_view_of_string_like = range_of_string_like<R> && std::ranges::view<R>;
+
+template<typename T>
+concept strict_signed_integral = std::signed_integral<T> && !one_of_type<T, char, wchar_t, char8_t, char16_t, char32_t>;
+
+template<typename T>
+concept strict_unsigned_integral =
+    std::unsigned_integral<T> && !one_of_type<T, bool, char, wchar_t, char8_t, char16_t, char32_t>;
 
 }  // namespace vsl
 

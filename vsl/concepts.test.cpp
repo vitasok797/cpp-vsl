@@ -11,76 +11,8 @@
 namespace test
 {
 
-static auto regular_func(int, double) -> int
-{
-    return 0;
-}
-
-static auto ref_func(int&, const int&) -> void
-{}
-
-struct Functor
-{
-    auto operator()() const -> void
-    {}
-
-    auto operator()(int x) -> int
-    {
-        return x * 2;
-    }
-};
-
-struct SampleClass
-{
-    auto non_const_method() -> void
-    {}
-
-    auto const_method() const -> void
-    {}
-};
-
 TEST(ConceptsTest, CompileCheck)
 {
-    // -----------------------------------------------------------------------------------------------
-    // callable
-    // -----------------------------------------------------------------------------------------------
-
-    // regular_func
-    static_assert(vsl::callable<decltype(&regular_func), int, double>);
-    static_assert(vsl::callable<decltype(&regular_func), int, float>);  // <float> to <double> conversion
-
-    // lambda
-    auto my_lambda = [](int x) { return x + 1; };
-    static_assert(vsl::callable<decltype(my_lambda), int>);
-    static_assert(!vsl::callable<decltype(my_lambda), const char*>);
-    static_assert(!vsl::callable<decltype(my_lambda)>);
-
-    // ref_func
-    static_assert(vsl::callable<decltype(ref_func), int&, const int&>);
-    static_assert(vsl::callable<decltype(ref_func), int&, int>);  // <int> to <const int&> implisit conversion
-    static_assert(!vsl::callable<decltype(ref_func), const int&, int>);
-
-    // Functor
-    static_assert(vsl::callable<Functor>);
-    static_assert(vsl::callable<Functor, int>);
-    static_assert(vsl::callable<const Functor>);
-    static_assert(!vsl::callable<const Functor, int>);
-
-    // SampleClass member functions
-    static_assert(vsl::callable<decltype(&SampleClass::non_const_method), SampleClass&>);
-    static_assert(vsl::callable<decltype(&SampleClass::const_method), const SampleClass&>);
-    static_assert(!vsl::callable<decltype(&SampleClass::non_const_method), const SampleClass&>);
-
-    // -----------------------------------------------------------------------------------------------
-    // callable_r
-    // -----------------------------------------------------------------------------------------------
-
-    // regular_func
-    static_assert(vsl::callable_r<int, decltype(regular_func), int, double>);
-    static_assert(vsl::callable_r<double, decltype(regular_func), int, double>);  // Return value conversion
-    static_assert(vsl::callable_r<void, decltype(regular_func), int, double>);    // Return value conversion
-    static_assert(!vsl::callable_r<int*, decltype(regular_func), int, double>);
-
     // -----------------------------------------------------------------------------------------------
     // numeric
     // -----------------------------------------------------------------------------------------------
