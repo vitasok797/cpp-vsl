@@ -50,7 +50,7 @@ inline auto to_upper_ascii(std::string_view str) -> std::string
     {
         if (c >= 'a' && c <= 'z')
         {
-            c -= 32;
+            c -= ('a' - 'A');
         }
     }
     return res;
@@ -71,7 +71,7 @@ inline auto to_lower_ascii(std::string_view str) -> std::string
     {
         if (c >= 'A' && c <= 'Z')
         {
-            c += 32;
+            c += ('a' - 'A');
         }
     }
     return res;
