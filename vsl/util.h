@@ -18,7 +18,7 @@ namespace vsl
 template<typename T>
 constexpr auto signed_size(const T& t) noexcept -> auto
 {
-    return vsl::as_signed(t.size());
+    return std::ssize(t);
 }
 
 // C++23: Use std::forward_like
