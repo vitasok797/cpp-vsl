@@ -3,6 +3,7 @@
 
 #include <vsl/concepts.h>
 
+#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <exception>
@@ -55,18 +56,6 @@ using SignedSize = std::ptrdiff_t;
 template<typename T>
 using OptionalRef = std::optional<std::reference_wrapper<T>>;
 
-template<typename T>
-constexpr auto as_signed(T t) noexcept -> auto
-{
-    return std::make_signed_t<T>(t);
-}
-
-template<typename T>
-constexpr auto as_unsigned(T t) noexcept -> auto
-{
-    return std::make_unsigned_t<T>(t);
-}
-
 struct NarrowingError : public std::exception
 {
     auto what() const noexcept -> const char* override
@@ -103,6 +92,62 @@ template<typename T, typename U>
 constexpr auto narrow_cast(U&& u) noexcept -> T
 {
     return static_cast<T>(std::forward<U>(u));
+}
+
+namespace detail
+{
+
+template<vsl::strict_unsigned_integral T>
+constexpr auto get_doubled_signed_type() -> auto
+{
+    if constexpr (std::same_as<T, uint8_t>)
+    {
+        return int16_t{};
+    }
+    else if constexpr (std::same_as<T, uint16_t>)
+    {
+        return int32_t{};
+    }
+    else
+    {
+        return int64_t{};
+    }
+}
+
+template<vsl::strict_unsigned_integral T>
+using doubled_signed_t = decltype(get_doubled_signed_type<T>());
+
+}  // namespace detail
+
+template<vsl::strict_unsigned_integral T>
+constexpr auto as_signed(T t) -> auto
+{
+    if constexpr (std::same_as<T, uint64_t>)
+    {
+        return numeric_cast<int64_t>(t);
+    }
+    else
+    {
+        return static_cast<detail::doubled_signed_t<T>>(t);
+    }
+}
+
+template<vsl::strict_unsigned_integral T>
+constexpr auto as_signed_unchecked(T t) noexcept -> auto
+{
+    return static_cast<detail::doubled_signed_t<T>>(t);
+}
+
+template<vsl::strict_signed_integral T>
+constexpr auto as_unsigned(T t) -> auto
+{
+    return numeric_cast<std::make_unsigned_t<T>>(t);
+}
+
+template<vsl::strict_signed_integral T>
+constexpr auto as_unsigned_unchecked(T t) noexcept -> auto
+{
+    return static_cast<std::make_unsigned_t<T>>(t);
 }
 
 }  // namespace vsl

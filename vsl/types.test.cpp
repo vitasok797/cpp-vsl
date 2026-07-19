@@ -1,5 +1,7 @@
 #include "types.h"
 
+#include <vsl/concepts.h>
+
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
@@ -158,6 +160,219 @@ TEST(TypesTest, NumericCastUnsigned)
     EXPECT_THROW(vsl::numeric_cast<u16>(float{1.1f}), vsl::NarrowingError);
     EXPECT_THROW(vsl::numeric_cast<u16>(double{1.1}), vsl::NarrowingError);
     EXPECT_THROW(vsl::numeric_cast<u16>(double{1e5}), vsl::NarrowingError);
+}
+
+TEST(TypesTest, AsSigned)
+{
+    {
+        // uint8_t -> int16_t
+        const auto value = uint8_t{200};
+        const auto result = vsl::as_signed(value);
+        EXPECT_EQ(result, value);
+        static_assert(vsl::same_type_as<decltype(result), int16_t>);
+    }
+    {
+        // uint16_t -> int32_t
+        const auto value = uint16_t{60000};
+        const auto result = vsl::as_signed(value);
+        EXPECT_EQ(result, value);
+        static_assert(vsl::same_type_as<decltype(result), int32_t>);
+    }
+    {
+        // uint32_t -> int64_t
+        const auto value = uint32_t{4'000'000'000};
+        const auto result = vsl::as_signed(value);
+        EXPECT_EQ(result, value);
+        static_assert(vsl::same_type_as<decltype(result), int64_t>);
+    }
+    {
+        // uint64_t -> int64_t within range
+        const auto value = uint64_t{1'000'000'000'000};
+        const auto result = vsl::as_signed(value);
+        EXPECT_EQ(result, value);
+        static_assert(vsl::same_type_as<decltype(result), int64_t>);
+    }
+    {
+        // Handle zero
+        EXPECT_EQ(vsl::as_signed(uint8_t{0}), int16_t{0});
+        EXPECT_EQ(vsl::as_signed(uint16_t{0}), int32_t{0});
+        EXPECT_EQ(vsl::as_signed(uint32_t{0}), int64_t{0});
+        EXPECT_EQ(vsl::as_signed(uint64_t{0}), int64_t{0});
+    }
+    {
+        // Handle max values
+        EXPECT_EQ(vsl::as_signed(std::numeric_limits<uint8_t>::max()), int16_t{255});
+        EXPECT_EQ(vsl::as_signed(std::numeric_limits<uint16_t>::max()), int32_t{65535});
+        EXPECT_EQ(vsl::as_signed(std::numeric_limits<uint32_t>::max()), int64_t{4'294'967'295});
+    }
+    {
+        // Throw on int64_t overflow
+        const auto value = static_cast<uint64_t>(std::numeric_limits<int64_t>::max()) + 1;
+        EXPECT_THROW({ [[maybe_unused]] auto result = vsl::as_signed(value); }, vsl::NarrowingError);
+    }
+}
+
+TEST(TypesTest, AsSignedUnchecked)
+{
+    {
+        // uint8_t -> int16_t
+        const auto value = uint8_t{200};
+        const auto result = vsl::as_signed_unchecked(value);
+        EXPECT_EQ(result, value);
+        static_assert(vsl::same_type_as<decltype(result), int16_t>);
+    }
+    {
+        // uint16_t -> int32_t
+        const auto value = uint16_t{60000};
+        const auto result = vsl::as_signed_unchecked(value);
+        EXPECT_EQ(result, value);
+        static_assert(vsl::same_type_as<decltype(result), int32_t>);
+    }
+    {
+        // uint32_t -> int64_t
+        const auto value = uint32_t{4'000'000'000};
+        const auto result = vsl::as_signed_unchecked(value);
+        EXPECT_EQ(result, value);
+        static_assert(vsl::same_type_as<decltype(result), int64_t>);
+    }
+    {
+        // uint64_t -> int64_t within range
+        const auto value = uint64_t{1'000'000'000'000};
+        const auto result = vsl::as_signed_unchecked(value);
+        EXPECT_EQ(result, value);
+        static_assert(vsl::same_type_as<decltype(result), int64_t>);
+    }
+    {
+        // Handle zero
+        EXPECT_EQ(vsl::as_signed_unchecked(uint8_t{0}), int16_t{0});
+        EXPECT_EQ(vsl::as_signed_unchecked(uint16_t{0}), int32_t{0});
+        EXPECT_EQ(vsl::as_signed_unchecked(uint32_t{0}), int64_t{0});
+        EXPECT_EQ(vsl::as_signed_unchecked(uint64_t{0}), int64_t{0});
+    }
+    {
+        // Handle max values
+        EXPECT_EQ(vsl::as_signed_unchecked(std::numeric_limits<uint8_t>::max()), int16_t{255});
+        EXPECT_EQ(vsl::as_signed_unchecked(std::numeric_limits<uint16_t>::max()), int32_t{65535});
+        EXPECT_EQ(vsl::as_signed_unchecked(std::numeric_limits<uint32_t>::max()), int64_t{4'294'967'295});
+    }
+    {
+        // Check noexcept
+        static_assert(noexcept(vsl::as_signed_unchecked(uint8_t{})));
+        static_assert(noexcept(vsl::as_signed_unchecked(uint16_t{})));
+        static_assert(noexcept(vsl::as_signed_unchecked(uint32_t{})));
+        static_assert(noexcept(vsl::as_signed_unchecked(uint64_t{})));
+    }
+}
+
+TEST(TypesTest, AsUnsigned)
+{
+    {
+        // Positive int8_t -> uint8_t
+        const auto value = int8_t{100};
+        const auto result = vsl::as_unsigned(value);
+        EXPECT_EQ(result, value);
+        static_assert(vsl::same_type_as<decltype(result), uint8_t>);
+    }
+    {
+        // Positive int16_t -> uint16_t
+        const auto value = int16_t{30000};
+        const auto result = vsl::as_unsigned(value);
+        EXPECT_EQ(result, value);
+        static_assert(vsl::same_type_as<decltype(result), uint16_t>);
+    }
+    {
+        // Positive int32_t -> uint32_t
+        const auto value = int32_t{2'000'000'000};
+        const auto result = vsl::as_unsigned(value);
+        EXPECT_EQ(result, value);
+        static_assert(vsl::same_type_as<decltype(result), uint32_t>);
+    }
+    {
+        // Positive int64_t -> uint64_t
+        const auto value = int64_t{9'000'000'000'000'000'000};
+        const auto result = vsl::as_unsigned(value);
+        EXPECT_EQ(result, value);
+        static_assert(vsl::same_type_as<decltype(result), uint64_t>);
+    }
+    {
+        // Handle zero
+        EXPECT_EQ(vsl::as_unsigned(int8_t{0}), uint8_t{0});
+        EXPECT_EQ(vsl::as_unsigned(int16_t{0}), uint16_t{0});
+        EXPECT_EQ(vsl::as_unsigned(int32_t{0}), uint32_t{0});
+        EXPECT_EQ(vsl::as_unsigned(int64_t{0}), uint64_t{0});
+    }
+    {
+        // Handle max positive values
+        EXPECT_EQ(vsl::as_unsigned(std::numeric_limits<int8_t>::max()), uint8_t{127});
+        EXPECT_EQ(vsl::as_unsigned(std::numeric_limits<int16_t>::max()), uint16_t{32767});
+        EXPECT_EQ(vsl::as_unsigned(std::numeric_limits<int32_t>::max()), uint32_t{2'147'483'647});
+        EXPECT_EQ(vsl::as_unsigned(std::numeric_limits<int64_t>::max()), uint64_t{9'223'372'036'854'775'807});
+    }
+    {
+        // Throw on negative
+        EXPECT_THROW({ [[maybe_unused]] auto result = vsl::as_unsigned(int8_t{-1}); }, vsl::NarrowingError);
+        EXPECT_THROW({ [[maybe_unused]] auto result = vsl::as_unsigned(int16_t{-1}); }, vsl::NarrowingError);
+        EXPECT_THROW({ [[maybe_unused]] auto result = vsl::as_unsigned(int32_t{-1}); }, vsl::NarrowingError);
+        EXPECT_THROW({ [[maybe_unused]] auto result = vsl::as_unsigned(int64_t{-1}); }, vsl::NarrowingError);
+    }
+}
+
+TEST(TypesTest, AsUnsignedUnchecked)
+{
+    {
+        // Positive int8_t -> uint8_t
+        const auto value = int8_t{100};
+        const auto result = vsl::as_unsigned_unchecked(value);
+        EXPECT_EQ(result, value);
+        static_assert(vsl::same_type_as<decltype(result), uint8_t>);
+    }
+    {
+        // Positive int16_t -> uint16_t
+        const auto value = int16_t{30000};
+        const auto result = vsl::as_unsigned_unchecked(value);
+        EXPECT_EQ(result, value);
+        static_assert(vsl::same_type_as<decltype(result), uint16_t>);
+    }
+    {
+        // Positive int32_t -> uint32_t
+        const auto value = int32_t{2'000'000'000};
+        const auto result = vsl::as_unsigned_unchecked(value);
+        EXPECT_EQ(result, value);
+        static_assert(vsl::same_type_as<decltype(result), uint32_t>);
+    }
+    {
+        // Positive int64_t -> uint64_t
+        const auto value = int64_t{9'000'000'000'000'000'000};
+        const auto result = vsl::as_unsigned_unchecked(value);
+        EXPECT_EQ(result, value);
+        static_assert(vsl::same_type_as<decltype(result), uint64_t>);
+    }
+    {
+        // Handle zero
+        EXPECT_EQ(vsl::as_unsigned_unchecked(int8_t{0}), uint8_t{0});
+        EXPECT_EQ(vsl::as_unsigned_unchecked(int16_t{0}), uint16_t{0});
+        EXPECT_EQ(vsl::as_unsigned_unchecked(int32_t{0}), uint32_t{0});
+        EXPECT_EQ(vsl::as_unsigned_unchecked(int64_t{0}), uint64_t{0});
+    }
+    {
+        // Handle max positive values
+        EXPECT_EQ(vsl::as_unsigned_unchecked(std::numeric_limits<int8_t>::max()), uint8_t{127});
+        EXPECT_EQ(vsl::as_unsigned_unchecked(std::numeric_limits<int16_t>::max()), uint16_t{32767});
+        EXPECT_EQ(vsl::as_unsigned_unchecked(std::numeric_limits<int32_t>::max()), uint32_t{2'147'483'647});
+        EXPECT_EQ(vsl::as_unsigned_unchecked(std::numeric_limits<int64_t>::max()), uint64_t{9'223'372'036'854'775'807});
+    }
+    {
+        // Check noexcept
+        static_assert(noexcept(vsl::as_unsigned_unchecked(int8_t{})));
+        static_assert(noexcept(vsl::as_unsigned_unchecked(int16_t{})));
+        static_assert(noexcept(vsl::as_unsigned_unchecked(int32_t{})));
+        static_assert(noexcept(vsl::as_unsigned_unchecked(int64_t{})));
+    }
+    {
+        // Negative values
+        EXPECT_EQ(vsl::as_unsigned_unchecked(int8_t{-1}), uint8_t{255});
+        EXPECT_EQ(vsl::as_unsigned_unchecked(int32_t{-1}), uint32_t{4'294'967'295});
+    }
 }
 
 }  // namespace test
