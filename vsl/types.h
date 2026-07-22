@@ -35,14 +35,15 @@ inline constexpr auto I32_MAX = std::numeric_limits<i32>::max();
 inline constexpr auto I64_MIN = std::numeric_limits<i64>::min();
 inline constexpr auto I64_MAX = std::numeric_limits<i64>::max();
 
-inline constexpr auto U8_MIN = std::numeric_limits<u8>::min();
 inline constexpr auto U8_MAX = std::numeric_limits<u8>::max();
-inline constexpr auto U16_MIN = std::numeric_limits<u16>::min();
 inline constexpr auto U16_MAX = std::numeric_limits<u16>::max();
-inline constexpr auto U32_MIN = std::numeric_limits<u32>::min();
 inline constexpr auto U32_MAX = std::numeric_limits<u32>::max();
-inline constexpr auto U64_MIN = std::numeric_limits<u64>::min();
 inline constexpr auto U64_MAX = std::numeric_limits<u64>::max();
+
+inline constexpr auto PTRDIFF_T_MIN = std::numeric_limits<ptrdiff_t>::min();
+inline constexpr auto PTRDIFF_T_MAX = std::numeric_limits<ptrdiff_t>::max();
+
+inline constexpr auto SIZE_T_MAX = std::numeric_limits<size_t>::max();
 
 inline constexpr auto DOUBLE_MAX = std::numeric_limits<double>::max();
 inline constexpr auto DOUBLE_MAX_NEG = std::numeric_limits<double>::lowest();
@@ -51,7 +52,6 @@ inline constexpr auto INF = std::numeric_limits<double>::infinity();
 using cstring = const char*;
 
 using Index = std::ptrdiff_t;
-using SignedSize = std::ptrdiff_t;
 
 template<typename T>
 using OptionalRef = std::optional<std::reference_wrapper<T>>;
@@ -67,7 +67,7 @@ struct NarrowingError : public std::exception
 // Implementation from GSL
 // https://github.com/microsoft/GSL/blob/main/include/gsl/narrow
 template<vsl::numeric T, vsl::numeric U>
-constexpr auto numeric_cast(U u) -> T
+constexpr auto checked_cast(U u) -> T
 {
     constexpr auto is_different_signedness = (std::is_signed_v<T> != std::is_signed_v<U>);
     const auto t = static_cast<T>(u);
@@ -88,6 +88,7 @@ constexpr auto numeric_cast(U u) -> T
     return t;
 }
 
+// A named cast for specifying that narrowing conversion is acceptable
 template<typename T, typename U>
 constexpr auto narrow_cast(U&& u) noexcept -> T
 {
@@ -124,7 +125,7 @@ constexpr auto as_signed(T t) -> auto
 {
     if constexpr (std::same_as<T, uint64_t>)
     {
-        return numeric_cast<int64_t>(t);
+        return checked_cast<int64_t>(t);
     }
     else
     {
@@ -141,7 +142,7 @@ constexpr auto as_signed_unchecked(T t) noexcept -> auto
 template<vsl::strict_signed_integral T>
 constexpr auto as_unsigned(T t) -> auto
 {
-    return numeric_cast<std::make_unsigned_t<T>>(t);
+    return checked_cast<std::make_unsigned_t<T>>(t);
 }
 
 template<vsl::strict_signed_integral T>
