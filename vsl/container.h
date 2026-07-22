@@ -34,9 +34,9 @@ struct StringAsciiIcaseCompare
 {
     using is_transparent = void;
 
-    constexpr bool operator()(std::string_view a, std::string_view b) const noexcept
+    constexpr auto operator()(std::string_view a, std::string_view b) const noexcept -> bool
     {
-        auto to_lower = [](unsigned char c) constexpr noexcept -> unsigned char
+        auto to_lower = [](unsigned char c) noexcept -> unsigned char
         { return (c >= 'A' && c <= 'Z') ? static_cast<unsigned char>(c + ('a' - 'A')) : c; };
 
         return std::ranges::lexicographical_compare(a, b, std::ranges::less{}, to_lower, to_lower);
@@ -44,7 +44,8 @@ struct StringAsciiIcaseCompare
 };
 
 template<typename T>
-auto get_hash_table_fill_efficiency(const T& container) -> double
+[[nodiscard]]
+inline auto get_hash_table_fill_efficiency(const T& container) -> double
 {
     if (container.empty()) return 1.0;
 
