@@ -10,19 +10,44 @@
 #include <uni_algo/case.h>
 
 #include <algorithm>
+#include <cassert>
 #include <concepts>
+#include <functional>
 #include <iterator>
+#include <limits>
+#include <optional>
 #include <ranges>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <tuple>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
 namespace vsl
 {
 
-using FoundStr = una::found;
+using FoundSubstr = una::found;
+
+struct AsciiTag
+{
+    explicit AsciiTag() = default;
+};
+
+struct IgnoreCaseTag
+{
+    explicit IgnoreCaseTag() = default;
+};
+
+struct IgnoreAsciiCaseTag
+{
+    explicit IgnoreAsciiCaseTag() = default;
+};
+
+inline constexpr auto ascii = AsciiTag{};
+inline constexpr auto ignore_case = IgnoreCaseTag{};
+inline constexpr auto ignore_ascii_case = IgnoreAsciiCaseTag{};
 
 enum class SplitOptions : u32
 {
@@ -43,7 +68,7 @@ inline auto to_upper(std::string_view str) -> std::string
 }
 
 [[nodiscard]]
-inline auto to_upper_ascii(std::string_view str) -> std::string
+inline auto to_upper(std::string_view str, AsciiTag) -> std::string
 {
     auto res = std::string{str};
     for (char& c : res)
@@ -64,7 +89,7 @@ inline auto to_lower(std::string_view str) -> std::string
 }
 
 [[nodiscard]]
-inline auto to_lower_ascii(std::string_view str) -> std::string
+inline auto to_lower(std::string_view str, AsciiTag) -> std::string
 {
     auto res = std::string{str};
     for (char& c : res)
@@ -100,16 +125,16 @@ inline auto is_equal(std::string_view str1, std::string_view str2) -> bool
 
 template<typename = void>
 [[nodiscard]]
-inline auto is_equal_icase(std::string_view str1, std::string_view str2) -> bool
+inline auto is_equal(std::string_view str1, std::string_view str2, IgnoreCaseTag) -> bool
 {
     return (una::caseless::compare_utf8<char>(str1, str2) == 0);
 }
 
-inline constexpr auto IS_EQUAL_ASCII_ICASE_CHUNK_SIZE = 512;
-
 [[nodiscard]]
-inline constexpr auto is_equal_ascii_icase(std::string_view str1, std::string_view str2) noexcept -> bool
+inline constexpr auto is_equal(std::string_view str1, std::string_view str2, IgnoreAsciiCaseTag) noexcept -> bool
 {
+    constexpr auto CHUNK_SIZE = ptrdiff_t{512};
+
     if (str1.size() != str2.size()) return false;
 
     const auto end1 = str1.end();
@@ -118,8 +143,7 @@ inline constexpr auto is_equal_ascii_icase(std::string_view str1, std::string_vi
 
     while (it1 != end1)
     {
-        const auto chunk_end1 =
-            it1 + std::min(static_cast<ptrdiff_t>(IS_EQUAL_ASCII_ICASE_CHUNK_SIZE), std::distance(it1, end1));
+        const auto chunk_end1 = it1 + std::min(CHUNK_SIZE, std::distance(it1, end1));
 
         std::tie(it1, it2) = std::mismatch(it1, chunk_end1, it2);
 
@@ -154,7 +178,7 @@ inline auto compare_str(std::string_view str1, std::string_view str2) -> int
 
 template<typename = void>
 [[nodiscard]]
-inline auto compare_str_icase(std::string_view str1, std::string_view str2) -> int
+inline auto compare_str(std::string_view str1, std::string_view str2, IgnoreCaseTag) -> int
 {
     return una::caseless::compare_utf8<char>(str1, str2);
 }
@@ -168,23 +192,37 @@ inline auto collate_str(std::string_view str1, std::string_view str2) -> int
 
 template<typename = void>
 [[nodiscard]]
-inline auto collate_str_icase(std::string_view str1, std::string_view str2) -> int
+inline auto collate_str(std::string_view str1, std::string_view str2, IgnoreCaseTag) -> int
 {
     return una::caseless::collate_utf8<char>(str1, str2);
 }
 
 template<typename = void>
 [[nodiscard]]
-inline auto find_str(std::string_view str1, std::string_view str2) -> FoundStr
+inline auto find_substr(std::string_view str1, std::string_view str2) -> FoundSubstr
 {
     return una::casesens::find_utf8<char>(str1, str2);
 }
 
 template<typename = void>
 [[nodiscard]]
-inline auto find_str_icase(std::string_view str1, std::string_view str2) -> FoundStr
+inline auto find_substr(std::string_view str1, std::string_view str2, IgnoreCaseTag) -> FoundSubstr
 {
     return una::caseless::find_utf8<char>(str1, str2);
+}
+
+[[nodiscard]]
+inline constexpr auto starts_with(std::string_view str, std::string_view prefix, IgnoreAsciiCaseTag) noexcept -> bool
+{
+    if (str.size() < prefix.size()) return false;
+    return is_equal(str.substr(0, prefix.size()), prefix, ignore_ascii_case);
+}
+
+[[nodiscard]]
+inline constexpr auto ends_with(std::string_view str, std::string_view suffix, IgnoreAsciiCaseTag) noexcept -> bool
+{
+    if (str.size() < suffix.size()) return false;
+    return is_equal(str.substr(str.size() - suffix.size()), suffix, ignore_ascii_case);
 }
 
 namespace detail
@@ -196,9 +234,9 @@ inline constexpr auto NBSP = std::string_view{"\xC2\xA0"};
 }  // namespace detail
 
 [[nodiscard]]
-inline constexpr auto trim_ascii_start(std::string_view str,
-                                       std::string_view symbols = detail::ASCII_WHITESPACES) noexcept
-    -> std::string_view
+inline constexpr auto trim_start(std::string_view str,
+                                 AsciiTag,
+                                 std::string_view symbols = detail::ASCII_WHITESPACES) noexcept -> std::string_view
 {
     const auto first = str.find_first_not_of(symbols);
     if (first == std::string_view::npos) return {};
@@ -207,8 +245,9 @@ inline constexpr auto trim_ascii_start(std::string_view str,
 }
 
 [[nodiscard]]
-inline constexpr auto trim_ascii_end(std::string_view str,
-                                     std::string_view symbols = detail::ASCII_WHITESPACES) noexcept -> std::string_view
+inline constexpr auto trim_end(std::string_view str,
+                               AsciiTag,
+                               std::string_view symbols = detail::ASCII_WHITESPACES) noexcept -> std::string_view
 {
     const auto last = str.find_last_not_of(symbols);
     if (last == std::string_view::npos) return {};
@@ -217,10 +256,11 @@ inline constexpr auto trim_ascii_end(std::string_view str,
 }
 
 [[nodiscard]]
-inline constexpr auto trim_ascii(std::string_view str, std::string_view symbols = detail::ASCII_WHITESPACES) noexcept
-    -> std::string_view
+inline constexpr auto trim(std::string_view str,
+                           AsciiTag,
+                           std::string_view symbols = detail::ASCII_WHITESPACES) noexcept -> std::string_view
 {
-    return trim_ascii_end(trim_ascii_start(str, symbols), symbols);
+    return trim_end(trim_start(str, ascii, symbols), ascii, symbols);
 }
 
 [[nodiscard]]
@@ -228,7 +268,7 @@ inline constexpr auto trim_start(std::string_view str) noexcept -> std::string_v
 {
     while (true)
     {
-        str = trim_ascii_start(str);
+        str = trim_start(str, ascii);
         if (!str.starts_with(detail::NBSP)) return str;
         str.remove_prefix(detail::NBSP.size());
     }
@@ -239,7 +279,7 @@ inline constexpr auto trim_end(std::string_view str) noexcept -> std::string_vie
 {
     while (true)
     {
-        str = trim_ascii_end(str);
+        str = trim_end(str, ascii);
         if (!str.ends_with(detail::NBSP)) return str;
         str.remove_suffix(detail::NBSP.size());
     }
@@ -251,13 +291,46 @@ inline constexpr auto trim(std::string_view str) noexcept -> std::string_view
     return trim_end(trim_start(str));
 }
 
+[[nodiscard]]
+inline constexpr auto trim_prefix(std::string_view str, std::string_view prefix) noexcept -> std::string_view
+{
+    if (str.starts_with(prefix)) str.remove_prefix(prefix.size());
+    return str;
+}
+
+[[nodiscard]]
+inline constexpr auto trim_suffix(std::string_view str, std::string_view suffix) noexcept -> std::string_view
+{
+    if (str.ends_with(suffix)) str.remove_suffix(suffix.size());
+    return str;
+}
+
+[[nodiscard]]
+inline constexpr auto trim_prefix(std::string_view str, std::string_view prefix, IgnoreAsciiCaseTag) noexcept
+    -> std::string_view
+{
+    if (starts_with(str, prefix, ignore_ascii_case)) str.remove_prefix(prefix.size());
+    return str;
+}
+
+[[nodiscard]]
+inline constexpr auto trim_suffix(std::string_view str, std::string_view suffix, IgnoreAsciiCaseTag) noexcept
+    -> std::string_view
+{
+    if (ends_with(str, suffix, ignore_ascii_case)) str.remove_suffix(suffix.size());
+    return str;
+}
+
 template<typename OutputStrType = std::string>
     requires vsl::one_of_type<OutputStrType, std::string, std::string_view>
 inline auto split(std::vector<OutputStrType>& out,
                   std::string_view str,
                   std::string_view separator,
-                  SplitOptions opt = SplitOptions::NONE) -> void
+                  SplitOptions opt = SplitOptions::NONE,
+                  vsl::Index max_tokens = std::numeric_limits<vsl::Index>::max()) -> void
 {
+    if (max_tokens <= 0) return;
+
     const auto trim_tokens = vsl::enum_contains_flags(opt, SplitOptions::TRIM);
     const auto skip_empty = vsl::enum_contains_flags(opt, SplitOptions::SKIP_EMPTY);
 
@@ -277,7 +350,10 @@ inline auto split(std::vector<OutputStrType>& out,
     auto pos = size_t{0};
     while (true)
     {
-        const auto sep_pos = str.find(separator, pos);
+        // NOTE: When 'max_tokens' is reached, the last token takes the entire remaining string.
+        // TRIM and SKIP_EMPTY options are applied to it as usual.
+        const auto sep_pos = (max_tokens > 1) ? str.find(separator, pos) : std::string_view::npos;
+
         auto token = (sep_pos == std::string_view::npos) ? str.substr(pos) : str.substr(pos, sep_pos - pos);
 
         if (trim_tokens)
@@ -289,6 +365,7 @@ inline auto split(std::vector<OutputStrType>& out,
         if (keep_token)
         {
             out.emplace_back(token);
+            --max_tokens;
         }
 
         if (sep_pos == std::string_view::npos) break;
@@ -299,12 +376,175 @@ inline auto split(std::vector<OutputStrType>& out,
 template<typename OutputStrType = std::string>
     requires vsl::one_of_type<OutputStrType, std::string, std::string_view>
 [[nodiscard]]
-inline auto split(std::string_view str, std::string_view separator, SplitOptions opt = SplitOptions::NONE)
-    -> std::vector<OutputStrType>
+inline auto split(std::string_view str,
+                  std::string_view separator,
+                  SplitOptions opt = SplitOptions::NONE,
+                  vsl::Index max_tokens = std::numeric_limits<vsl::Index>::max()) -> std::vector<OutputStrType>
 {
     auto res = std::vector<OutputStrType>{};
-    split(res, str, separator, opt);
+    split(res, str, separator, opt, max_tokens);
     return res;
+}
+
+namespace detail
+{
+
+template<typename T>
+concept replace_replacement_func =
+    std::invocable<T, std::string_view> && vsl::string_like<std::invoke_result_t<T, std::string_view>>;
+
+template<typename T>
+concept replace_replacement = vsl::string_like<T> || replace_replacement_func<T>;
+
+struct FindSubstrPolicy
+{
+    constexpr auto operator()(std::string_view str, std::string_view substring) const noexcept
+        -> std::optional<std::string_view>
+    {
+        if (str.empty() || substring.empty()) return std::nullopt;
+
+        const auto pos = str.find(substring);
+        if (pos == std::string_view::npos) return std::nullopt;
+        return str.substr(pos, substring.size());
+    }
+};
+
+struct FindSubstrAsciiCaselessPolicy
+{
+    constexpr auto operator()(std::string_view str, std::string_view substring) const noexcept
+        -> std::optional<std::string_view>
+    {
+        if (str.empty() || substring.empty()) return std::nullopt;
+
+        constexpr auto char_to_lower = [](char c) noexcept -> unsigned char
+        {
+            const auto uc = static_cast<unsigned char>(c);
+            return (uc >= 'A' && uc <= 'Z') ? static_cast<unsigned char>(uc + ('a' - 'A')) : uc;
+        };
+
+        const auto found_rng = std::ranges::search(str, substring, {}, char_to_lower, char_to_lower);
+        if (found_rng.empty()) return std::nullopt;
+        return std::string_view(found_rng.begin(), found_rng.end());
+    }
+};
+
+template<typename FindPolicy, replace_replacement Replacement>
+inline auto replace_impl(
+    std::string& out, std::string_view str, std::string_view pattern, const Replacement& replacement, vsl::Index n)
+    -> void
+{
+    if (str.empty() || pattern.empty() || n <= 0)
+    {
+        out.append(str);
+        return;
+    }
+
+    const auto find_policy = FindPolicy{};
+
+    while (n > 0)
+    {
+        const auto match = find_policy(str, pattern);
+        if (!match.has_value()) break;
+        assert(!match->empty());
+
+        const auto head_length = match->data() - str.data();
+        out.append(str.data(), vsl::as_unsigned(head_length));
+
+        if constexpr (replace_replacement_func<Replacement>)
+        {
+            out.append(std::invoke(replacement, *match));
+        }
+        else
+        {
+            out.append(replacement);
+        }
+
+        const auto tail_start = match->data() + match->size();
+        const auto tail_end = str.data() + str.size();
+        const auto tail_length = tail_end - tail_start;
+        str = std::string_view(tail_start, vsl::as_unsigned(tail_length));
+
+        --n;
+    }
+
+    out.append(str);
+}
+
+template<typename FindPolicy>
+inline constexpr auto contains_substr_impl(std::string_view str, std::string_view substring) noexcept -> bool
+{
+    // Return true for an empty substring to match C++23 std::string_view::contains behavior
+    if (substring.empty()) return true;
+
+    return FindPolicy{}(str, substring).has_value();
+}
+
+}  // namespace detail
+
+template<detail::replace_replacement Replacement>
+inline auto replace(std::string& out,
+                    std::string_view str,
+                    std::string_view pattern,
+                    const Replacement& replacement,
+                    vsl::Index n = std::numeric_limits<vsl::Index>::max()) -> void
+{
+    detail::replace_impl<detail::FindSubstrPolicy>(out, str, pattern, replacement, n);
+}
+
+template<detail::replace_replacement Replacement>
+[[nodiscard]]
+inline auto replace(std::string_view str,
+                    std::string_view pattern,
+                    const Replacement& replacement,
+                    vsl::Index n = std::numeric_limits<vsl::Index>::max()) -> std::string
+{
+    auto res = std::string{};
+    res.reserve(str.size() + str.size() / 5);  // +20%
+    replace(res, str, pattern, replacement, n);
+    return res;
+}
+
+template<detail::replace_replacement Replacement>
+inline auto replace(std::string& out,
+                    std::string_view str,
+                    std::string_view pattern,
+                    const Replacement& replacement,
+                    IgnoreAsciiCaseTag,
+                    vsl::Index n = std::numeric_limits<vsl::Index>::max()) -> void
+{
+    detail::replace_impl<detail::FindSubstrAsciiCaselessPolicy>(out, str, pattern, replacement, n);
+}
+
+template<detail::replace_replacement Replacement>
+[[nodiscard]]
+inline auto replace(std::string_view str,
+                    std::string_view pattern,
+                    const Replacement& replacement,
+                    IgnoreAsciiCaseTag,
+                    vsl::Index n = std::numeric_limits<vsl::Index>::max()) -> std::string
+{
+    auto res = std::string{};
+    res.reserve(str.size() + str.size() / 5);  // +20%
+    replace(res, str, pattern, replacement, ignore_ascii_case, n);
+    return res;
+}
+
+// NOTE: If targeting C++23, prefer std::string_view::contains for case-sensitive checks
+[[nodiscard]]
+inline constexpr auto contains_substr(std::string_view str, std::string_view substring) noexcept -> bool
+{
+#ifdef __cpp_lib_string_contains
+    return str.contains(substring);
+#else
+    return detail::contains_substr_impl<detail::FindSubstrPolicy>(str, substring);
+#endif
+}
+
+[[nodiscard]]
+inline constexpr auto contains_substr(std::string_view str, std::string_view substring, IgnoreAsciiCaseTag) noexcept
+    -> bool
+{
+    return detail::contains_substr_impl<detail::FindSubstrAsciiCaselessPolicy>(str, substring);
 }
 
 template<std::ranges::input_range R>
@@ -329,7 +569,7 @@ inline auto indent(std::string& out, std::string_view str, int width) -> void
         const auto text = (eol_start == std::string_view::npos) ? str.substr(pos) : str.substr(pos, eol_start - pos);
         if (!text.empty())
         {
-            out.append(static_cast<size_t>(width), ' ');
+            out.append(vsl::as_unsigned_unchecked(width), ' ');
             out.append(text);
         }
         pos = eol_start;
@@ -418,6 +658,29 @@ inline auto format_count_of_total(CountType count, TotalCountType total_count, s
         res.append(separator);
     }
     res += std::to_string(total_count);
+    return res;
+}
+
+[[nodiscard]]
+inline auto repeat_str(std::string_view str, vsl::Index n) -> std::string
+{
+    if (n <= 0 || str.empty())
+    {
+        return {};
+    }
+
+    auto res = std::string{};
+    if (str.size() > res.max_size() / vsl::as_unsigned_unchecked(n)) [[unlikely]]
+    {
+        throw std::length_error{"repeat_str: resulting string size exceeds max_size()"};
+    }
+    res.reserve(str.size() * vsl::as_unsigned_unchecked(n));
+
+    for (auto i = vsl::Index{0}; i < n; ++i)
+    {
+        res.append(str);
+    }
+
     return res;
 }
 
