@@ -86,6 +86,9 @@ concept regex_type = vsl::one_of_type<T, Re, ReAscii>;
 template<typename T>
 concept repl_type = vsl::one_of_type<T, std::string, const char*, char*>;
 
+template<typename T>
+concept repl_func_type = std::invocable<T, const ReMatch&> && vsl::string_like<std::invoke_result_t<T, const ReMatch&>>;
+
 [[nodiscard]]
 inline auto reserve_string_for(std::string_view s) -> std::string
 {
@@ -289,12 +292,10 @@ inline auto re_replace(std::string_view s, const R& re, const Repl& repl, ReRepl
     return res;
 }
 
-template<detail::regex_type R>
-inline auto re_replace(std::string& out,
-                       std::string_view s,
-                       const R& re,
-                       std::function<std::string(const ReMatch&)> repl_func,
-                       ReReplFlags flags = ReReplFlags::DEFAULT) -> void
+template<detail::regex_type R, detail::repl_func_type F>
+inline auto re_replace(
+    std::string& out, std::string_view s, const R& re, const F& repl_func, ReReplFlags flags = ReReplFlags::DEFAULT)
+    -> void
 {
     const auto first_only = vsl::enum_contains_flags(flags, ReReplFlags::FORMAT_FIRST_ONLY);
     const auto copy_unmatched = !vsl::enum_contains_flags(flags, ReReplFlags::FORMAT_NO_COPY);
@@ -308,7 +309,7 @@ inline auto re_replace(std::string& out,
         {
             out.append(match.prefix().first, match.prefix().second);
         }
-        out.append(repl_func(match));
+        out.append(std::invoke(repl_func, match));
         last_pos = match.position() + match.length();
         if (first_only) break;
     }
@@ -319,12 +320,10 @@ inline auto re_replace(std::string& out,
     }
 }
 
-template<detail::regex_type R>
+template<detail::regex_type R, detail::repl_func_type F>
 [[nodiscard]]
-inline auto re_replace(std::string_view s,
-                       const R& re,
-                       std::function<std::string(const ReMatch&)> repl_func,
-                       ReReplFlags flags = ReReplFlags::DEFAULT) -> std::string
+inline auto re_replace(std::string_view s, const R& re, const F& repl_func, ReReplFlags flags = ReReplFlags::DEFAULT)
+    -> std::string
 {
     auto res = detail::reserve_string_for(s);
     re_replace(res, s, re, repl_func, flags);
