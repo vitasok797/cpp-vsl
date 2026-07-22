@@ -414,8 +414,9 @@ TEST_F(TcpTest, Buffer)
     {
         client_.write<int32_t>(101);
 
+        ASSERT_TRUE(client_.buffer_empty());
         ASSERT_EQ(client_.buffer_size(), 0);
-        client_.set_buffer_active(true);
+        client_.enable_buffer(true);
         // ---------------------------------------------------------------------------------------
         client_.write<int32_t>(201);
         client_.write<int32_t>(202);
@@ -429,11 +430,13 @@ TEST_F(TcpTest, Buffer)
                                             + sizeof(uint64_t) + 5                      //
                                             + 3;                                        //
         // ---------------------------------------------------------------------------------------
-        client_.set_buffer_active(false);
+        client_.enable_buffer(false);
+        ASSERT_FALSE(client_.buffer_empty());
         ASSERT_EQ(client_.buffer_size(), EXPECTED_BUFF_SIZE);
 
         client_.write<int32_t>(client_.buffer_size());
         client_.write_buffer();
+        ASSERT_TRUE(client_.buffer_empty());
         ASSERT_EQ(client_.buffer_size(), 0);
 
         client_.write<int32_t>(102);
@@ -462,8 +465,9 @@ TEST_F(TcpTest, WriteEmptyBuffer)
     client_.write<int32_t>(101);
     client_.flush();
 
-    client_.set_buffer_active(true);
-    client_.set_buffer_active(false);
+    client_.enable_buffer(true);
+    client_.enable_buffer(false);
+    ASSERT_TRUE(client_.buffer_empty());
     ASSERT_EQ(client_.buffer_size(), 0);
     client_.write_buffer();
     client_.flush();
@@ -473,6 +477,19 @@ TEST_F(TcpTest, WriteEmptyBuffer)
 
     ASSERT_EQ(server_.read<int32_t>(), 101);
     ASSERT_EQ(server_.read<int32_t>(), 102);
+}
+
+TEST_F(TcpTest, BufferCapacity)
+{
+    constexpr auto INITIAL_BUFFER_RESERVE_SIZE = 1024;
+
+    ASSERT_GE(client_.buffer_capacity(), INITIAL_BUFFER_RESERVE_SIZE);
+
+    client_.reserve_buffer(INITIAL_BUFFER_RESERVE_SIZE * 2);
+    ASSERT_GE(client_.buffer_capacity(), INITIAL_BUFFER_RESERVE_SIZE * 2);
+
+    client_.shrink_buffer_to_fit();
+    ASSERT_EQ(client_.buffer_capacity(), 0);
 }
 
 TEST_F(TcpEndiannessTest, SendRecvDiffEndiannessInt)

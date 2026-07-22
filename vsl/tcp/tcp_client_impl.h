@@ -128,19 +128,39 @@ inline auto TcpClient::close() -> void
     }
 }
 
-inline auto TcpClient::set_buffer_active(bool state) -> void
+inline auto TcpClient::enable_buffer(bool state) -> void
 {
-    buffer_active_ = state;
+    buffer_ebabled_ = state;
 }
 
-inline auto TcpClient::buffer_size() -> int
+inline auto TcpClient::buffer_size() const -> int
 {
     return vsl::numeric_cast<int>(buffer_streambuf_->buffer_size());
 }
 
+inline auto TcpClient::buffer_empty() const -> bool
+{
+    return buffer_streambuf_->buffer_empty();
+}
+
+inline auto TcpClient::buffer_capacity() const -> int
+{
+    return vsl::numeric_cast<int>(buffer_streambuf_->buffer_capacity());
+}
+
+inline auto TcpClient::reserve_buffer(int capacity) -> void
+{
+    buffer_streambuf_->reserve_buffer(vsl::as_unsigned(capacity));
+}
+
+inline auto TcpClient::shrink_buffer_to_fit() -> void
+{
+    buffer_streambuf_->shrink_buffer_to_fit();
+}
+
 inline auto TcpClient::get_active_binary_writer() -> Poco::BinaryWriter&
 {
-    return buffer_active_ ? *buffer_binary_writer_ : *binary_writer_;
+    return buffer_ebabled_ ? *buffer_binary_writer_ : *binary_writer_;
 }
 
 template<typename T>

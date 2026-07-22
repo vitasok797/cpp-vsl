@@ -96,8 +96,12 @@ class TcpClient final
     auto shutdown(ShutdownType how = ShutdownType::BOTH) -> void;
     auto close() -> void;
 
-    auto set_buffer_active(bool state) -> void;
-    auto buffer_size() -> int;
+    auto enable_buffer(bool state) -> void;
+    auto buffer_size() const -> int;
+    auto buffer_empty() const -> bool;
+    auto buffer_capacity() const -> int;
+    auto reserve_buffer(int capacity) -> void;
+    auto shrink_buffer_to_fit() -> void;
 
     template<typename T>
         requires vsl::numeric<T>
@@ -172,7 +176,7 @@ class TcpClient final
     std::shared_ptr<std::ostream> buffer_stream_;
     std::shared_ptr<Poco::BinaryWriter> buffer_binary_writer_;
 
-    bool buffer_active_{false};
+    bool buffer_ebabled_{false};
 };
 
 }  // namespace vsl::tcp
