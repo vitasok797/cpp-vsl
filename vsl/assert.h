@@ -11,9 +11,6 @@
 #define VSL_EXPECTS(...) VSL_ASSERT("Expects", __VA_ARGS__)
 #define VSL_ENSURES(...) VSL_ASSERT("Ensures", __VA_ARGS__)
 
-#define EXPECTS VSL_EXPECTS
-#define ENSURES VSL_ENSURES
-
 namespace vsl::detail
 {
 
