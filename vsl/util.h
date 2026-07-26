@@ -21,7 +21,7 @@ constexpr auto signed_size(const T& t) noexcept -> auto
     return std::ssize(t);
 }
 
-// C++23: Use std::forward_like
+// NOTE: If targeting C++23, prefer std::forward_like
 template<typename T, typename U>
 constexpr auto forward_like(U&& x) noexcept -> auto&&
 {
