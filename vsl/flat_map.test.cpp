@@ -235,7 +235,7 @@ TEST(FlatMapTest, ComparatorStringIcase)
     static constexpr auto ASCII_SYMBOLS_LOWER =
         R"( !"#$%&'()*+,-./0123456789:;<=>?@abcdefghijklmnopqrstuvwxyz[\]^_`{|}~)";
 
-    const auto table = vsl::FlatMapAsciiIcase<std::string, int>{
+    const auto table = vsl::FlatStringMapAsciiCaseless<std::string, int>{
         {            "Apple", 1},
         {           "Banana", 2},
         {ASCII_SYMBOLS_UPPER, 3},
@@ -254,7 +254,7 @@ TEST(FlatMapTest, ComparatorStringIcaseDuplicateError)
 {
     auto create_table = []
     {
-        const auto table = vsl::FlatMap<std::string, int, vsl::StringAsciiIcaseCompare>{
+        const auto table = vsl::FlatMap<std::string, int, vsl::StringAsciiCaselessCompare>{
             {"Hello", 1},
             {"HELLO", 2}, // Duplicate key
         };

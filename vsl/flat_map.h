@@ -104,7 +104,7 @@ class FlatMap
 };
 
 template<vsl::string_like Key, typename Value>
-using FlatMapAsciiIcase = FlatMap<Key, Value, vsl::StringAsciiIcaseCompare>;
+using FlatStringMapAsciiCaseless = FlatMap<Key, Value, vsl::StringAsciiCaselessCompare>;
 
 }  // namespace vsl
 

@@ -30,16 +30,19 @@ struct StringHash
     }
 };
 
-struct StringAsciiIcaseCompare
+struct StringAsciiCaselessCompare
 {
     using is_transparent = void;
 
     constexpr auto operator()(std::string_view a, std::string_view b) const noexcept -> bool
     {
-        auto to_lower = [](unsigned char c) noexcept -> unsigned char
-        { return (c >= 'A' && c <= 'Z') ? static_cast<unsigned char>(c + ('a' - 'A')) : c; };
+        constexpr auto char_to_lower = [](char c) noexcept -> unsigned char
+        {
+            const auto uc = static_cast<unsigned char>(c);
+            return (uc >= 'A' && uc <= 'Z') ? static_cast<unsigned char>(uc + ('a' - 'A')) : uc;
+        };
 
-        return std::ranges::lexicographical_compare(a, b, std::ranges::less{}, to_lower, to_lower);
+        return std::ranges::lexicographical_compare(a, b, {}, char_to_lower, char_to_lower);
     }
 };
 
