@@ -390,11 +390,14 @@ namespace detail
 {
 
 template<typename T>
-concept replace_replacement_func =
+concept replacement_str_type = vsl::string_like<T>;
+
+template<typename T>
+concept replacement_func_type =
     std::invocable<T, std::string_view> && vsl::string_like<std::invoke_result_t<T, std::string_view>>;
 
 template<typename T>
-concept replace_replacement = vsl::string_like<T> || replace_replacement_func<T>;
+concept replacement_any_type = replacement_str_type<T> || replacement_func_type<T>;
 
 struct FindSubstrPolicy
 {
@@ -428,7 +431,7 @@ struct FindSubstrAsciiCaselessPolicy
     }
 };
 
-template<typename FindPolicy, replace_replacement Replacement>
+template<typename FindPolicy, replacement_any_type Replacement>
 inline auto replace_impl(
     std::string& out, std::string_view str, std::string_view pattern, const Replacement& replacement, vsl::Index n)
     -> void
@@ -450,7 +453,7 @@ inline auto replace_impl(
         const auto head_length = match->data() - str.data();
         out.append(str.data(), vsl::as_unsigned(head_length));
 
-        if constexpr (replace_replacement_func<Replacement>)
+        if constexpr (replacement_func_type<Replacement>)
         {
             out.append(std::invoke(replacement, *match));
         }
@@ -481,7 +484,7 @@ inline constexpr auto contains_substr_impl(std::string_view str, std::string_vie
 
 }  // namespace detail
 
-template<detail::replace_replacement Replacement>
+template<detail::replacement_any_type Replacement>
 inline auto replace(std::string& out,
                     std::string_view str,
                     std::string_view pattern,
@@ -491,7 +494,7 @@ inline auto replace(std::string& out,
     detail::replace_impl<detail::FindSubstrPolicy>(out, str, pattern, replacement, n);
 }
 
-template<detail::replace_replacement Replacement>
+template<detail::replacement_any_type Replacement>
 [[nodiscard]]
 inline auto replace(std::string_view str,
                     std::string_view pattern,
@@ -504,7 +507,7 @@ inline auto replace(std::string_view str,
     return res;
 }
 
-template<detail::replace_replacement Replacement>
+template<detail::replacement_any_type Replacement>
 inline auto replace(std::string& out,
                     std::string_view str,
                     std::string_view pattern,
@@ -515,7 +518,7 @@ inline auto replace(std::string& out,
     detail::replace_impl<detail::FindSubstrAsciiCaselessPolicy>(out, str, pattern, replacement, n);
 }
 
-template<detail::replace_replacement Replacement>
+template<detail::replacement_any_type Replacement>
 [[nodiscard]]
 inline auto replace(std::string_view str,
                     std::string_view pattern,

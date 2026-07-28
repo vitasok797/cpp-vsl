@@ -40,7 +40,7 @@ inline auto extract_leading_ascii(std::string& out, std::string_view str) -> std
 }
 
 template<size_t N>
-inline auto append_replacement(std::string& out, std::array<unsigned char, N> repl) -> void
+inline auto append_encoding_map_repl(std::string& out, std::array<unsigned char, N> repl) -> void
 {
     assert(repl[0] != '\0');
     out += static_cast<char>(repl[0]);
@@ -81,7 +81,7 @@ inline auto to_encoding(std::string& out, std::string_view str, const Encoding&,
         const auto found_it = std::ranges::lower_bound(Encoding::to_encoding_map, cp, {}, &MapPairType::first);
         if (found_it != Encoding::to_encoding_map.end() && found_it->first == cp)
         {
-            detail::append_replacement(out, found_it->second);
+            detail::append_encoding_map_repl(out, found_it->second);
             continue;
         }
 
@@ -116,7 +116,7 @@ inline auto from_encoding(std::string& out, std::string_view str, const Encoding
         else
         {
             const auto repl_index = static_cast<unsigned char>(c) - detail::FIRST_NON_ASCII_CHAR;
-            detail::append_replacement(out, Encoding::from_encoding_map[repl_index]);
+            detail::append_encoding_map_repl(out, Encoding::from_encoding_map[repl_index]);
         }
     }
 }

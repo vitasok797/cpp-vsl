@@ -84,13 +84,14 @@ template<typename T>
 concept regex_type = vsl::one_of_type<T, Re, ReAscii>;
 
 template<typename T>
-concept repl_type = vsl::one_of_type<T, std::string, const char*, char*>;
+concept regex_replacement_str_type = vsl::one_of_type<T, std::string, const char*, char*>;
 
 template<typename T>
-concept repl_func_type = std::invocable<T, const ReMatch&> && vsl::string_like<std::invoke_result_t<T, const ReMatch&>>;
+concept regex_replacement_func_type =
+    std::invocable<T, const ReMatch&> && vsl::string_like<std::invoke_result_t<T, const ReMatch&>>;
 
 [[nodiscard]]
-inline auto reserve_string_for(std::string_view s) -> std::string
+inline auto re_create_result_string(std::string_view s) -> std::string
 {
     constexpr auto RESERVE_PART = 5;  // +20%
     const auto reserve_size = s.size() + (s.size() / RESERVE_PART);
@@ -265,7 +266,7 @@ inline auto re_split(std::string_view s,
            | std::views::filter([skip_empty](std::string_view sv) noexcept { return !(skip_empty && sv.empty()); });
 }
 
-template<typename OutputIt, typename BidirIt, detail::regex_type R, detail::repl_type Repl>
+template<typename OutputIt, typename BidirIt, detail::regex_type R, detail::regex_replacement_str_type Repl>
 [[nodiscard]]
 inline auto re_replace(
     OutputIt out, BidirIt first, BidirIt last, const R& re, const Repl& repl, ReReplFlags flags = ReReplFlags::DEFAULT)
@@ -274,7 +275,7 @@ inline auto re_replace(
     return srell::regex_replace(out, first, last, re, repl, detail::to_srell_flags(flags));
 }
 
-template<detail::regex_type R, detail::repl_type Repl>
+template<detail::regex_type R, detail::regex_replacement_str_type Repl>
 inline auto re_replace(
     std::string& out, std::string_view s, const R& re, const Repl& repl, ReReplFlags flags = ReReplFlags::DEFAULT)
     -> void
@@ -282,17 +283,17 @@ inline auto re_replace(
     srell::regex_replace(std::back_inserter(out), s.begin(), s.end(), re, repl, detail::to_srell_flags(flags));
 }
 
-template<detail::regex_type R, detail::repl_type Repl>
+template<detail::regex_type R, detail::regex_replacement_str_type Repl>
 [[nodiscard]]
 inline auto re_replace(std::string_view s, const R& re, const Repl& repl, ReReplFlags flags = ReReplFlags::DEFAULT)
     -> std::string
 {
-    auto res = detail::reserve_string_for(s);
+    auto res = detail::re_create_result_string(s);
     re_replace(res, s, re, repl, flags);
     return res;
 }
 
-template<detail::regex_type R, detail::repl_func_type F>
+template<detail::regex_type R, detail::regex_replacement_func_type F>
 inline auto re_replace(
     std::string& out, std::string_view s, const R& re, const F& repl_func, ReReplFlags flags = ReReplFlags::DEFAULT)
     -> void
@@ -320,12 +321,12 @@ inline auto re_replace(
     }
 }
 
-template<detail::regex_type R, detail::repl_func_type F>
+template<detail::regex_type R, detail::regex_replacement_func_type F>
 [[nodiscard]]
 inline auto re_replace(std::string_view s, const R& re, const F& repl_func, ReReplFlags flags = ReReplFlags::DEFAULT)
     -> std::string
 {
-    auto res = detail::reserve_string_for(s);
+    auto res = detail::re_create_result_string(s);
     re_replace(res, s, re, repl_func, flags);
     return res;
 }
@@ -360,7 +361,7 @@ inline auto re_escape(std::string& out, std::string_view s) -> void
 [[nodiscard]]
 inline auto re_escape(std::string_view s) -> std::string
 {
-    auto res = detail::reserve_string_for(s);
+    auto res = detail::re_create_result_string(s);
     re_escape(res, s);
     return res;
 }
@@ -382,7 +383,7 @@ inline auto re_escape_repl(std::string& out, std::string_view s) -> void
 [[nodiscard]]
 inline auto re_escape_repl(std::string_view s) -> std::string
 {
-    auto res = detail::reserve_string_for(s);
+    auto res = detail::re_create_result_string(s);
     re_escape_repl(res, s);
     return res;
 }
