@@ -3,22 +3,27 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-PROJECT_SRC_DIR = 'vsl'
+DIRS = ['vsl']
+EXCLUDE_SUBDIRS = ['vsl/external']
+EXTENSIONS = ['.cpp', '.h']
 CLANG_FORMAT_CONFIG_PATH = None
 
 
-def format_in_dir(target_dir: str | Path | None) -> None:
+def format_in_dir(target_dir: str) -> None:
     if not target_dir:
-        return
+        raise Exception('Target dir is empty')
 
     target_dir = Path(target_dir)
     if not target_dir.is_dir():
-        return
+        raise Exception('Target dir "{target_dir}" not found')
 
     files = []
-    extensions = ['.cpp', '.h']
-    for ext in extensions:
+    for ext in EXTENSIONS:
         files += target_dir.rglob(f'*{ext}')
+
+    def path_contains_exclude_subdir(path: Path) -> bool:
+        return any(path.is_relative_to(subdir) for subdir in EXCLUDE_SUBDIRS)
+    files = [file for file in files if not path_contains_exclude_subdir(file)]
 
     for file in sorted(files):
         print(file)
@@ -30,9 +35,8 @@ def format_in_dir(target_dir: str | Path | None) -> None:
 
 
 def main() -> None:
-    format_in_dir(PROJECT_SRC_DIR)
-    format_in_dir('example')
-    format_in_dir('test')
+    for target_dir in DIRS:
+        format_in_dir(target_dir)
 
 
 if __name__ == '__main__':
