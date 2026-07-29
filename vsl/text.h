@@ -603,7 +603,7 @@ inline auto to_lf(std::string_view str) -> std::string
     res.reserve(str.size());
 
     auto start = size_t{0};
-    for (size_t i = 0; i < str.size(); ++i)
+    for (auto i = size_t{0}; i < str.size(); ++i)
     {
         if (str[i] == '\r')
         {
@@ -624,7 +624,7 @@ inline auto to_lf(std::string_view str) -> std::string
 inline auto to_crlf(std::string& out, std::string_view str) -> void
 {
     auto start = size_t{0};
-    for (size_t i = 0; i < str.size(); ++i)
+    for (auto i = size_t{0}; i < str.size(); ++i)
     {
         if (str[i] == '\r' || str[i] == '\n')
         {

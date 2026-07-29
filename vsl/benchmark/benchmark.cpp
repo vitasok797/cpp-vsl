@@ -13,7 +13,7 @@ auto flush_cache(const void* ptr, size_t size) -> void
 {
     constexpr auto CACHE_LINE_SIZE = size_t{64};
     const char* char_ptr = static_cast<const char*>(ptr);
-    for (size_t i = 0; i < size; i += CACHE_LINE_SIZE)
+    for (auto i = size_t{0}; i < size; i += CACHE_LINE_SIZE)
     {
         _mm_clflush(char_ptr + i);
     }

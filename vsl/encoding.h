@@ -47,7 +47,7 @@ inline auto append_encoding_map_repl(std::string& out, std::array<unsigned char,
 
     if constexpr (N > 1)
     {
-        for (size_t i = 1; i < N; ++i)
+        for (auto i = size_t{1}; i < N; ++i)
         {
             if (repl[i] == '\0') return;
             out += static_cast<char>(repl[i]);

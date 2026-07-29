@@ -51,7 +51,7 @@ inline auto get_hash_table_fill_efficiency(const T& container) -> double
     if (container.empty()) return 1.0;
 
     auto occupied_buckets = 0;
-    for (size_t i = 0; i < container.bucket_count(); ++i)
+    for (auto i = size_t{0}; i < container.bucket_count(); ++i)
     {
         if (container.bucket_size(i) > 0)
         {

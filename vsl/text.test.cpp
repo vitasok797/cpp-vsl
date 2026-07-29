@@ -168,7 +168,7 @@ TEST(TextTest, IsEqualIgnoreAsciiCase)
         auto str1 = std::string(len, ' ');
         auto str2 = std::string(len, ' ');
 
-        for (size_t i = 0; i < len; ++i)
+        for (auto i = size_t{0}; i < len; ++i)
         {
             if (i % 2 == 0)
             {
