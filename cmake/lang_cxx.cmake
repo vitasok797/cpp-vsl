@@ -8,8 +8,23 @@ endfunction()
 
 function(target_set_cxx_base_compile_options target)
     if(MSVC)
-        target_compile_options(${target} PRIVATE /W4 /utf-8 /Zc:preprocessor)
+        target_compile_options(${target} PRIVATE
+            /W4
+            /utf-8
+            /Zc:preprocessor
+            /wd4068  # Suppress "unknown pragma" warning
+            )
     else()
-        target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Wconversion -Wno-sign-conversion)
+        target_compile_options(${target} PRIVATE
+            -Wall
+            -Wextra
+            -Wpedantic
+            -Wconversion
+            -Wsign-conversion
+            -Wsign-compare
+            -Wtype-limits
+            -Wswitch-enum
+            -Wimplicit-fallthrough
+            )
     endif()
 endfunction()

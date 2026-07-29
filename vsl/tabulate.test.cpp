@@ -1,5 +1,7 @@
 #include "tabulate.h"
 
+#include <vsl/types.h>
+
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
@@ -161,7 +163,7 @@ TEST(TabulateTest, CreateTableVariableCellCount)
     auto items = {1, 2, 3};
     auto item_to_row_variable = [](int x)
     {
-        return vsl::tabulate::TableRow(x, fmt::format("{}", x));  //
+        return vsl::tabulate::TableRow(vsl::as_unsigned(x), fmt::format("{}", x));  //
     };
     ASSERT_EQ(vsl::tabulate::create_table(header, items, item_to_row_variable), "+----+------+------+\n"
                                                                                 "| ID | Name | Type |\n"

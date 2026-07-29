@@ -6,7 +6,11 @@
 #include <vsl/text.h>
 #include <vsl/types.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#pragma GCC diagnostic ignored "-Wswitch-enum"
 #include <srell/srell.hpp>
+#pragma GCC diagnostic pop
 
 #include <functional>
 #include <initializer_list>
@@ -301,7 +305,7 @@ inline auto re_replace(
     const auto first_only = vsl::enum_contains_flags(flags, ReReplFlags::FORMAT_FIRST_ONLY);
     const auto copy_unmatched = !vsl::enum_contains_flags(flags, ReReplFlags::FORMAT_NO_COPY);
 
-    auto last_pos = ReMatch::size_type{0};
+    auto last_pos = size_t{0};
 
     const auto matches = re_find_matches(s, re, static_cast<ReMatchFlags>(flags));
     for (auto&& match : matches)
@@ -311,7 +315,7 @@ inline auto re_replace(
             out.append(match.prefix().first, match.prefix().second);
         }
         out.append(std::invoke(repl_func, match));
-        last_pos = match.position() + match.length();
+        last_pos = static_cast<size_t>(match.position() + match.length());
         if (first_only) break;
     }
 

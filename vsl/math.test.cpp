@@ -96,14 +96,14 @@ TEST(MathTest, GenerateRandomIntegral)
     auto from0 = [](auto x) { return x >= 0 && x <= std::numeric_limits<decltype(x)>::max(); };
     ASSERT_NO_FATAL_FAILURE(test_generate_random<int64_t>(from0, 0));
     ASSERT_NO_FATAL_FAILURE(test_generate_random<int32_t>(from0, 0));
-    ASSERT_NO_FATAL_FAILURE(test_generate_random<uint64_t>(from0, 0));
-    ASSERT_NO_FATAL_FAILURE(test_generate_random<uint32_t>(from0, 0));
+    ASSERT_NO_FATAL_FAILURE(test_generate_random<uint64_t>(from0, 0u));
+    ASSERT_NO_FATAL_FAILURE(test_generate_random<uint32_t>(from0, 0u));
 
     auto from1_to2 = [](auto x) { return x >= 1 && x <= 2; };
     ASSERT_NO_FATAL_FAILURE(test_generate_random<int64_t>(from1_to2, 1, 2));
     ASSERT_NO_FATAL_FAILURE(test_generate_random<int32_t>(from1_to2, 1, 2));
-    ASSERT_NO_FATAL_FAILURE(test_generate_random<uint64_t>(from1_to2, 1, 2));
-    ASSERT_NO_FATAL_FAILURE(test_generate_random<uint32_t>(from1_to2, 1, 2));
+    ASSERT_NO_FATAL_FAILURE(test_generate_random<uint64_t>(from1_to2, 1u, 2u));
+    ASSERT_NO_FATAL_FAILURE(test_generate_random<uint32_t>(from1_to2, 1u, 2u));
 
     auto fromN100_toN10 = [](auto x) { return x >= -100 && x <= -10; };
     ASSERT_NO_FATAL_FAILURE(test_generate_random<int64_t>(fromN100_toN10, -100, -10));

@@ -115,7 +115,7 @@ inline auto from_encoding(std::string& out, std::string_view str, const Encoding
         }
         else
         {
-            const auto repl_index = static_cast<unsigned char>(c) - detail::FIRST_NON_ASCII_CHAR;
+            const auto repl_index = static_cast<size_t>(static_cast<unsigned char>(c) - detail::FIRST_NON_ASCII_CHAR);
             detail::append_encoding_map_repl(out, Encoding::from_encoding_map[repl_index]);
         }
     }

@@ -231,8 +231,8 @@ template<typename T, typename Size>
 auto TcpClient::read_raw(T* buffer, Size length) -> void
 {
     auto data_ptr = reinterpret_cast<char*>(buffer);
-    auto data_size = vsl::checked_cast<std::streamsize>(length) * sizeof(T);
-    binary_reader_->readRaw(data_ptr, data_size);
+    auto data_size = vsl::checked_cast<size_t>(length) * sizeof(T);
+    binary_reader_->readRaw(data_ptr, static_cast<std::streamsize>(data_size));
 
     check_stream_status(*binary_reader_);
 }
@@ -243,8 +243,8 @@ auto TcpClient::write_raw(const T* buffer, Size length) -> void
     auto& active_writer = get_active_binary_writer();
 
     auto data_ptr = reinterpret_cast<const char*>(buffer);
-    auto data_size = vsl::checked_cast<std::streamsize>(length) * sizeof(T);
-    active_writer.writeRaw(data_ptr, data_size);
+    auto data_size = vsl::checked_cast<size_t>(length) * sizeof(T);
+    active_writer.writeRaw(data_ptr, static_cast<std::streamsize>(data_size));
 
     check_stream_status(active_writer);
 }

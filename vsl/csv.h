@@ -1,7 +1,11 @@
 #ifndef VSL_CSV_H
 #define VSL_CSV_H
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#pragma GCC diagnostic ignored "-Wswitch-enum"
 #include <vincentlaucsb-csv-parser/csv.hpp>
+#pragma GCC diagnostic pop
 
 // Reference:
 // https://vincentlaucsb.github.io/csv-parser/

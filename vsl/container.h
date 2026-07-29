@@ -1,8 +1,6 @@
 #ifndef VSL_CONTAINER_H
 #define VSL_CONTAINER_H
 
-#include <vsl/types.h>
-
 #include <algorithm>
 #include <string>
 #include <string_view>
@@ -53,7 +51,7 @@ inline auto get_hash_table_fill_efficiency(const T& container) -> double
     if (container.empty()) return 1.0;
 
     auto occupied_buckets = 0;
-    for (auto i = 0; i < vsl::as_signed(container.bucket_count()); ++i)
+    for (size_t i = 0; i < container.bucket_count(); ++i)
     {
         if (container.bucket_size(i) > 0)
         {
