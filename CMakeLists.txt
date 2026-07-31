@@ -23,6 +23,9 @@ target_link_libraries(${CUR_TARGET} INTERFACE fmt::fmt)
 find_package(libenvpp CONFIG REQUIRED)
 target_link_libraries(${CUR_TARGET} INTERFACE libenvpp::libenvpp)
 
+find_package(libfort CONFIG REQUIRED)
+target_link_libraries(${CUR_TARGET} INTERFACE libfort::fort)
+
 find_package(magic_enum CONFIG REQUIRED)
 target_link_libraries(${CUR_TARGET} INTERFACE magic_enum::magic_enum)
 
@@ -41,9 +44,6 @@ if(EXISTS "${UTF8PROC_DEPRECATED_CONFIG_FILE}")
 endif()
 find_package(Poco REQUIRED COMPONENTS Foundation Net)
 target_link_libraries(${CUR_TARGET} INTERFACE Poco::Foundation Poco::Net)
-
-find_package(tabulate CONFIG REQUIRED)
-target_link_libraries(${CUR_TARGET} INTERFACE tabulate::tabulate)
 
 find_package(uni-algo CONFIG REQUIRED)
 target_link_libraries(${CUR_TARGET} INTERFACE uni-algo::uni-algo)
@@ -91,7 +91,7 @@ if(VSL_BUILD_TESTS AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         "vsl/pointer.test.cpp"
         "vsl/reflection.test.cpp"
         "vsl/regex.test.cpp"
-        "vsl/tabulate.test.cpp"
+        "vsl/table.test.cpp"
         "vsl/tcp/test.cpp"
         "vsl/text.test.cpp"
         "vsl/types.test.cpp"
