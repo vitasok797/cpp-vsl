@@ -11,6 +11,7 @@
 #include <ranges>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 namespace test
@@ -603,32 +604,45 @@ TEST(TextTest, Split)
 
 TEST(TextTest, Replace)
 {
-    EXPECT_EQ(vsl::replace("", "abc", "_"), "");
-    EXPECT_EQ(vsl::replace("abc", "", "_"), "abc");
+    auto get_replace_res = []<typename... Args>(Args&&... args)
+    {
+        auto res1 = std::string{};
+        res1.reserve(100);
+        vsl::replace(res1, std::forward<Args>(args)...);
 
-    EXPECT_EQ(vsl::replace("123", "abc", "_"), "123");
-    EXPECT_EQ(vsl::replace("ab", "abc", "_"), "ab");
+        auto res2 = vsl::replace(std::forward<Args>(args)...);
 
-    EXPECT_EQ(vsl::replace("abc", "abc", "_"), "_");
-    EXPECT_EQ(vsl::replace("123abc456", "abc", "_"), "123_456");
-    EXPECT_EQ(vsl::replace("abc123abc", "abc", "_"), "_123_");
-    EXPECT_EQ(vsl::replace("aaaaaa", "aaa", "_"), "__");
+        EXPECT_EQ(res1, res2);
 
-    EXPECT_EQ(vsl::replace("abc123abc", "ABC", "_"), "abc123abc");
-    EXPECT_EQ(vsl::replace("abc123abc", "ABC", "_", vsl::ignore_ascii_case), "_123_");
-    EXPECT_EQ(vsl::replace("abc123abc", "DEF", "_", vsl::ignore_ascii_case), "abc123abc");
+        return res1;
+    };
 
-    EXPECT_EQ(vsl::replace("abc123abc456abc", "abc", "_", 0), "abc123abc456abc");
-    EXPECT_EQ(vsl::replace("abc123abc456abc", "abc", "_", 1), "_123abc456abc");
-    EXPECT_EQ(vsl::replace("abc123abc456abc", "abc", "_", 2), "_123_456abc");
-    EXPECT_EQ(vsl::replace("abc123abc456abc", "abc", "_", 3), "_123_456_");
-    EXPECT_EQ(vsl::replace("abc123abc456abc", "abc", "_", 99), "_123_456_");
+    EXPECT_EQ(get_replace_res("", "abc", "_"), "");
+    EXPECT_EQ(get_replace_res("abc", "", "_"), "abc");
+
+    EXPECT_EQ(get_replace_res("123", "abc", "_"), "123");
+    EXPECT_EQ(get_replace_res("ab", "abc", "_"), "ab");
+
+    EXPECT_EQ(get_replace_res("abc", "abc", "_"), "_");
+    EXPECT_EQ(get_replace_res("123abc456", "abc", "_"), "123_456");
+    EXPECT_EQ(get_replace_res("abc123abc", "abc", "_"), "_123_");
+    EXPECT_EQ(get_replace_res("aaaaaa", "aaa", "_"), "__");
+
+    EXPECT_EQ(get_replace_res("abc123abc", "ABC", "_"), "abc123abc");
+    EXPECT_EQ(get_replace_res("abc123abc", "ABC", "_", vsl::ignore_ascii_case), "_123_");
+    EXPECT_EQ(get_replace_res("abc123abc", "DEF", "_", vsl::ignore_ascii_case), "abc123abc");
+
+    EXPECT_EQ(get_replace_res("abc123abc456abc", "abc", "_", 0), "abc123abc456abc");
+    EXPECT_EQ(get_replace_res("abc123abc456abc", "abc", "_", 1), "_123abc456abc");
+    EXPECT_EQ(get_replace_res("abc123abc456abc", "abc", "_", 2), "_123_456abc");
+    EXPECT_EQ(get_replace_res("abc123abc456abc", "abc", "_", 3), "_123_456_");
+    EXPECT_EQ(get_replace_res("abc123abc456abc", "abc", "_", 99), "_123_456_");
 
     auto repl_func = [](auto&& sv) { return std::string{"["}.append(sv).append("]"); };
-    EXPECT_EQ(vsl::replace("abc123abc456abc", "abc", repl_func), "[abc]123[abc]456[abc]");
-    EXPECT_EQ(vsl::replace("abc123abc456abc", "abc", repl_func, 2), "[abc]123[abc]456abc");
-    EXPECT_EQ(vsl::replace("abc123abc456abc", "ABC", repl_func, vsl::ignore_ascii_case), "[abc]123[abc]456[abc]");
-    EXPECT_EQ(vsl::replace("abc123abc456abc", "ABC", repl_func, vsl::ignore_ascii_case, 2), "[abc]123[abc]456abc");
+    EXPECT_EQ(get_replace_res("abc123abc456abc", "abc", repl_func), "[abc]123[abc]456[abc]");
+    EXPECT_EQ(get_replace_res("abc123abc456abc", "abc", repl_func, 2), "[abc]123[abc]456abc");
+    EXPECT_EQ(get_replace_res("abc123abc456abc", "ABC", repl_func, vsl::ignore_ascii_case), "[abc]123[abc]456[abc]");
+    EXPECT_EQ(get_replace_res("abc123abc456abc", "ABC", repl_func, vsl::ignore_ascii_case, 2), "[abc]123[abc]456abc");
 }
 
 TEST(TextTest, ContainsSubstr)
