@@ -3,6 +3,8 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <cstddef>
+#include <cstdint>
 #include <ranges>
 #include <string>
 #include <string_view>
@@ -13,25 +15,6 @@ namespace test
 
 TEST(ConceptsTest, CompileCheck)
 {
-    // -----------------------------------------------------------------------------------------------
-    // numeric
-    // -----------------------------------------------------------------------------------------------
-
-    static_assert(vsl::numeric<int>);
-    static_assert(vsl::numeric<double>);
-    static_assert(vsl::numeric<float>);
-    static_assert(vsl::numeric<unsigned long long>);
-    static_assert(vsl::numeric<char>);
-    static_assert(vsl::numeric<bool>);
-
-    static_assert(vsl::numeric<const int>);
-    static_assert(vsl::numeric<const double&>);
-    static_assert(vsl::numeric<int&&>);
-    static_assert(vsl::numeric<volatile float>);
-
-    static_assert(!vsl::numeric<int*>);
-    static_assert(!vsl::numeric<const char*>);
-
     // -----------------------------------------------------------------------------------------------
     // same_type_as
     // -----------------------------------------------------------------------------------------------
@@ -54,6 +37,55 @@ TEST(ConceptsTest, CompileCheck)
     static_assert(vsl::one_of_type<int, double, int, char>);
     static_assert(vsl::one_of_type<const int&, double, int, char>);
     static_assert(vsl::one_of_type<const char*, int, const char*, double>);
+
+    // -----------------------------------------------------------------------------------------------
+    // numeric
+    // -----------------------------------------------------------------------------------------------
+
+    static_assert(vsl::numeric<int>);
+    static_assert(vsl::numeric<double>);
+    static_assert(vsl::numeric<float>);
+    static_assert(vsl::numeric<unsigned long long>);
+    static_assert(vsl::numeric<char>);
+    static_assert(vsl::numeric<bool>);
+
+    static_assert(vsl::numeric<const int>);
+    static_assert(vsl::numeric<const double&>);
+    static_assert(vsl::numeric<int&&>);
+    static_assert(vsl::numeric<volatile float>);
+
+    static_assert(!vsl::numeric<int*>);
+    static_assert(!vsl::numeric<const char*>);
+
+    // -----------------------------------------------------------------------------------------------
+    // character_type
+    // -----------------------------------------------------------------------------------------------
+
+    static_assert(vsl::character<char>);
+    static_assert(vsl::character<char32_t>);
+    static_assert(vsl::character<const char>);
+    static_assert(!vsl::character<int>);
+    static_assert(!vsl::character<unsigned int>);
+
+    // -----------------------------------------------------------------------------------------------
+    // strict_signed_integral
+    // -----------------------------------------------------------------------------------------------
+
+    static_assert(vsl::strict_signed_integral<int>);
+    static_assert(vsl::strict_signed_integral<int32_t>);
+    static_assert(!vsl::strict_signed_integral<uint32_t>);
+    static_assert(!vsl::strict_signed_integral<char>);
+    static_assert(!vsl::strict_signed_integral<bool>);
+
+    // -----------------------------------------------------------------------------------------------
+    // strict_unsigned_integral
+    // -----------------------------------------------------------------------------------------------
+
+    static_assert(vsl::strict_unsigned_integral<unsigned int>);
+    static_assert(vsl::strict_unsigned_integral<uint32_t>);
+    static_assert(!vsl::strict_unsigned_integral<int32_t>);
+    static_assert(!vsl::strict_unsigned_integral<char>);
+    static_assert(!vsl::strict_unsigned_integral<bool>);
 
     // -----------------------------------------------------------------------------------------------
     // string_like
