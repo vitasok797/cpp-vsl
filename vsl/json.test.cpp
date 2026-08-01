@@ -3,6 +3,8 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <fmt/format.h>
+
 #include <compare>
 #include <map>
 #include <sstream>
@@ -170,6 +172,53 @@ TEST(JsonTest, Create)
         {"B", 2},
     };
     EXPECT_EQ(json_from_initializer_list.dump(), R"({"A":1,"B":2})");
+}
+
+TEST(JsonTest, CreateNested)
+{
+    const auto name = "John";
+    const auto age = 30;
+    const auto email = "smith@example.com";
+    const auto phone = "+79991112233";
+    const auto expected_result = fmt::format("{{"
+                                             "\"name\":\"{}\","
+                                             "\"age\":{},"
+                                             "\"contacts\":{{\"email\":\"{}\",\"phone\":\"{}\"}}"
+                                             "}}",
+                                             name, age, email, phone);
+    {
+        const auto json = OrderedJson{
+            {"name", name},
+            {"age", age},
+            {
+             "contacts", {{"email", email}, {"phone", phone}},
+             },
+        };
+
+        EXPECT_EQ(json.dump(), expected_result);
+    }
+    {
+        auto json = OrderedJson{};
+
+        json["name"] = name;
+        json["age"] = age;
+        json["contacts"]["email"] = email;
+        json["contacts"]["phone"] = phone;
+
+        EXPECT_EQ(json.dump(), expected_result);
+    }
+    {
+        auto contacts = OrderedJson{};
+        contacts["email"] = email;
+        contacts["phone"] = phone;
+
+        auto user = OrderedJson{};
+        user["name"] = name;
+        user["age"] = age;
+        user["contacts"] = contacts;
+
+        EXPECT_EQ(user.dump(), expected_result);
+    }
 }
 
 TEST(JsonTest, CreateFromStruct)
