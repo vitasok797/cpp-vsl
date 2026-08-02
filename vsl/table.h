@@ -6,7 +6,6 @@
 #include <./fort.hpp>
 
 #include <ranges>
-#include <stdexcept>
 #include <string>
 #include <utility>
 
@@ -43,22 +42,22 @@ inline const auto add_table_separator = fort::separator;
 namespace detail
 {
 
-template<typename BaseTable>
-class TableExtension : public BaseTable
+template<typename BaseFortTable>
+class FortTableWrapper
 {
   public:
-    TableExtension() = default;
+    FortTableWrapper() = default;
 
-    explicit TableExtension(TableBorderStyle style)
+    explicit FortTableWrapper(TableBorderStyle style)
     {
         set_border_style(style);
     }
 
     template<std::ranges::input_range Header, std::ranges::input_range Items, typename Func>
-    explicit TableExtension(const Header& header,
-                            const Items& items,
-                            Func item_to_row,
-                            TableBorderStyle style = vsl::TableBorderStyle::BASIC)
+    explicit FortTableWrapper(const Header& header,
+                              const Items& items,
+                              Func item_to_row,
+                              TableBorderStyle style = vsl::TableBorderStyle::BASIC)
     {
         if (!std::ranges::empty(header))
         {
@@ -73,6 +72,33 @@ class TableExtension : public BaseTable
 
         set_border_style(style);
     }
+
+    // Copying disabled due to issue:
+    // https://github.com/seleznevae/libfort/pull/67
+    FortTableWrapper(const FortTableWrapper&) = delete;
+    FortTableWrapper& operator=(const FortTableWrapper&) = delete;
+
+    // 'noexcept' is required for STL container compatibility (e.g., std::vector reallocation).
+    // Without it, containers would fallback to copy, but copy is deleted for this class.
+    // Creating an empty table may theoretically throw std::bad_alloc, causing std::terminate on OOM
+    FortTableWrapper(FortTableWrapper&& other) noexcept
+        : table_(std::move(other.table_))
+    {
+        other.table_ = BaseFortTable{};
+    }
+
+    // See comment in the move constructor regarding 'noexcept' safety
+    FortTableWrapper& operator=(FortTableWrapper&& other) noexcept
+    {
+        if (this != &other)
+        {
+            table_ = std::move(other.table_);
+            other.table_ = BaseFortTable{};
+        }
+        return *this;
+    }
+
+    ~FortTableWrapper() = default;
 
     auto set_border_style(TableBorderStyle style) -> void
     {
@@ -117,23 +143,30 @@ class TableExtension : public BaseTable
 
         if (ft_style)
         {
-            static_cast<BaseTable*>(this)->set_border_style(ft_style);
+            table_.set_border_style(ft_style);
         }
     }
 
     auto start_header_row() -> void
     {
-        *this << fort::header;
+        table_ << fort::header;
     }
 
     auto end_row() -> void
     {
-        *this << fort::endr;
+        table_ << fort::endr;
     }
 
     auto add_separator() -> void
     {
-        *this << fort::separator;
+        table_ << fort::separator;
+    }
+
+    template<typename T>
+    auto operator<<(const T& arg) -> FortTableWrapper&
+    {
+        table_ << arg;
+        return *this;
     }
 
     template<std::ranges::input_range R>
@@ -142,14 +175,14 @@ class TableExtension : public BaseTable
     {
         for (const auto& item : rng)
         {
-            *this << item;
+            table_ << item;
         }
     }
 
     template<typename... Args>
     auto write(Args&&... args) -> void
     {
-        ((*this << std::forward<Args>(args)), ...);
+        ((table_ << std::forward<Args>(args)), ...);
     }
 
     template<std::ranges::input_range R>
@@ -184,32 +217,22 @@ class TableExtension : public BaseTable
 
     auto to_string() const -> std::string
     {
-        const auto* str = this->c_str();
-        if (!str)
-        {
-            throw std::runtime_error("Error during table to string conversion");
-        }
-
-        auto table_str = std::string{str};
+        auto table_str = table_.to_string();
         if (!table_str.empty())
         {
             table_str.pop_back();
         }
         return table_str;
     }
+
+  private:
+    BaseFortTable table_{};
 };
 
 }  // namespace detail
 
-class Table : public detail::TableExtension<fort::utf8_table>
-{
-    using detail::TableExtension<fort::utf8_table>::TableExtension;
-};
-
-class TableAscii : public detail::TableExtension<fort::char_table>
-{
-    using detail::TableExtension<fort::char_table>::TableExtension;
-};
+using Table = detail::FortTableWrapper<fort::utf8_table>;
+using TableAscii = detail::FortTableWrapper<fort::char_table>;
 
 }  // namespace vsl
 

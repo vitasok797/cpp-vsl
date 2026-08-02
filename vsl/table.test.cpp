@@ -9,6 +9,7 @@
 #include <ranges>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 namespace test
@@ -132,6 +133,21 @@ TEST(TableTest, CreateFromRange)
                                      "| A | B |\n"
                                      "+---+---+");
     }
+}
+
+TEST(TableTest, EmptyTable)
+{
+    auto table = vsl::Table{};
+    EXPECT_EQ(table.to_string(), "");
+}
+
+TEST(TableTest, SingleRow)
+{
+    auto table = vsl::Table{};
+    table.write_ln("A", "B");
+    EXPECT_EQ(table.to_string(), "+---+---+\n"
+                                 "| A | B |\n"
+                                 "+---+---+");
 }
 
 TEST(TableTest, SetBorderStyle)
@@ -387,6 +403,64 @@ TEST(TableTest, AddSeparator)
                                  "| 5 | 6 | 7 | 8 |\n"
                                  "| 9 | 0 |   |   |\n"
                                  "+---+---+---+---+");
+}
+
+TEST(TableTest, MoveCtor)
+{
+    {
+        auto table = vsl::Table{};
+        fill_simple_table(table);
+
+        auto table2 = std::move(table);
+
+        EXPECT_EQ(table.to_string(), "");
+        EXPECT_EQ(table2.to_string(), "+---+---+\n"
+                                      "| A | B |\n"
+                                      "| 1 | 2 |\n"
+                                      "+---+---+");
+    }
+    {
+        auto table = vsl::TableAscii{};
+        fill_simple_table(table);
+
+        auto table2 = std::move(table);
+
+        EXPECT_EQ(table.to_string(), "");
+        EXPECT_EQ(table2.to_string(), "+---+---+\n"
+                                      "| A | B |\n"
+                                      "| 1 | 2 |\n"
+                                      "+---+---+");
+    }
+}
+
+TEST(TableTest, MoveAssignment)
+{
+    {
+        auto table = vsl::Table{};
+        fill_simple_table(table);
+
+        auto table2 = vsl::Table{};
+        table2 = std::move(table);
+
+        EXPECT_EQ(table.to_string(), "");
+        EXPECT_EQ(table2.to_string(), "+---+---+\n"
+                                      "| A | B |\n"
+                                      "| 1 | 2 |\n"
+                                      "+---+---+");
+    }
+    {
+        auto table = vsl::TableAscii{};
+        fill_simple_table(table);
+
+        auto table2 = vsl::TableAscii{};
+        table2 = std::move(table);
+
+        EXPECT_EQ(table.to_string(), "");
+        EXPECT_EQ(table2.to_string(), "+---+---+\n"
+                                      "| A | B |\n"
+                                      "| 1 | 2 |\n"
+                                      "+---+---+");
+    }
 }
 
 }  // namespace test
