@@ -79,8 +79,7 @@ class FortTableWrapper
     FortTableWrapper& operator=(const FortTableWrapper&) = delete;
 
     // 'noexcept' is required for STL container compatibility (e.g., std::vector reallocation).
-    // Without it, containers would fallback to copy, but copy is deleted for this class.
-    // Creating an empty table may theoretically throw std::bad_alloc, causing std::terminate on OOM
+    // Creating an empty table may theoretically throw std::bad_alloc, causing std::terminate
     FortTableWrapper(FortTableWrapper&& other) noexcept
         : table_(std::move(other.table_))
     {
