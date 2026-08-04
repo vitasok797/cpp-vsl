@@ -1,5 +1,5 @@
-#ifndef VSL_ASYNC_H
-#define VSL_ASYNC_H
+#ifndef VSL_THREADING_H
+#define VSL_THREADING_H
 
 #include <future>
 #include <utility>
@@ -15,4 +15,4 @@ auto run_async(F&& f, Params&&... params)
 
 }  // namespace vsl
 
-#endif  // VSL_ASYNC_H
+#endif  // VSL_THREADING_H
