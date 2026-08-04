@@ -33,6 +33,18 @@ TEST(UtilTest, IsOneOf)
 
     EXPECT_TRUE(vsl::is_one_of(opt, std::array{Options::OPT1, Options::OPT3, Options::OPT4}));
     EXPECT_FALSE(vsl::is_one_of(opt, std::array{Options::OPT1, Options::OPT2, Options::OPT4}));
+
+    // Different mixed types (must be comparable)
+    EXPECT_TRUE(vsl::is_one_of(1, 1.0, 1.1, 2));
+    EXPECT_FALSE(vsl::is_one_of(1, 1.1, 1.2, 2));
+
+    // Different types (must be comparable)
+    EXPECT_TRUE(vsl::is_one_of(1, {1.0, 1.1, 1.2}));
+    EXPECT_FALSE(vsl::is_one_of(1, {1.1, 1.2, 1.3}));
+
+    // Different types (must be comparable)
+    EXPECT_TRUE(vsl::is_one_of(1, std::array{1.0, 1.1, 1.2}));
+    EXPECT_FALSE(vsl::is_one_of(1, std::array{1.1, 1.2, 1.3}));
 }
 
 template<typename Underlying>

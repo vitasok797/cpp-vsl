@@ -5,6 +5,7 @@
 #include <vsl/types.h>
 
 #include <algorithm>
+#include <concepts>
 #include <initializer_list>
 #include <ranges>
 #include <type_traits>
@@ -48,14 +49,15 @@ auto is_one_of(const T& value, const Options&... options) -> bool
     return ((value == options) || ...);
 }
 
-template<typename T>
-auto is_one_of(const T& value, const std::initializer_list<T>& options) -> bool
+template<typename T, typename U>
+    requires std::equality_comparable_with<T, U>
+auto is_one_of(const T& value, const std::initializer_list<U>& options) -> bool
 {
     return std::ranges::find(options, value) != options.end();
 }
 
 template<typename T, std::ranges::input_range R>
-    requires vsl::range_of<R, T>
+    requires std::equality_comparable_with<T, std::ranges::range_value_t<R>>
 auto is_one_of(const T& value, const R& options) -> bool
 {
     return std::ranges::find(options, value) != options.end();
