@@ -78,6 +78,17 @@ auto this_to(Ptr* this_ptr) noexcept -> decltype(auto)
     return static_cast<output_type>(*this_ptr);
 }
 
+class NonCopyable
+{
+  public:
+    NonCopyable() = default;
+    NonCopyable(const NonCopyable&) = delete;
+    NonCopyable& operator=(const NonCopyable&) = delete;
+    NonCopyable(NonCopyable&&) noexcept = default;
+    NonCopyable& operator=(NonCopyable&&) noexcept = default;
+    ~NonCopyable() = default;
+};
+
 }  // namespace vsl
 
 #endif  // VSL_UTIL_H
