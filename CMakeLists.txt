@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.30)
 
-project(vsl)
+project(vsl_dev)
 
 include(cmake/modules.cmake)
 
@@ -17,41 +17,18 @@ endfunction()
 set(CUR_TARGET dependencies)
 add_library(${CUR_TARGET} INTERFACE)
 
-find_package(fmt CONFIG REQUIRED)
-target_link_libraries(${CUR_TARGET} INTERFACE fmt::fmt)
-
-find_package(libenvpp CONFIG REQUIRED)
-target_link_libraries(${CUR_TARGET} INTERFACE libenvpp::libenvpp)
-
-find_package(libfort CONFIG REQUIRED)
-target_link_libraries(${CUR_TARGET} INTERFACE libfort::fort)
-
-find_package(magic_enum CONFIG REQUIRED)
-target_link_libraries(${CUR_TARGET} INTERFACE magic_enum::magic_enum)
-
-find_package(nameof CONFIG REQUIRED)
-target_link_libraries(${CUR_TARGET} INTERFACE nameof::nameof)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/vsl)
+target_link_libraries(${CUR_TARGET} INTERFACE vsl_lib)
 
 find_package(nanobench CONFIG REQUIRED)
 target_link_libraries(${CUR_TARGET} INTERFACE nanobench::nanobench)
-
-find_package(nlohmann_json CONFIG REQUIRED)
-target_link_libraries(${CUR_TARGET} INTERFACE nlohmann_json::nlohmann_json)
-
-set(UTF8PROC_DEPRECATED_CONFIG_FILE "${CMAKE_BINARY_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}/share/unofficial-utf8proc/unofficial-utf8proc-config.cmake")
-if(EXISTS "${UTF8PROC_DEPRECATED_CONFIG_FILE}")
-    file(WRITE "${UTF8PROC_DEPRECATED_CONFIG_FILE}" "find_package(utf8proc CONFIG REQUIRED)\n")
-endif()
-find_package(Poco REQUIRED COMPONENTS Foundation Net)
-target_link_libraries(${CUR_TARGET} INTERFACE Poco::Foundation Poco::Net)
-
-find_package(uni-algo CONFIG REQUIRED)
-target_link_libraries(${CUR_TARGET} INTERFACE uni-algo::uni-algo)
 
 #--- interrupt demo ------------------------------------------------------------------------------
 
 set(CUR_TARGET interrupt_demo)
 add_executable(${CUR_TARGET})
+
+target_link_libraries(${CUR_TARGET} PRIVATE dependencies)
 
 configure_cxx_options(${CUR_TARGET})
 
@@ -71,11 +48,8 @@ if(VSL_BUILD_TESTS AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     add_executable(${CUR_TARGET})
 
     target_link_libraries(${CUR_TARGET} PRIVATE GTest::gtest_main GTest::gmock)
-
-    target_include_directories(${CUR_TARGET} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-    target_include_directories(${CUR_TARGET} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/vsl/external")
-
     target_link_libraries(${CUR_TARGET} PRIVATE dependencies)
+
     configure_cxx_options(${CUR_TARGET})
 
     target_sources(${CUR_TARGET} PRIVATE
@@ -109,10 +83,8 @@ endif()
 set(CUR_TARGET benchmark)
 add_executable(${CUR_TARGET})
 
-target_include_directories(${CUR_TARGET} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-target_include_directories(${CUR_TARGET} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/vsl/external")
-
 target_link_libraries(${CUR_TARGET} PRIVATE dependencies)
+
 configure_cxx_options(${CUR_TARGET})
 
 target_sources(${CUR_TARGET} PRIVATE
