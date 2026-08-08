@@ -53,6 +53,7 @@ if(VSL_BUILD_TESTS AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     configure_cxx_options(${CUR_TARGET})
 
     target_sources(${CUR_TARGET} PRIVATE
+        "vsl/assert.test.cpp"
         "vsl/concepts.test.cpp"
         "vsl/container.test.cpp"
         "vsl/csv.test.cpp"
