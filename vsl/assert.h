@@ -6,11 +6,12 @@
 #include <source_location>
 #include <stdexcept>
 
-#define VSL_ASSERT(type, expr, ...) (static_cast<bool>(expr) ? static_cast<void>(0) : \
+#define VSL_CUSTOM_ASSERTION(type, expr, ...) (static_cast<bool>(expr) ? static_cast<void>(0) : \
     vsl::detail::assert_fail(type, #expr, std::source_location::current() __VA_OPT__(,) __VA_ARGS__))
 
-#define VSL_EXPECTS(...) VSL_ASSERT("Expects", __VA_ARGS__)
-#define VSL_ENSURES(...) VSL_ASSERT("Ensures", __VA_ARGS__)
+#define VSL_EXPECT(...) VSL_CUSTOM_ASSERTION("Expect", __VA_ARGS__)
+#define VSL_ASSERT(...) VSL_CUSTOM_ASSERTION("Assert", __VA_ARGS__)
+#define VSL_ENSURE(...) VSL_CUSTOM_ASSERTION("Ensure", __VA_ARGS__)
 
 namespace vsl
 {
