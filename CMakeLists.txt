@@ -89,5 +89,5 @@ target_link_libraries(${CUR_TARGET} PRIVATE dependencies)
 configure_cxx_options(${CUR_TARGET})
 
 target_sources(${CUR_TARGET} PRIVATE
-    "vsl/benchmark/benchmark.cpp"
+    "bench/benchmark.cpp"
     )
