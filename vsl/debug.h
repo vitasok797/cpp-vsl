@@ -19,10 +19,10 @@
 #define VSL_IS_REF(x) (std::is_lvalue_reference_v<decltype(x)> ? "REF" : "")
 #define VSL_IS_RVALUE_REF(x) (std::is_rvalue_reference_v<decltype(x)> ? "RVAL_REF" : "")
 
-namespace vsl::debug
+namespace vsl
 {
 
-inline auto get_thread_unique_num() noexcept -> int
+inline auto debug_get_thread_unique_num() noexcept -> int
 {
     static auto next_thread_num = std::atomic<int>{0};
     static thread_local auto thread_num = next_thread_num.fetch_add(1);
@@ -30,10 +30,10 @@ inline auto get_thread_unique_num() noexcept -> int
 }
 
 template<typename... Values>
-void println_sync(const Values&... values)
+void debug_println_sync(const Values&... values)
 {
     auto os = std::osyncstream{std::cout};
-    os << "[" << get_thread_unique_num() << "]";
+    os << "[" << debug_get_thread_unique_num() << "]";
     ((os << " " << values), ...);
     os << std::endl;
 }
@@ -152,7 +152,7 @@ class WatcherBase final
 
         if (options.print_thread)
         {
-            os << "[" << get_thread_unique_num() << "] ";
+            os << "[" << debug_get_thread_unique_num() << "] ";
         }
 
         if (options.print_identity)
@@ -301,6 +301,6 @@ class DebugAllocator
     Handler handler_{};
 };
 
-}  // namespace vsl::debug
+}  // namespace vsl
 
 #endif  // VSL_DEBUG_H

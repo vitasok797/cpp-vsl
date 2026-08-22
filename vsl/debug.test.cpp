@@ -18,18 +18,18 @@ TEST(DebugTest, DebugAllocator)
     auto log = std::vector<std::string>{};
     auto expected_log = std::vector<std::string>{};
 
-    auto handler = [&log](vsl::debug::DebugAllocatorOperation op, size_t total_size, size_t count, size_t size_of_type)
+    auto handler = [&log](vsl::DebugAllocatorOperation op, size_t total_size, size_t count, size_t size_of_type)
     {
-        const auto op_mark = (op == vsl::debug::DebugAllocatorOperation::ALLOCATE) ? '+' : '-';
+        const auto op_mark = (op == vsl::DebugAllocatorOperation::ALLOCATE) ? '+' : '-';
         const auto msg = fmt::format("({}) {} ({} of size={})", op_mark, total_size, count, size_of_type);
         log.push_back(msg);
     };
 
-    // const auto alloc = vsl::debug::DebugAllocator<int>::create_default();
-    const auto alloc = vsl::debug::DebugAllocator<int>{handler};
+    // const auto alloc = vsl::DebugAllocator<int>::create_default();
+    const auto alloc = vsl::DebugAllocator<int>{handler};
 
     {
-        auto vec = std::vector<int, vsl::debug::DebugAllocator<int>>{alloc};
+        auto vec = std::vector<int, vsl::DebugAllocator<int>>{alloc};
 
         vec.reserve(4);
         expected_log.push_back("(+) 16 (4 of size=4)");
