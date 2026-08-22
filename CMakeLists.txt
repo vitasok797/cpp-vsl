@@ -67,6 +67,7 @@ if(VSL_BUILD_TESTS AND "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         "vsl/pointer.test.cpp"
         "vsl/reflection.test.cpp"
         "vsl/regex.test.cpp"
+        "vsl/scope_guard.test.cpp"
         "vsl/table.test.cpp"
         "vsl/tcp/test.cpp"
         "vsl/text.test.cpp"
