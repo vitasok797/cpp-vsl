@@ -13,6 +13,8 @@
 #include <type_traits>
 #include <vector>
 
+using namespace testing;
+
 namespace test
 {
 
@@ -32,8 +34,8 @@ TEST(RegexTest, Create)
     test_good_pattern(good_pattern);
     test_good_pattern(std::string{good_pattern});
 
-    EXPECT_THROW(auto re = vsl::Re("+"), vsl::ReError);
-    EXPECT_THROW(auto re = vsl::ReAscii("[]]"), vsl::ReError);
+    EXPECT_THROW(vsl::Re("+"), vsl::ReError);
+    EXPECT_THROW(vsl::ReAscii("[]]"), vsl::ReError);
 }
 
 TEST(RegexTest, FullMatch)
@@ -269,17 +271,17 @@ TEST(RegexTest, Find)
             const auto res = vsl::re_find_matches(s, re, flags);
             static_assert(vsl::range_of<decltype(res), vsl::ReMatch>);
             const auto res_str = res | std::views::transform([](auto&& m) { return m.str(); });
-            EXPECT_THAT(std::vector(res_str.begin(), res_str.end()), testing::ElementsAreArray(expected_res));
+            EXPECT_THAT(std::vector(res_str.begin(), res_str.end()), ElementsAreArray(expected_res));
         }
         {
             const auto res = vsl::re_find_matches_sv(s, re, flags);
             static_assert(vsl::range_of<decltype(res), std::string_view>);
-            EXPECT_THAT(std::vector(res.begin(), res.end()), testing::ElementsAreArray(expected_res));
+            EXPECT_THAT(std::vector(res.begin(), res.end()), ElementsAreArray(expected_res));
         }
         {
             const auto res = vsl::re_find_submatches(s, re, 0, flags);
             static_assert(vsl::range_of<decltype(res), std::string_view>);
-            EXPECT_THAT(std::vector(res.begin(), res.end()), testing::ElementsAreArray(expected_res));
+            EXPECT_THAT(std::vector(res.begin(), res.end()), ElementsAreArray(expected_res));
         }
     };
 
@@ -327,55 +329,55 @@ TEST(RegexTest, FindSubmatches)
         const auto submatches = -1;
         const auto expected_res = empty_res;
         const auto res = vsl::re_find_submatches(s2, re, submatches, no_flags);
-        EXPECT_THAT(std::vector(res.begin(), res.end()), testing::ElementsAreArray(expected_res));
+        EXPECT_THAT(std::vector(res.begin(), res.end()), ElementsAreArray(expected_res));
     }
     {
         // int submatches arg
         const auto submatches = -1;
         const auto expected_res = {"1", "2", "3"};
         const auto res = vsl::re_find_submatches(s, re, submatches, no_flags);
-        EXPECT_THAT(std::vector(res.begin(), res.end()), testing::ElementsAreArray(expected_res));
+        EXPECT_THAT(std::vector(res.begin(), res.end()), ElementsAreArray(expected_res));
     }
     {
         // int submatches arg
         const auto submatches = 0;
         const auto expected_res = {"abc", "def"};
         const auto res = vsl::re_find_submatches(s, re, submatches, no_flags);
-        EXPECT_THAT(std::vector(res.begin(), res.end()), testing::ElementsAreArray(expected_res));
+        EXPECT_THAT(std::vector(res.begin(), res.end()), ElementsAreArray(expected_res));
     }
     {
         // int submatches arg
         const auto submatches = 1;
         const auto expected_res = {"b", "e"};
         const auto res = vsl::re_find_submatches(s, re, submatches, no_flags);
-        EXPECT_THAT(std::vector(res.begin(), res.end()), testing::ElementsAreArray(expected_res));
+        EXPECT_THAT(std::vector(res.begin(), res.end()), ElementsAreArray(expected_res));
     }
     {
         // int submatches arg
         const auto submatches = 2;
         const auto expected_res = {"", ""};
         const auto res = vsl::re_find_submatches(s, re, submatches, no_flags);
-        EXPECT_THAT(std::vector(res.begin(), res.end()), testing::ElementsAreArray(expected_res));
+        EXPECT_THAT(std::vector(res.begin(), res.end()), ElementsAreArray(expected_res));
     }
     {
         // std::vector submatches arg
         const auto submatches = std::vector{-1, 0, 1};
         const auto expected_res = {"1", "abc", "b", "2", "def", "e", "3"};
         const auto res = vsl::re_find_submatches(s, re, submatches, no_flags);
-        EXPECT_THAT(std::vector(res.begin(), res.end()), testing::ElementsAreArray(expected_res));
+        EXPECT_THAT(std::vector(res.begin(), res.end()), ElementsAreArray(expected_res));
     }
     {
         // std::initializer_list submatches arg
         const auto expected_res = {"1", "b", "2", "e", "3"};
         const auto res = vsl::re_find_submatches(s, re, {-1, 1}, no_flags);
-        EXPECT_THAT(std::vector(res.begin(), res.end()), testing::ElementsAreArray(expected_res));
+        EXPECT_THAT(std::vector(res.begin(), res.end()), ElementsAreArray(expected_res));
     }
     {
         const auto s2 = "111";
         const auto submatches = -1;
         const auto expected_res = {"111"};
         const auto res = vsl::re_find_submatches(s2, re, submatches, no_flags);
-        EXPECT_THAT(std::vector(res.begin(), res.end()), testing::ElementsAreArray(expected_res));
+        EXPECT_THAT(std::vector(res.begin(), res.end()), ElementsAreArray(expected_res));
     }
 }
 
@@ -388,7 +390,7 @@ TEST(RegexTest, Split)
     {
         auto res = vsl::re_split(s, re, opt);
         static_assert(vsl::range_view_of<decltype(res), std::string_view>);
-        EXPECT_THAT(std::vector(res.begin(), res.end()), testing::ElementsAreArray(expected_res));
+        EXPECT_THAT(std::vector(res.begin(), res.end()), ElementsAreArray(expected_res));
     };
 
     const auto re = vsl::Re{";"};

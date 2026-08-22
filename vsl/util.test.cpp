@@ -6,6 +6,8 @@
 #include <array>
 #include <vector>
 
+using namespace testing;
+
 namespace test
 {
 

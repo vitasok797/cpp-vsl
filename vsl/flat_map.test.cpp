@@ -29,7 +29,7 @@ TEST(FlatMapTest, EmptyTable)
 
     EXPECT_EQ(table.find(42), nullptr);
 
-    EXPECT_THAT([&] { [[maybe_unused]] auto val = table.at(42); }, KeyNotFoundErrorMatcher);
+    EXPECT_THAT([&] { static_cast<void>(table.at(42)); }, KeyNotFoundErrorMatcher);
 }
 
 TEST(FlatMapTest, SingleElement)
@@ -51,8 +51,8 @@ TEST(FlatMapTest, SingleElement)
     EXPECT_EQ(table.find('c'), nullptr);
 
     EXPECT_EQ(table.at('b'), 0);
-    EXPECT_THAT([&] { [[maybe_unused]] auto val = table.at('a'); }, KeyNotFoundErrorMatcher);
-    EXPECT_THAT([&] { [[maybe_unused]] auto val = table.at('c'); }, KeyNotFoundErrorMatcher);
+    EXPECT_THAT([&] { static_cast<void>(table.at('a')); }, KeyNotFoundErrorMatcher);
+    EXPECT_THAT([&] { static_cast<void>(table.at('c')); }, KeyNotFoundErrorMatcher);
 }
 
 TEST(FlatMapTest, MultipleUnsortedElements)
@@ -74,7 +74,7 @@ TEST(FlatMapTest, MultipleUnsortedElements)
     EXPECT_EQ(table.find("unknown"), nullptr);
 
     EXPECT_EQ(table.at("mouse"), 3);
-    EXPECT_THAT([&] { [[maybe_unused]] auto val = table.at("unknown"); }, KeyNotFoundErrorMatcher);
+    EXPECT_THAT([&] { static_cast<void>(table.at("unknown")); }, KeyNotFoundErrorMatcher);
 }
 
 TEST(FlatMapTest, DuplicateKeyError)
@@ -132,7 +132,7 @@ TEST(FlatMapTest, StringHeterogeneousLookup)
     EXPECT_EQ(table.find(std::string_view{"unknown"}), nullptr);
 
     EXPECT_EQ(table.at(std::string_view{"ccc"}), 3);
-    EXPECT_THAT([&] { [[maybe_unused]] auto val = table.at(std::string_view{"unknown"}); }, KeyNotFoundErrorMatcher);
+    EXPECT_THAT([&] { static_cast<void>(table.at(std::string_view{"unknown"})); }, KeyNotFoundErrorMatcher);
 }
 
 TEST(FlatMapTest, KeySearch)
@@ -201,7 +201,7 @@ TEST(FlatMapTest, ComparatorGreater)
     EXPECT_FALSE(table.contains(6));
     EXPECT_EQ(table.find(10), nullptr);
 
-    EXPECT_THAT([&] { [[maybe_unused]] auto val = table.at(99); }, KeyNotFoundErrorMatcher);
+    EXPECT_THAT([&] { static_cast<void>(table.at(99)); }, KeyNotFoundErrorMatcher);
 }
 
 TEST(FlatMapTest, ComparatorLambda)

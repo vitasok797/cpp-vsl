@@ -12,6 +12,8 @@
 #include <utility>
 #include <vector>
 
+using namespace testing;
+
 namespace test
 {
 

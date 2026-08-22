@@ -6,6 +6,8 @@
 #include <memory>
 #include <optional>
 
+using namespace testing;
+
 namespace test
 {
 

@@ -11,6 +11,8 @@
 #include <string>
 #include <tuple>
 
+using namespace testing;
+
 namespace test
 {
 
@@ -268,8 +270,8 @@ TEST(JsonTest, Parse)
     EXPECT_TRUE(Json::parse("{}").empty());
     EXPECT_TRUE(OrderedJson::parse("{}").empty());
 
-    EXPECT_THROW(auto _ = Json::parse(PERSON_STR_BAD), vsl::json_parse_error);
-    EXPECT_THROW(auto _ = OrderedJson::parse(PERSON_STR_BAD), vsl::json_parse_error);
+    EXPECT_THROW(static_cast<void>(Json::parse(PERSON_STR_BAD)), vsl::json_parse_error);
+    EXPECT_THROW(static_cast<void>(OrderedJson::parse(PERSON_STR_BAD)), vsl::json_parse_error);
 }
 
 TEST(JsonTest, IsValidJsonString)
@@ -358,14 +360,13 @@ TEST(JsonTest, GetStructTypeError)
 TEST(JsonTest, TryGet)
 {
     const auto json = Json::parse(PERSON_STR);
-    EXPECT_THAT(vsl::try_get_from_json<std::string>(json["name"]), testing::Optional(std::string{"John"}));
-    EXPECT_THAT(vsl::try_get_from_json<Person>(json), testing::Optional(PERSON_STRUCT));
+    EXPECT_THAT(vsl::try_get_from_json<std::string>(json["name"]), Optional(std::string{"John"}));
+    EXPECT_THAT(vsl::try_get_from_json<Person>(json), Optional(PERSON_STRUCT));
     EXPECT_EQ(vsl::try_get_from_json<int>(json["name"]), std::nullopt);
 
     const auto json_partial = Json::parse(PERSON_STR_PARTIAL);
-    EXPECT_THAT(vsl::try_get_from_json<PersonInlineWithDefault>(json_partial),
-                testing::Optional(PERSON_STRUCT_INLINE_DEF));
-    EXPECT_THAT(vsl::try_get_from_json<PersonWithDefault>(json_partial), testing::Optional(PERSON_STRUCT_DEF));
+    EXPECT_THAT(vsl::try_get_from_json<PersonInlineWithDefault>(json_partial), Optional(PERSON_STRUCT_INLINE_DEF));
+    EXPECT_THAT(vsl::try_get_from_json<PersonWithDefault>(json_partial), Optional(PERSON_STRUCT_DEF));
     EXPECT_EQ(vsl::try_get_from_json<PersonInline>(json_partial), std::nullopt);
     EXPECT_EQ(vsl::try_get_from_json<Person>(json_partial), std::nullopt);
 }
@@ -399,7 +400,7 @@ TEST(JsonTest, GetStrictStruct)
     json_wrong_type["name"] = 1;
 
     EXPECT_EQ(vsl::get_strict_struct_from_json<Person>(json_ok), PERSON_STRUCT);
-    EXPECT_THAT(vsl::try_get_strict_struct_from_json<Person>(json_ok), testing::Optional(PERSON_STRUCT));
+    EXPECT_THAT(vsl::try_get_strict_struct_from_json<Person>(json_ok), Optional(PERSON_STRUCT));
 
     EXPECT_THROW(vsl::get_strict_struct_from_json<Person>(json_extra_key), vsl::json_out_of_range);
     EXPECT_EQ(vsl::try_get_strict_struct_from_json<Person>(json_extra_key), std::nullopt);

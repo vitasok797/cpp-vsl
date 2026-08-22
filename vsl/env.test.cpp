@@ -7,6 +7,8 @@
 
 #include <string>
 
+using namespace testing;
+
 namespace test
 {
 
@@ -26,8 +28,6 @@ TEST(EnvTest, Exists)
 
 TEST(EnvTest, Get)
 {
-    using namespace testing;
-
     {
         const auto res = vsl::env_get<std::string>(VAR_NAME);
         EXPECT_THAT(res, HasSubstr(VAR_SUBSTRING));

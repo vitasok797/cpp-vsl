@@ -5,6 +5,8 @@
 
 #include <fmt/format.h>
 
+using namespace testing;
+
 namespace test
 {
 

@@ -10,6 +10,8 @@
 #include <string>
 #include <string_view>
 
+using namespace testing;
+
 namespace test
 {
 

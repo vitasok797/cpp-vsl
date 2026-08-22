@@ -10,6 +10,8 @@
 #include <cstdint>
 #include <limits>
 
+using namespace testing;
+
 namespace test
 {
 
@@ -209,7 +211,7 @@ TEST(TypesTest, AsSigned)
     {
         // Throw on int64_t overflow
         const auto value = static_cast<uint64_t>(std::numeric_limits<int64_t>::max()) + 1;
-        EXPECT_THROW({ [[maybe_unused]] auto result = vsl::as_signed(value); }, vsl::NarrowingError);
+        EXPECT_THROW(vsl::as_signed(value), vsl::NarrowingError);
     }
 }
 
@@ -311,10 +313,10 @@ TEST(TypesTest, AsUnsigned)
     }
     {
         // Throw on negative
-        EXPECT_THROW({ [[maybe_unused]] auto result = vsl::as_unsigned(int8_t{-1}); }, vsl::NarrowingError);
-        EXPECT_THROW({ [[maybe_unused]] auto result = vsl::as_unsigned(int16_t{-1}); }, vsl::NarrowingError);
-        EXPECT_THROW({ [[maybe_unused]] auto result = vsl::as_unsigned(int32_t{-1}); }, vsl::NarrowingError);
-        EXPECT_THROW({ [[maybe_unused]] auto result = vsl::as_unsigned(int64_t{-1}); }, vsl::NarrowingError);
+        EXPECT_THROW(vsl::as_unsigned(int8_t{-1}), vsl::NarrowingError);
+        EXPECT_THROW(vsl::as_unsigned(int16_t{-1}), vsl::NarrowingError);
+        EXPECT_THROW(vsl::as_unsigned(int32_t{-1}), vsl::NarrowingError);
+        EXPECT_THROW(vsl::as_unsigned(int64_t{-1}), vsl::NarrowingError);
     }
 }
 

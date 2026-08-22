@@ -5,6 +5,8 @@
 
 #include <utility>
 
+using namespace testing;
+
 namespace test
 {
 

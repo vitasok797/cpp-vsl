@@ -14,6 +14,8 @@
 #include <utility>
 #include <vector>
 
+using namespace testing;
+
 namespace test::tcp
 {
 
@@ -28,7 +30,7 @@ using vsl::tcp::TcpListenerError;
 static const auto server_endpoint = std::pair{"0.0.0.0", 8888};
 static const auto client_remote_endpoint = std::pair{"127.0.0.1", 8888};
 
-class BaseTcpTest : public ::testing::Test
+class BaseTcpTest : public Test
 {
   protected:
     BaseTcpTest(TcpClient::ByteOrder client_byte_order, TcpClient::ByteOrder server_byte_order)
@@ -328,7 +330,7 @@ TEST_F(TcpTest, SendRecvRawArray)
     std::array<int64_t, 3> ints_received;
     server_.read_raw(ints_received.data(), ints_received.size());
 
-    ASSERT_THAT(ints_received, testing::ElementsAreArray(ints_sent));
+    ASSERT_THAT(ints_received, ElementsAreArray(ints_sent));
 }
 
 TEST_F(TcpTest, DataAvailable)
@@ -451,7 +453,7 @@ TEST_F(TcpTest, Buffer)
 
         std::array<char, 3> chars_received;
         server_.read_raw(chars_received.data(), chars_received.size());
-        ASSERT_THAT(chars_received, testing::ElementsAreArray(chars));
+        ASSERT_THAT(chars_received, ElementsAreArray(chars));
 
         ASSERT_EQ(server_.read<int32_t>(), 102);
     };

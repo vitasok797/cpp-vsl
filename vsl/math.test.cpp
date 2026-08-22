@@ -10,6 +10,8 @@
 #include <stdexcept>
 #include <utility>
 
+using namespace testing;
+
 namespace test
 {
 

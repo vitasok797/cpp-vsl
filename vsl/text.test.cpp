@@ -14,6 +14,8 @@
 #include <utility>
 #include <vector>
 
+using namespace testing;
+
 namespace test
 {
 
@@ -204,11 +206,11 @@ TEST(TextTest, CollateStr)
 
     auto vec = std::vector<std::string>{"браво", "астра", "АЛЬФА", "ОМЕГА"};
     std::ranges::sort(vec);
-    EXPECT_THAT(vec, testing::ElementsAre("АЛЬФА", "ОМЕГА", "астра", "браво"));
+    EXPECT_THAT(vec, ElementsAre("АЛЬФА", "ОМЕГА", "астра", "браво"));
     std::ranges::sort(vec, [](auto a, auto b) { return vsl::collate_str(a, b) < 0; });
-    EXPECT_THAT(vec, testing::ElementsAre("астра", "АЛЬФА", "браво", "ОМЕГА"));
+    EXPECT_THAT(vec, ElementsAre("астра", "АЛЬФА", "браво", "ОМЕГА"));
     std::ranges::sort(vec, [](auto a, auto b) { return vsl::collate_str(a, b, vsl::ignore_case) < 0; });
-    EXPECT_THAT(vec, testing::ElementsAre("АЛЬФА", "астра", "браво", "ОМЕГА"));
+    EXPECT_THAT(vec, ElementsAre("АЛЬФА", "астра", "браво", "ОМЕГА"));
 }
 
 TEST(TextTest, FindSubstr)
@@ -364,8 +366,6 @@ TEST(TextTest, Split)
     auto test_split = [](auto&& s, auto&& sep, auto&& opt, auto&& expected_res,
                          vsl::Index max_tokens = std::numeric_limits<vsl::Index>::max())
     {
-        using namespace testing;
-
         {
             auto res = std::vector<std::string>{};
             res.reserve(100);
@@ -835,7 +835,7 @@ TEST(TextTest, RepeatStr)
     EXPECT_EQ(vsl::repeat_str("abc", 2), "abcabc");
     EXPECT_EQ(vsl::repeat_str("", 1), "");
 
-    EXPECT_THROW([[maybe_unused]] auto res = vsl::repeat_str("12345", std::numeric_limits<vsl::Index>::max() / 4),
+    EXPECT_THROW(static_cast<void>(vsl::repeat_str("12345", std::numeric_limits<vsl::Index>::max() / 4)),
                  std::length_error);
 }
 
