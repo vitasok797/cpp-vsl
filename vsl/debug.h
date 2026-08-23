@@ -1,6 +1,7 @@
 #ifndef VSL_DEBUG_H
 #define VSL_DEBUG_H
 
+#include <vsl/assert.h>
 #include <vsl/types.h>
 
 #include <fmt/format.h>
@@ -227,6 +228,81 @@ using Watcher = WatcherBase<detail::watcher_config>;
 using CopyWatcher = WatcherBase<detail::copy_watcher_config>;
 using CtorWatcher = WatcherBase<detail::ctor_watcher_config>;
 using ThreadWatcher = WatcherBase<>;
+
+struct CopyMoveStats
+{
+    [[nodiscard]]
+    auto no_ops() const noexcept -> bool
+    {
+        return (copies == 0) && (moves == 0);
+    }
+
+    [[nodiscard]]
+    auto only_copies() const noexcept -> bool
+    {
+        return (copies > 0) && (moves == 0);
+    }
+
+    [[nodiscard]]
+    auto only_copies(int count) const -> bool
+    {
+        VSL_EXPECT(count > 0);
+        return (copies == count) && (moves == 0);
+    }
+
+    [[nodiscard]]
+    auto only_moves() const noexcept -> bool
+    {
+        return (copies == 0) && (moves > 0);
+    }
+
+    [[nodiscard]]
+    auto only_moves(int count) const -> bool
+    {
+        VSL_EXPECT(count > 0);
+        return (copies == 0) && (moves == count);
+    }
+
+    int copies{0};
+    int moves{0};
+};
+
+class CopyMoveProbe
+{
+  public:
+    explicit CopyMoveProbe(CopyMoveStats& stats)
+        : stats_{&stats}
+    {}
+
+    CopyMoveProbe(const CopyMoveProbe& other)
+        : stats_{other.stats_}
+    {
+        ++stats_->copies;
+    }
+
+    CopyMoveProbe(CopyMoveProbe&& other) noexcept
+        : stats_{other.stats_}
+    {
+        ++stats_->moves;
+    }
+
+    auto operator=(const CopyMoveProbe& other) -> CopyMoveProbe&
+    {
+        stats_ = other.stats_;
+        ++stats_->copies;
+        return *this;
+    }
+
+    auto operator=(CopyMoveProbe&& other) noexcept -> CopyMoveProbe&
+    {
+        stats_ = other.stats_;
+        ++stats_->moves;
+        return *this;
+    }
+
+  private:
+    CopyMoveStats* stats_;
+};
 
 enum class DebugAllocatorOperation
 {
