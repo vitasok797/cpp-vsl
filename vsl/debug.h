@@ -263,6 +263,12 @@ struct CopyMoveStats
         return (copies == 0) && (moves == count);
     }
 
+    auto clear() -> void
+    {
+        copies = 0;
+        moves = 0;
+    }
+
     int copies{0};
     int moves{0};
 };

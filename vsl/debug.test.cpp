@@ -87,6 +87,18 @@ TEST(DebugTest, CopyMoveStatsNonPositiveCount)
     EXPECT_THROW(static_cast<void>(stats.only_moves(-1)), vsl::AssertionError);
 }
 
+TEST(DebugTest, CopyMoveStatsClear)
+{
+    auto stats = vsl::CopyMoveStats{
+        .copies = 2,
+        .moves = 1,
+    };
+
+    EXPECT_FALSE(stats.no_ops());
+    stats.clear();
+    EXPECT_TRUE(stats.no_ops());
+}
+
 TEST(DebugTest, CopyMoveProbeCopy)
 {
     auto stats = vsl::CopyMoveStats{};
