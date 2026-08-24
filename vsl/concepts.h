@@ -17,7 +17,7 @@ template<typename T, typename... Types>
 concept one_of_type = (std::same_as<std::decay_t<T>, Types> || ...);
 
 template<typename T>
-concept numeric = std::integral<std::remove_cvref_t<T>> || std::floating_point<std::remove_cvref_t<T>>;
+concept cvref = !std::same_as<T, std::remove_cvref_t<T>>;
 
 template<typename T>
 concept character = std::same_as<std::remove_cv_t<T>, char> || std::same_as<std::remove_cv_t<T>, wchar_t>
@@ -30,6 +30,14 @@ concept strict_signed_integral = std::signed_integral<T> && !one_of_type<T, char
 template<typename T>
 concept strict_unsigned_integral =
     std::unsigned_integral<T> && !one_of_type<T, bool, char, wchar_t, char8_t, char16_t, char32_t>;
+
+template<typename T>
+concept numeric = std::integral<std::remove_cvref_t<T>> || std::floating_point<std::remove_cvref_t<T>>;
+
+template<typename T>
+concept strict_numeric =
+    vsl::strict_signed_integral<std::remove_cvref_t<T>> || vsl::strict_unsigned_integral<std::remove_cvref_t<T>>
+    || std::floating_point<std::remove_cvref_t<T>>;
 
 template<typename T>
 concept string_like = one_of_type<T, std::string, std::string_view, const char*, char*>;

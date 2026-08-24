@@ -41,6 +41,72 @@ TEST(ConceptsTest, CompileCheck)
     static_assert(vsl::one_of_type<const char*, int, const char*, double>);
 
     // -----------------------------------------------------------------------------------------------
+    // cvref
+    // -----------------------------------------------------------------------------------------------
+
+    static_assert(vsl::cvref<int&>);
+    static_assert(vsl::cvref<const int&>);
+    static_assert(!vsl::cvref<int>);
+    static_assert(!vsl::cvref<int*>);
+    static_assert(!vsl::cvref<const int*>);
+
+    // -----------------------------------------------------------------------------------------------
+    // character
+    // -----------------------------------------------------------------------------------------------
+
+    static_assert(vsl::character<char>);
+    static_assert(vsl::character<wchar_t>);
+    static_assert(vsl::character<char8_t>);
+    static_assert(vsl::character<char16_t>);
+    static_assert(vsl::character<char32_t>);
+
+    static_assert(vsl::character<const char>);
+    static_assert(!vsl::character<const char*>);
+
+    static_assert(!vsl::character<int>);
+    static_assert(!vsl::character<unsigned int>);
+
+    // -----------------------------------------------------------------------------------------------
+    // strict_signed_integral
+    // -----------------------------------------------------------------------------------------------
+
+    static_assert(vsl::strict_signed_integral<int>);
+    static_assert(vsl::strict_signed_integral<int32_t>);
+    static_assert(!vsl::strict_signed_integral<uint32_t>);
+
+    static_assert(!vsl::strict_signed_integral<bool>);
+
+    static_assert(!vsl::strict_signed_integral<char>);
+    static_assert(!vsl::strict_signed_integral<wchar_t>);
+    static_assert(!vsl::strict_signed_integral<char8_t>);
+    static_assert(!vsl::strict_signed_integral<char16_t>);
+    static_assert(!vsl::strict_signed_integral<char32_t>);
+
+    static_assert(vsl::strict_signed_integral<const int8_t>);
+    static_assert(!vsl::strict_signed_integral<int8_t*>);
+    static_assert(!vsl::strict_signed_integral<const char*>);
+
+    // -----------------------------------------------------------------------------------------------
+    // strict_unsigned_integral
+    // -----------------------------------------------------------------------------------------------
+
+    static_assert(vsl::strict_unsigned_integral<unsigned int>);
+    static_assert(vsl::strict_unsigned_integral<uint32_t>);
+    static_assert(!vsl::strict_unsigned_integral<int32_t>);
+
+    static_assert(!vsl::strict_unsigned_integral<bool>);
+
+    static_assert(!vsl::strict_unsigned_integral<char>);
+    static_assert(!vsl::strict_unsigned_integral<wchar_t>);
+    static_assert(!vsl::strict_unsigned_integral<char8_t>);
+    static_assert(!vsl::strict_unsigned_integral<char16_t>);
+    static_assert(!vsl::strict_unsigned_integral<char32_t>);
+
+    static_assert(vsl::strict_unsigned_integral<const uint8_t>);
+    static_assert(!vsl::strict_unsigned_integral<uint8_t*>);
+    static_assert(!vsl::strict_unsigned_integral<const char*>);
+
+    // -----------------------------------------------------------------------------------------------
     // numeric
     // -----------------------------------------------------------------------------------------------
 
@@ -60,34 +126,35 @@ TEST(ConceptsTest, CompileCheck)
     static_assert(!vsl::numeric<const char*>);
 
     // -----------------------------------------------------------------------------------------------
-    // character_type
+    // strict_numeric
     // -----------------------------------------------------------------------------------------------
 
-    static_assert(vsl::character<char>);
-    static_assert(vsl::character<char32_t>);
-    static_assert(vsl::character<const char>);
-    static_assert(!vsl::character<int>);
-    static_assert(!vsl::character<unsigned int>);
+    static_assert(vsl::strict_numeric<int>);
+    static_assert(vsl::strict_numeric<unsigned long long>);
+    static_assert(vsl::strict_numeric<uint32_t>);
+    static_assert(vsl::strict_numeric<double>);
+    static_assert(vsl::strict_numeric<float>);
 
-    // -----------------------------------------------------------------------------------------------
-    // strict_signed_integral
-    // -----------------------------------------------------------------------------------------------
+    static_assert(vsl::strict_numeric<const int>);
+    static_assert(vsl::strict_numeric<const uint32_t&>);
+    static_assert(vsl::strict_numeric<int8_t&>);
+    static_assert(vsl::strict_numeric<uint16_t&&>);
+    static_assert(vsl::strict_numeric<volatile int>);
 
-    static_assert(vsl::strict_signed_integral<int>);
-    static_assert(vsl::strict_signed_integral<int32_t>);
-    static_assert(!vsl::strict_signed_integral<uint32_t>);
-    static_assert(!vsl::strict_signed_integral<char>);
-    static_assert(!vsl::strict_signed_integral<bool>);
+    static_assert(vsl::strict_numeric<const double>);
+    static_assert(vsl::strict_numeric<const float&>);
+    static_assert(vsl::strict_numeric<double&>);
+    static_assert(vsl::strict_numeric<float&&>);
+    static_assert(vsl::strict_numeric<volatile double>);
 
-    // -----------------------------------------------------------------------------------------------
-    // strict_unsigned_integral
-    // -----------------------------------------------------------------------------------------------
+    static_assert(!vsl::strict_numeric<int*>);
+    static_assert(!vsl::strict_numeric<const int*>);
+    static_assert(!vsl::strict_numeric<double*>);
+    static_assert(!vsl::strict_numeric<const float*>);
 
-    static_assert(vsl::strict_unsigned_integral<unsigned int>);
-    static_assert(vsl::strict_unsigned_integral<uint32_t>);
-    static_assert(!vsl::strict_unsigned_integral<int32_t>);
-    static_assert(!vsl::strict_unsigned_integral<char>);
-    static_assert(!vsl::strict_unsigned_integral<bool>);
+    static_assert(!vsl::strict_numeric<char>);
+    static_assert(!vsl::strict_numeric<const char*>);
+    static_assert(!vsl::strict_numeric<bool>);
 
     // -----------------------------------------------------------------------------------------------
     // string_like
