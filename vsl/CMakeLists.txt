@@ -7,6 +7,9 @@ target_compile_options(vsl_lib INTERFACE
     $<$<CXX_COMPILER_ID:MSVC>:/utf-8 /Zc:preprocessor /wd4068>
 )
 
+# Disable min/max macros from Windows headers
+target_compile_definitions(vsl_lib INTERFACE NOMINMAX)
+
 target_include_directories(vsl_lib INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/../vsl/..")
 target_include_directories(vsl_lib INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/external")
 
