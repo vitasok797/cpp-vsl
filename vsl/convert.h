@@ -35,7 +35,7 @@ namespace detail
 {
 
 template<typename T>
-concept conversion_numeric = (vsl::strict_numeric<T> || std::same_as<T, bool>) && !vsl::cvref<T>;
+concept conversion_numeric = (vsl::strict_numeric<T> || std::same_as<T, bool>) && vsl::not_cvref<T>;
 
 }  // namespace detail
 
@@ -73,7 +73,7 @@ namespace detail
 {
 
 template<vsl::strict_numeric Output>
-    requires(!vsl::cvref<Output>)
+    requires(vsl::not_cvref<Output>)
 [[nodiscard]]
 inline auto str_to_numeric_raw(std::string_view str) -> vsl::Result<Output, std::string>
 {
