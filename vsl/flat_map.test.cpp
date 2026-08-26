@@ -230,10 +230,8 @@ TEST(FlatMapTest, ComparatorLambda)
 
 TEST(FlatMapTest, ComparatorStringIcase)
 {
-    static constexpr auto ASCII_SYMBOLS_UPPER =
-        R"( !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`{|}~)";
-    static constexpr auto ASCII_SYMBOLS_LOWER =
-        R"( !"#$%&'()*+,-./0123456789:;<=>?@abcdefghijklmnopqrstuvwxyz[\]^_`{|}~)";
+    constexpr auto ASCII_SYMBOLS_UPPER = R"( !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`{|}~)";
+    constexpr auto ASCII_SYMBOLS_LOWER = R"( !"#$%&'()*+,-./0123456789:;<=>?@abcdefghijklmnopqrstuvwxyz[\]^_`{|}~)";
 
     const auto table = vsl::FlatStringMapAsciiCaseless<std::string, int>{
         {            "Apple", 1},
