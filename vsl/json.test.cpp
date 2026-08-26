@@ -270,8 +270,8 @@ TEST(JsonTest, Parse)
     EXPECT_TRUE(Json::parse("{}").empty());
     EXPECT_TRUE(OrderedJson::parse("{}").empty());
 
-    EXPECT_THROW(static_cast<void>(Json::parse(PERSON_STR_BAD)), vsl::json_parse_error);
-    EXPECT_THROW(static_cast<void>(OrderedJson::parse(PERSON_STR_BAD)), vsl::json_parse_error);
+    EXPECT_THROW({ [[maybe_unused]] const auto json = Json::parse(PERSON_STR_BAD); }, vsl::json_parse_error);
+    EXPECT_THROW({ [[maybe_unused]] const auto json = OrderedJson::parse(PERSON_STR_BAD); }, vsl::json_parse_error);
 }
 
 TEST(JsonTest, IsValidJsonString)
