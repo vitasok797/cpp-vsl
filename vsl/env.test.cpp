@@ -17,7 +17,7 @@ static constexpr auto VAR_NAME = "ComSpec";
 static constexpr auto VAR_SUBSTRING = "cmd.exe";
 #else
 static constexpr auto VAR_NAME = "PATH";
-static constexpr auto VAR_SUBSTRING = "/home/";
+static constexpr auto VAR_SUBSTRING = "/bin";
 #endif
 
 TEST(EnvTest, Exists)
