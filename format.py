@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-DIRS = ['vsl']
+DIRS = ['bench', 'vsl']
 EXCLUDE_SUBDIRS = ['vsl/external']
 EXTENSIONS = ['.cpp', '.h']
 CLANG_FORMAT_CONFIG_PATH = None
