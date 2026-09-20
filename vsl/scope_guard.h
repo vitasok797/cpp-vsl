@@ -14,11 +14,13 @@ template<typename F>
 class ScopeGuard final
 {
   public:
-    [[nodiscard]] ScopeGuard(const F& f) noexcept
+    [[nodiscard]]
+    ScopeGuard(const F& f) noexcept
         : f_{f}
     {}
 
-    [[nodiscard]] ScopeGuard(F&& f) noexcept
+    [[nodiscard]]
+    ScopeGuard(F&& f) noexcept
         : f_{std::move(f)}
     {}
 
