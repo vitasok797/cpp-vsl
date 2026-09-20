@@ -74,12 +74,12 @@ TEST(MathDeathTest, CeilDivAssertions)
 }
 
 template<typename T, typename Predicate, typename... Args>
-auto test_generate_random(Predicate predicate, Args&&... args) -> void
+auto test_gen_random(Predicate predicate, Args&&... args) -> void
 {
     constexpr auto TEST_CYCLES = 10000;
     for (auto i = 0; i < TEST_CYCLES; ++i)
     {
-        auto value = vsl::generate_random<T>(std::forward<Args>(args)...);
+        auto value = vsl::gen_random<T>(std::forward<Args>(args)...);
         ASSERT_TRUE(predicate(value)) << "Generated value: " << value;
     }
 }
@@ -90,49 +90,49 @@ TEST(MathTest, GenerateRandomIntegral)
     {
         return x >= std::numeric_limits<decltype(x)>::min() && x <= std::numeric_limits<decltype(x)>::max();  //
     };
-    ASSERT_NO_FATAL_FAILURE(test_generate_random<int64_t>(full_default));
-    ASSERT_NO_FATAL_FAILURE(test_generate_random<int32_t>(full_default));
-    ASSERT_NO_FATAL_FAILURE(test_generate_random<uint64_t>(full_default));
-    ASSERT_NO_FATAL_FAILURE(test_generate_random<uint32_t>(full_default));
+    ASSERT_NO_FATAL_FAILURE(test_gen_random<int64_t>(full_default));
+    ASSERT_NO_FATAL_FAILURE(test_gen_random<int32_t>(full_default));
+    ASSERT_NO_FATAL_FAILURE(test_gen_random<uint64_t>(full_default));
+    ASSERT_NO_FATAL_FAILURE(test_gen_random<uint32_t>(full_default));
 
     auto from0 = [](auto x) { return x >= 0 && x <= std::numeric_limits<decltype(x)>::max(); };
-    ASSERT_NO_FATAL_FAILURE(test_generate_random<int64_t>(from0, 0));
-    ASSERT_NO_FATAL_FAILURE(test_generate_random<int32_t>(from0, 0));
-    ASSERT_NO_FATAL_FAILURE(test_generate_random<uint64_t>(from0, 0u));
-    ASSERT_NO_FATAL_FAILURE(test_generate_random<uint32_t>(from0, 0u));
+    ASSERT_NO_FATAL_FAILURE(test_gen_random<int64_t>(from0, 0));
+    ASSERT_NO_FATAL_FAILURE(test_gen_random<int32_t>(from0, 0));
+    ASSERT_NO_FATAL_FAILURE(test_gen_random<uint64_t>(from0, 0u));
+    ASSERT_NO_FATAL_FAILURE(test_gen_random<uint32_t>(from0, 0u));
 
     auto from1_to2 = [](auto x) { return x >= 1 && x <= 2; };
-    ASSERT_NO_FATAL_FAILURE(test_generate_random<int64_t>(from1_to2, 1, 2));
-    ASSERT_NO_FATAL_FAILURE(test_generate_random<int32_t>(from1_to2, 1, 2));
-    ASSERT_NO_FATAL_FAILURE(test_generate_random<uint64_t>(from1_to2, 1u, 2u));
-    ASSERT_NO_FATAL_FAILURE(test_generate_random<uint32_t>(from1_to2, 1u, 2u));
+    ASSERT_NO_FATAL_FAILURE(test_gen_random<int64_t>(from1_to2, 1, 2));
+    ASSERT_NO_FATAL_FAILURE(test_gen_random<int32_t>(from1_to2, 1, 2));
+    ASSERT_NO_FATAL_FAILURE(test_gen_random<uint64_t>(from1_to2, 1u, 2u));
+    ASSERT_NO_FATAL_FAILURE(test_gen_random<uint32_t>(from1_to2, 1u, 2u));
 
     auto fromN100_toN10 = [](auto x) { return x >= -100 && x <= -10; };
-    ASSERT_NO_FATAL_FAILURE(test_generate_random<int64_t>(fromN100_toN10, -100, -10));
-    ASSERT_NO_FATAL_FAILURE(test_generate_random<int32_t>(fromN100_toN10, -100, -10));
+    ASSERT_NO_FATAL_FAILURE(test_gen_random<int64_t>(fromN100_toN10, -100, -10));
+    ASSERT_NO_FATAL_FAILURE(test_gen_random<int32_t>(fromN100_toN10, -100, -10));
 
-    ASSERT_THROW(vsl::generate_random<int64_t>(1, 0), std::invalid_argument);
+    ASSERT_THROW(vsl::gen_random<int64_t>(1, 0), std::invalid_argument);
 }
 
 TEST(MathTest, GenerateRandomFloating)
 {
     auto full_default = [](auto x) { return x >= 0.0 && x < 1.0; };
-    ASSERT_NO_FATAL_FAILURE(test_generate_random<float>(full_default));
-    ASSERT_NO_FATAL_FAILURE(test_generate_random<double>(full_default));
+    ASSERT_NO_FATAL_FAILURE(test_gen_random<float>(full_default));
+    ASSERT_NO_FATAL_FAILURE(test_gen_random<double>(full_default));
 
     auto from01 = [](auto x) { return x >= 0.1 && x < 1.0; };
-    ASSERT_NO_FATAL_FAILURE(test_generate_random<float>(from01, 0.1f));
-    ASSERT_NO_FATAL_FAILURE(test_generate_random<double>(from01, 0.1));
+    ASSERT_NO_FATAL_FAILURE(test_gen_random<float>(from01, 0.1f));
+    ASSERT_NO_FATAL_FAILURE(test_gen_random<double>(from01, 0.1));
 
     auto from1_to2 = [](auto x) { return x >= 1.0 && x < 2.0; };
-    ASSERT_NO_FATAL_FAILURE(test_generate_random<float>(from1_to2, 1.0f, 2.0f));
-    ASSERT_NO_FATAL_FAILURE(test_generate_random<double>(from1_to2, 1.0, 2.0));
+    ASSERT_NO_FATAL_FAILURE(test_gen_random<float>(from1_to2, 1.0f, 2.0f));
+    ASSERT_NO_FATAL_FAILURE(test_gen_random<double>(from1_to2, 1.0, 2.0));
 
     auto fromN100_toN10 = [](auto x) { return x >= -100.0 && x < -10.0; };
-    ASSERT_NO_FATAL_FAILURE(test_generate_random<float>(fromN100_toN10, -100.0f, -10.0f));
-    ASSERT_NO_FATAL_FAILURE(test_generate_random<double>(fromN100_toN10, -100.0, -10.0));
+    ASSERT_NO_FATAL_FAILURE(test_gen_random<float>(fromN100_toN10, -100.0f, -10.0f));
+    ASSERT_NO_FATAL_FAILURE(test_gen_random<double>(fromN100_toN10, -100.0, -10.0));
 
-    ASSERT_THROW(vsl::generate_random<double>(1.0, 0.0), std::invalid_argument);
+    ASSERT_THROW(vsl::gen_random<double>(1.0, 0.0), std::invalid_argument);
 }
 
 }  // namespace test

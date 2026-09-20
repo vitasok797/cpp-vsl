@@ -50,8 +50,8 @@ auto ceil_div(A a, B b) noexcept -> std::common_type_t<A, B>
 // Floating point: distribution [a, b), default [0, 1) and [a, 1)
 template<typename T>
     requires std::is_arithmetic_v<T> && (!std::is_same_v<T, bool>)
-auto generate_random(T a = std::is_floating_point_v<T> ? T{0} : std::numeric_limits<T>::min(),
-                     T b = std::is_floating_point_v<T> ? T{1} : std::numeric_limits<T>::max()) -> T
+auto gen_random(T a = std::is_floating_point_v<T> ? T{0} : std::numeric_limits<T>::min(),
+                T b = std::is_floating_point_v<T> ? T{1} : std::numeric_limits<T>::max()) -> T
 {
     static_assert(sizeof(T) > 1, "8-bit types (char, int8_t, uint8_t) are not supported by uniform_int_distribution");
 
