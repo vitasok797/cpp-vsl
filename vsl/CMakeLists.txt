@@ -4,7 +4,7 @@ add_library(vsl_lib INTERFACE)
 
 target_compile_features(vsl_lib INTERFACE cxx_std_20)
 target_compile_options(vsl_lib INTERFACE
-    $<$<CXX_COMPILER_ID:MSVC>:/utf-8 /Zc:preprocessor /wd4068>
+    $<$<CXX_COMPILER_ID:MSVC>:/utf-8 /Zc:preprocessor /wd4068 /wd4702>
 )
 
 # Disable min/max macros from Windows headers
